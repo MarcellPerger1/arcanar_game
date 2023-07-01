@@ -628,10 +628,10 @@ class Card:
     always_triggers: bool = False
 
     # runtime values:
-    effective_color: ColorT = None
+    effective_color: ColorT = field(default=None, repr=False)
     is_starting_card: bool = False
     markers: int = 0
-    is_alive: bool = True
+    is_alive: bool = field(default=True, repr=False)
 
     def execute_from_other(self, info: EffectExecInfo):
         return self.effect.execute(d_replace(info, card=self))
@@ -1316,6 +1316,8 @@ class TextChooser(IChooser):
             strings.append(col_strings)
         rows: list[tuple[str, ...]] = list(zip(*strings))
         rows.insert(0, tuple(c.name.capitalize() for c in magics))
+        for i, c in enumerate(magics):
+            box_ws[i] = max(box_ws[i], len(c.name))
         for y, row in enumerate(rows):
             full_lines: list[tuple[str, ...]] = list(zip_longest(*(string.splitlines() for string in row), fillvalue=''))
             for full_line in full_lines:
