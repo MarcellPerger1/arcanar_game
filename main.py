@@ -1330,44 +1330,8 @@ class TextChooser(IChooser):
 
     def _print_magics(self):
         print("Your magics:")
-        # todo better print table
-        pprint.pp(self.player.magics)
+        # pprint.pp(self.player.magics)
         return self._print_magics_2()
-        # box_w = 40
-        # max_n_cards = 0
-        # strings = {}
-        # for color, cards in self.player.magics.items():
-        #     max_n_cards = max(max_n_cards, len(cards))
-        #     strings[color] = [pprint.pformat(card, width=box_w, compact=True) for card in cards]
-        # heights = [0] * max_n_cards
-        # lengths = {ct: 0 for ct in self.player.magics}
-        # for color, col_strings in strings.items():
-        #     for i, string in enumerate(col_strings):
-        #         heights[i] = max(heights[i], len(string.splitlines()))
-        #         lengths[color] = max(lengths[color],
-        #                              max(len(ln) for ln in string.splitlines()))
-        # for i in range(max_n_cards):
-        #     for color, col_strings in strings.items():
-        #         if i >= len(col_strings):
-        #             string = ''
-        #         else:
-        #             string = col_strings[i]
-        #         lines = string.splitlines()
-        #         for li in range(heights[i]):
-        #             if li >= len(lines):
-        #                 print('| ' + ' '*40 + ' | ')
-        #             else:
-        #                 print(f'| {lines[li]:>40} | ')
-        #         print('| ' + '-'*40 + ' | ')
-        # for color, col_strings in strings.items():
-        #     for i, string in enumerate(col_strings):
-        #         lines = string.splitlines()
-        #         for li in range(heights[i]):
-        #             if li >= len(lines):
-        #                 print('| ' + ' '*40 + ' | ')
-        #             else:
-        #                 print(f'| {lines[li]:>40} | ')
-        #         print('| ' + '-'*40 + ' | ')
 
     def _print_hand(self):
         print('Cards in hand:')
