@@ -158,6 +158,8 @@ class ColorPaymentMethod(IPaymentMethod):
         self.card = card
 
     def get_required_resources(self) -> dict[Color, int]:
+        if self.card.cost is None:
+            return {}
         return {self.card.cost.color: self.card.cost.color_cost}
 
 
@@ -622,9 +624,9 @@ class HasMarkers(ICondition):
 @dataclass
 class Card:
     # static values:
-    color: CardType
+    color: CardType | Color
     effect: CardEffect
-    cost: CardCost | None
+    cost: CardCost
     always_triggers: bool = False
 
     # runtime values:
@@ -654,7 +656,8 @@ class CardCost:
 def _make_starting_card(color: ColorT, effect: CardEffect = None):
     if effect is None:
         effect = GainResource(color, 1)
-    return Card(color, effect, None, False, color, is_starting_card=True)
+    return Card(color, effect, CardCost(Color.red, 0, 0),
+                False, color, is_starting_card=True)
 
 
 def _make_starting_cards_for_color(color: CardType):
@@ -815,7 +818,7 @@ class Game:
         hands_new = [None] * n_players
         for i in range(n_players):
             hands_new[(i + direction) % n_players] = hands_old[i % n_players]
-        for i, hand in hands_new:
+        for i, hand in enumerate(hands_new):
             assert hand is not None
             self.players[i].hand = hand
 
@@ -879,27 +882,27 @@ def _make_decks() -> list[list[Card]]:
             ConditionalEffect(HasMarkers(), DiscardThis(), AddMarker())
         )
 
-    def conv_ef(src_color: ColorFilter, src_n: int,
+    def conv_ef(src_color: ColorFilter | Color, src_n: int,
                 dest_color: Color, dest_n: int,
                 effect: CardEffect = None) -> CardEffect:
         return Convert(SpendResource(src_color, src_n),
                        GainResource(dest_color, dest_n), effect)
 
-    def a_most_5pt(color: CardType):
+    def a_most_5pt(color: CardType | Color):
         return Card(
             a, ConditionalEffect(MostMagicsOfType(color), GainPoints(5)), free)
 
     def gain_rp(color: Color, color_amount: int, point_amount: int):
         return Group(GainResource(color, color_amount), GainPoints(point_amount))
 
-    def p_cards_gain(req_color: CardType, req_n: int,
+    def p_cards_gain(req_color: CardType | Color, req_n: int,
                      p_n: int, pt_n: int, cost: CardCost):
         return Card(p, ConditionalEffect(
             HasMagicsOfType(req_color, req_n),
             gain_rp(p, p_n, pt_n)
         ), cost)
 
-    def p_cards_3pt(req_color: CardType, req_n: int, cost: CardCost):
+    def p_cards_3pt(req_color: CardType | Color, req_n: int, cost: CardCost):
         return Card(p, ConditionalEffect(
             HasMagicsOfType(req_color, req_n),
             GainPoints(3)
