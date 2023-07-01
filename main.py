@@ -5,7 +5,10 @@ import random
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, replace as d_replace, field
 from itertools import zip_longest
-from typing import TypeVar, Generator, Iterable, cast
+from typing import TypeVar, Generator, Iterable, cast, Any, overload, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from typing import TypeGuard
 
 T = TypeVar('T')
 
@@ -13,12 +16,12 @@ T = TypeVar('T')
 # region my_enum
 # home-made enum that allows subclasses!
 class ColorEnumMeta(type):
-    def __init__(cls, name, bases, ns, **kwargs):
+    def __init__(cls, name: str, bases: tuple[type, ...], ns: dict[str, Any], **kwargs):
         super().__init__(name, bases, ns, **kwargs)
         if not hasattr(cls, '_allowed_names_'):
             cls._allowed_names_: tuple[str, ...] = ()
         if not hasattr(cls, '_name_to_inst_'):
-            cls._name_to_inst_ = {}
+            cls._name_to_inst_: dict[str, Color] = {}
 
     def __new__(mcls, name, bases, ns, **kwargs):
         return super().__new__(mcls, name, bases, ns, **kwargs)
@@ -28,7 +31,7 @@ class ColorEnumMeta(type):
             return item in cls._name_to_inst_.values()
         return item in cls._name_to_inst_
 
-    def __iter__(self) -> Generator[Color | ColorT, None, None]:
+    def __iter__(self) -> Generator[Color, None, None]:
         yield from self._name_to_inst_.values()
 
     def __len__(self):
@@ -61,6 +64,8 @@ class ColorEnum(metaclass=ColorEnumMeta):
 
         if isinstance(name, type(self)):
             name = name.name
+        else:
+            assert isinstance(name, str)
         if name not in self._allowed_names_:
             raise ValueError(f"Invalid name for {type(self).__name__}")
         set_name(name)
@@ -95,7 +100,7 @@ class ColorEnum(metaclass=ColorEnumMeta):
 
 # region enums
 class Color(ColorEnum):
-    purple = green = red = blue = yellow = None  # type: Color
+    purple = green = red = blue = yellow = None  # type: Color  # type: ignore
 
 
 ColorT = TypeVar('ColorT', covariant=True, bound=Color)
@@ -117,7 +122,7 @@ COLOR_ADJACENCY: dict[Color, tuple[Color, ...]] = {
 
 
 class CardType(Color):
-    artifact = spell = None  # type: CardType
+    artifact = spell = None  # type: CardType  # type: ignore
 
 
 CardType.register('artifact')
@@ -126,7 +131,7 @@ CardType.register('spell', is_final=True)
 
 
 class ColorFilter(Color):
-    any_color = except_red = except_yellow = None  # type: ColorFilter
+    any_color = except_red = except_yellow = None  # type: ColorFilter  # type: ignore
 
 
 ColorFilter.register('any_color')
@@ -204,7 +209,7 @@ class RunMagicsAction(IAction):
 class IChooser(ABC):
     @abstractmethod
     def choose_spend(self, color: ColorFilter, amount: int,
-                     player: Player) -> dict[Color, int]:
+                     player: Player) -> dict[Color, int] | None:
         ...
 
     @abstractmethod
@@ -307,6 +312,10 @@ class Convert(CardEffect):
     gain: GainResource | CardEffect
     effect: CardEffect = field(default_factory=NullEffect)
 
+    def __post_init__(self):
+        if self.effect is None:
+            object.__setattr__(self, 'effect', NullEffect())
+
     def execute(self, info: EffectExecInfo) -> bool:
         if not self.spend.execute(info):
             return False
@@ -396,7 +405,7 @@ class ForEachOfChosenColor(CardEffect):
     effect: CardEffect
 
     def execute(self, info: EffectExecInfo) -> bool:
-        color: ColorT = info.chooser.choose_color()
+        color: Color = info.chooser.choose_color()
         assert color in Color
         for _ in range(info.player.num_cards_of_type(color)):
             self.effect.execute(info)
@@ -429,7 +438,7 @@ class ExecuteAnyColorTwice(CardEffect):
     do_evergreens: bool = False
 
     def execute(self, info: EffectExecInfo) -> bool:
-        color: ColorT = info.chooser.choose_color()
+        color: Color = info.chooser.choose_color()
         for c in info.player.magics[color]:
             c.execute_from_other(info)
         if not self.do_evergreens:
@@ -493,7 +502,8 @@ class MoveCardAndRunColor(CardEffect):
         if card is None:
             return False
         orig_color = card.effective_color
-        new_color: ColorT = info.chooser.choose_move_where(
+        assert orig_color is not None
+        new_color: Color = info.chooser.choose_move_where(
             COLOR_ADJACENCY[orig_color])
         # move the card
         card.effective_color = new_color
@@ -516,6 +526,7 @@ class DiscardThis(CardEffect):
         #  NOT `for i in range(len(cards))` as python will handle it
         #  correctly that way.
         info.card.setstate_discarded()
+        assert info.card.effective_color is not None
         info.player.magics[info.card.effective_color].remove(info.card)
         info.player.discard.append(info.card)
         return True
@@ -548,16 +559,27 @@ class ConditionalEffect(CardEffect):
         return True
 
 
+def is_iterable(x) -> TypeGuard[Iterable]:
+    try:
+        iter(x)
+    except (TypeError, NotImplementedError):
+        return False
+    return True
+
+
 @dataclass(frozen=True, init=False)
 class EffectGroup(CardEffect):
     effects: tuple[CardEffect, ...]
 
+    @overload
+    def __init__(self, *effects: CardEffect): ...
+    @overload
+    def __init__(self, effect: tuple[CardEffect, ...], /): ...
+
     def __init__(self, *effects: CardEffect | tuple[CardEffect, ...]):
         if len(effects) == 1:
-            try:
+            if is_iterable(effects[0]):
                 effects = tuple(effects[0])
-            except (TypeError, NotImplementedError, AttributeError):
-                pass
         object.__setattr__(self, 'effects', effects)
 
     def execute(self, info: EffectExecInfo) -> bool:
@@ -630,7 +652,7 @@ class Card:
     always_triggers: bool = False
 
     # runtime values:
-    effective_color: ColorT = field(default=None, repr=False)
+    effective_color: Color | CardType | None = field(default=None, repr=False)
     is_starting_card: bool = False
     markers: int = 0
     is_alive: bool = field(default=True, repr=False)
@@ -653,7 +675,7 @@ class CardCost:
     wildcard_cost: int
 
 
-def _make_starting_card(color: ColorT, effect: CardEffect = None):
+def _make_starting_card(color: Color, effect: CardEffect | None = None):
     if effect is None:
         effect = GainResource(color, 1)
     return Card(color, effect, CardCost(Color.red, 0, 0),
@@ -671,11 +693,11 @@ def _make_starting_cards_for_color(color: CardType):
 
 
 class Player:
-    def __init__(self, game: Game, idx: int = None):
+    def __init__(self, game: Game, idx: int):
         self.game = game
         self.resources: dict[Color, int] = {c: 1 for c in REAL_COLORS}
-        self.hand: list[Card] | None = None
-        self.magics: dict[CardType, list[Card]] = self.get_starting_magics()
+        self.hand: list[Card] = []
+        self.magics: dict[Color | CardType, list[Card]] = self.get_starting_magics()
         self.points = 0
         self.discard: list[Card] = []
         self.idx = idx
@@ -692,7 +714,7 @@ class Player:
         return {c: _make_starting_cards_for_color(c)
                 for c in (*Color, CardType.artifact)}
 
-    def num_cards_of_type(self, color: CardType) -> int:
+    def num_cards_of_type(self, color: CardType | Color) -> int:
         n = 0
         for c in self.magics[color]:
             if not c.is_starting_card:
@@ -702,7 +724,7 @@ class Player:
     def draw_start_cards(self, deck: list[Card]):
         self.hand = [d_replace(deck.pop()) for _ in range(6)]
 
-    def place_card(self, card: Card, target: CardType = None):
+    def place_card(self, card: Card, target: CardType | Color | None = None):
         if target is None:
             target = card.color
         if target == CardType.spell:
@@ -765,7 +787,7 @@ MOON_COLOR_POOL: tuple[Color, ...] = (*Color, *Color)
 
 
 class Game:
-    moon_phases: tuple[tuple[Color, Color], ...]
+    moon_phases: tuple[tuple[MoonPhase, MoonPhase], ...]
     turn: int
     round_i: int
     winners: list[Player]
@@ -787,7 +809,7 @@ class Game:
 
     def prepare_moon_phases(self):
         raw_moon_phases = shuffled(MOON_COLOR_POOL)
-        moon_phases = [cast('tuple[Color, Color]',
+        moon_phases = [cast('tuple[MoonPhase, MoonPhase]',
                             tuple(raw_moon_phases.pop() for _ in range(2)))
                        for _ in range(5)] + [(MoonPhase.last_turn,) * 2]
         self.moon_phases = tuple(moon_phases)
@@ -815,7 +837,7 @@ class Game:
         direction = GIVE_DIRN[self.round_i]
         hands_old = [player.hand for player in self.players]
         n_players = len(self.players)
-        hands_new = [None] * n_players
+        hands_new: list[list[Card] | None] = [None] * n_players
         for i in range(n_players):
             hands_new[(i + direction) % n_players] = hands_old[i % n_players]
         for i, hand in enumerate(hands_new):
@@ -854,7 +876,7 @@ class Game:
 
 # noinspection PyPep8Naming
 def _make_decks() -> list[list[Card]]:
-    def gain1(color: Color | CardType, cost: CardCost = None):
+    def gain1(color: Color | CardType, cost: CardCost | None = None):
         if cost is None:
             cost = CardCost(r, 0, 0)
         return Card(color, GainResource(color, 1), cost)
@@ -863,6 +885,7 @@ def _make_decks() -> list[list[Card]]:
         return Card(color, GainResource(color, 2), cost)
 
     def p_gain2_c1(cond_color: Color | CardType, cost_color: Color):
+        cond_color = cast('CardType', cond_color)
         return Card(p,
                     ConditionalEffect(
                         HasMagicsOfType(cond_color, 1),
@@ -884,11 +907,13 @@ def _make_decks() -> list[list[Card]]:
 
     def conv_ef(src_color: ColorFilter | Color, src_n: int,
                 dest_color: Color, dest_n: int,
-                effect: CardEffect = None) -> CardEffect:
+                effect: CardEffect = NullEffect()) -> CardEffect:
+        src_color = cast('ColorFilter', src_color)
         return Convert(SpendResource(src_color, src_n),
                        GainResource(dest_color, dest_n), effect)
 
     def a_most_5pt(color: CardType | Color):
+        color = cast('CardType', color)  # all Color are valid CardType
         return Card(
             a, ConditionalEffect(MostMagicsOfType(color), GainPoints(5)), free)
 
@@ -897,18 +922,21 @@ def _make_decks() -> list[list[Card]]:
 
     def p_cards_gain(req_color: CardType | Color, req_n: int,
                      p_n: int, pt_n: int, cost: CardCost):
+        req_color = cast('CardType', req_color)  # all Color are valid CardType
         return Card(p, ConditionalEffect(
             HasMagicsOfType(req_color, req_n),
             gain_rp(p, p_n, pt_n)
         ), cost)
 
     def p_cards_3pt(req_color: CardType | Color, req_n: int, cost: CardCost):
+        req_color = cast('CardType', req_color)  # all Color are valid CardType
         return Card(p, ConditionalEffect(
             HasMagicsOfType(req_color, req_n),
             GainPoints(3)
         ), cost)
 
-    def a_2per_card(color: Color | CardType, pts: int = 2, cost: CardCost = None):
+    def a_2per_card(color: Color | CardType, pts: int = 2, cost: CardCost | None = None):
+        color = cast('CardType', color)  # all Color are valid CardType
         if cost is None:
             cost = Cost(color, 2, 4)
         return Card(a, ForEachCardOfType(color, GainPoints(pts)), cost)
