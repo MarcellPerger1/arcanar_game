@@ -4,6 +4,7 @@ import pprint
 import random
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, replace as d_replace, field
+from itertools import zip_longest
 from typing import TypeVar, Generator, Iterable, cast
 
 T = TypeVar('T')
@@ -260,7 +261,6 @@ class NullEffect(CardEffect):
         return True
 
 
-# todo these `CardEffect`s and `ICondition`s should be dataclasses
 @dataclass(frozen=True)
 class GainResource(CardEffect):
     color: Color
@@ -1291,10 +1291,81 @@ class TextChooser(IChooser):
         print('You have these resources: ',
               {color.name: self.player.resources[color] for color in Color})
 
+    def _print_magics_2(self):
+        magics = self.player.magics
+        n_boxes_y = 0
+        n_boxes_x = len(magics)
+        for _, cards in magics.items():
+            n_boxes_y = max(n_boxes_y, len(cards))
+        want_box_w = 40
+        strings = []
+        box_ws = []
+        box_hs = [0] * n_boxes_y
+        for color, cards in magics.items():
+            col_strings = []
+            box_w = 0
+            for i, card in enumerate(cards):
+                string = pprint.pformat(card, width=want_box_w, compact=True)
+                box_w = max(box_w, max(len(ln) for ln in string.splitlines()))
+                box_h = len(string.splitlines())
+                box_hs[i] = max(box_hs[i], box_h)
+                col_strings.append(string)
+            box_ws.append(box_w)
+            if len(col_strings) < n_boxes_y:
+                col_strings += [''] * (n_boxes_y - len(col_strings))
+            strings.append(col_strings)
+        rows: list[tuple[str, ...]] = list(zip(*strings))
+        rows.insert(0, tuple(c.name.capitalize() for c in magics))
+        for y, row in enumerate(rows):
+            full_lines: list[tuple[str, ...]] = list(zip_longest(*(string.splitlines() for string in row), fillvalue=''))
+            for full_line in full_lines:
+                for x, sub_line in enumerate(full_line):
+                    print('| ' + sub_line.ljust(box_ws[x]) + ' ', end='')
+                print('|')
+            for x in range(n_boxes_x):
+                print('| ' + '-'*box_ws[x] + ' ', end='')
+            print('|')
+
     def _print_magics(self):
         print("Your magics:")
         # todo better print table
         pprint.pp(self.player.magics)
+        return self._print_magics_2()
+        # box_w = 40
+        # max_n_cards = 0
+        # strings = {}
+        # for color, cards in self.player.magics.items():
+        #     max_n_cards = max(max_n_cards, len(cards))
+        #     strings[color] = [pprint.pformat(card, width=box_w, compact=True) for card in cards]
+        # heights = [0] * max_n_cards
+        # lengths = {ct: 0 for ct in self.player.magics}
+        # for color, col_strings in strings.items():
+        #     for i, string in enumerate(col_strings):
+        #         heights[i] = max(heights[i], len(string.splitlines()))
+        #         lengths[color] = max(lengths[color],
+        #                              max(len(ln) for ln in string.splitlines()))
+        # for i in range(max_n_cards):
+        #     for color, col_strings in strings.items():
+        #         if i >= len(col_strings):
+        #             string = ''
+        #         else:
+        #             string = col_strings[i]
+        #         lines = string.splitlines()
+        #         for li in range(heights[i]):
+        #             if li >= len(lines):
+        #                 print('| ' + ' '*40 + ' | ')
+        #             else:
+        #                 print(f'| {lines[li]:>40} | ')
+        #         print('| ' + '-'*40 + ' | ')
+        # for color, col_strings in strings.items():
+        #     for i, string in enumerate(col_strings):
+        #         lines = string.splitlines()
+        #         for li in range(heights[i]):
+        #             if li >= len(lines):
+        #                 print('| ' + ' '*40 + ' | ')
+        #             else:
+        #                 print(f'| {lines[li]:>40} | ')
+        #         print('| ' + '-'*40 + ' | ')
 
     def _print_hand(self):
         print('Cards in hand:')
