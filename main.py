@@ -293,7 +293,7 @@ class SpendResource(CardEffect):
     amount: int
 
     def execute(self, info: EffectExecInfo) -> bool:
-        if not isinstance(self.color, Color):
+        if isinstance(self.color, ColorFilter):
             resources = info.chooser.choose_spend(
                 self.color, self.amount, info.player)
             if resources is None:
@@ -1350,7 +1350,8 @@ class TextChooser(IChooser):
         for i, c in enumerate(magics):
             box_ws[i] = max(box_ws[i], len(c.name))
         for y, row in enumerate(rows):
-            full_lines: list[tuple[str, ...]] = list(zip_longest(*(string.splitlines() for string in row), fillvalue=''))
+            full_lines: list[tuple[str, ...]] = list(zip_longest(
+                *(string.splitlines() for string in row), fillvalue=''))
             for full_line in full_lines:
                 for x, sub_line in enumerate(full_line):
                     print('| ' + sub_line.ljust(box_ws[x]) + ' ', end='')
