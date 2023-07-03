@@ -1322,8 +1322,9 @@ class TextChooser(IChooser):
         print('You have these resources: ',
               {color.name: self.player.resources[color] for color in Color})
 
-    def _print_magics_2(self):
-        magics = self.player.magics
+    def _print_magics_2(self, magics: dict[CardType | Color, list[Card]] | None = None):
+        if magics is None:
+            magics = self.player.magics
         n_boxes_y = 0
         n_boxes_x = len(magics)
         for _, cards in magics.items():
@@ -1367,7 +1368,10 @@ class TextChooser(IChooser):
 
     def _print_hand(self):
         print('Cards in hand:')
-        pprint.pp(self.player.hand)
+        magics: dict[CardType | Color, list[Card]] = {}
+        for card in self.player.hand:
+            magics.setdefault(card.color, []).append(card)
+        return self._print_magics_2(magics)
 
 
 PLACE_ALIASES = {'place', 'put', 'buy', 'purchase', 'get'}
