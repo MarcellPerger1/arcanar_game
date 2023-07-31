@@ -181,6 +181,7 @@ class ThreadedBackend(IBackend):
     def __init__(self, n_players=4):
         self.n_players = n_players
 
+    # noinspection PyAttributeOutsideInit
     def start(self, app: GuiApp):
         self.orig_stdin = sys.stdin
         self.orig_stdout = sys.stdout
@@ -260,7 +261,7 @@ class GuiApp:
         self.backend.send_input(text + '\n')
         self.inp.delete(0, tk.END)
         if self.backend.stdin.requesting:
-            self.write_stdout('\n')
+            self.write_stdout(' >? ' + text + '\n')
 
     def write_stdout(self, s: str):
         self.append_text(self.out, s)
