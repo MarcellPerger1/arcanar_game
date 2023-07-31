@@ -1243,9 +1243,12 @@ class TextChooser(IChooser):
                 print("Invalid input:", str(err))
 
     def choose_action(self, player: Player) -> IAction:
+        print(f'Player {player.idx}\'s turn')
+        self._print_magics()
         self._print_hand()
         self._print_resources()
-        self._print_magics()
+        print('Moon phases', self.game.moon_phases)
+        print(f'Current turn: {self.game.turn}')
         tp = self._choose_action_type()
         print(f"Choose a card to {tp.card_action}")
         while True:
@@ -1368,10 +1371,22 @@ class TextChooser(IChooser):
 
     def _print_hand(self):
         print('Cards in hand:')
-        magics: dict[CardType | Color, list[Card]] = {}
-        for card in self.player.hand:
-            magics.setdefault(card.color, []).append(card)
+        # # use Color to populate dict initially for correct ordering
+        # magics: dict[CardType | Color, list[Card]] = {c: [] for c in CardType}
+        # for card in self.player.hand:
+        #     magics[card.color].append(card)
+        # # remove unnecessary columns
+        # for color in CardType:
+        #     if len(magics[color]) == 0:
+        #         del magics[color]
+        magics = {_DictToAttr(name=str(i)): [v] for i, v in enumerate(self.player.hand)}
         return self._print_magics_2(magics)
+
+
+class _DictToAttr:
+    def __init__(self, d: dict[str, Any] = None, **kwargs):
+        for k, v in ((d or {}) | kwargs).items():
+            setattr(self, k, v)
 
 
 PLACE_ALIASES = {'place', 'put', 'buy', 'purchase', 'get'}
