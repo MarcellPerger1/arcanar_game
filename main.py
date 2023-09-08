@@ -300,6 +300,7 @@ class SpendResource(CardEffect):
                 return False
             assert info.player.has_resources(resources)
             info.player.subtract_resources(resources)
+            return True
         if info.player.resources[self.color] >= self.amount:
             info.player.resources[self.color] -= self.amount
             return True
