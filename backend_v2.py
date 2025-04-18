@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import abc
 from collections import Counter
 from dataclasses import dataclass, fields
 from typing import Generic, TypeVar, AbstractSet
 
 
+# TODO package-ify this stuff into separate modules
+# region util
 T = TypeVar('T')
 lookup_member = object()
 
@@ -93,8 +96,10 @@ class ExtendableEnum(Generic[T], metaclass=ExtendableEnumMeta[T]):
 
     def __init_subclass__(cls, **kwargs):
         cls._copy_attrs()  # So additions to subclass don't affect base class
+# endregion
 
 
+# region Color enums
 class Color(ExtendableEnum):
     PURPLE = 1
     GREEN = 2
@@ -123,6 +128,7 @@ class Area(PlaceableCardType):
 
 class AnyResource(Color):
     POINTS = 12
+# endregion
 
 
 @dataclass
@@ -210,8 +216,25 @@ class ColorFilter:
 
 
 @dataclass
+class EffectExecInfo:
+    card: Card
+    player: Player
+
+    @property
+    def game(self):
+        return self.player.game
+
+
+class CardEffect(abc.ABC):
+    @abc.abstractmethod
+    def execute(self, info: EffectExecInfo):
+        ...
+
+
+@dataclass
 class Player:
     idx: int  # Which player we are
+    game: Game
     # Me when the code gets too generic... - we have 'areas' for each player:
     #  the hand, regular placed cards (1 for each type), placed artifacts, etc.
     # In effect an 'area' is a generalised 1D ordered list of cards.
