@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import AbstractSet
 
-from backend_v2.enums import Area, Color
+from backend_v2.enums import Area, Color, AnyResource
 
 
 @dataclass
@@ -14,11 +14,11 @@ class Location:
 
 
 @dataclass(frozen=True)
-class ColorFilter:
-    allowed_colors: frozenset[Color]
+class ResourceFilter:
+    allowed_resources: frozenset[AnyResource]
 
-    def __init__(self, allowed_colors: AbstractSet):
-        object.__setattr__(self, 'allowed_colors', frozenset(allowed_colors))
+    def __init__(self, allowed_resources: AbstractSet[AnyResource]):
+        object.__setattr__(self, 'allowed_resources', frozenset(allowed_resources))
 
-    def is_allowed(self, c: Color):
-        return c in self.allowed_colors
+    def is_allowed(self, c: AnyResource):
+        return c in self.allowed_resources

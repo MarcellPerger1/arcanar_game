@@ -5,7 +5,7 @@ from collections import Counter
 from dataclasses import dataclass, fields
 from typing import TYPE_CHECKING
 
-from .common import Location, ColorFilter
+from .common import Location, ResourceFilter
 from .enums import CardType, Color
 
 if TYPE_CHECKING:
@@ -63,7 +63,7 @@ class Card(CardTemplate):
 
 @dataclass
 class CardCost:
-    possibilities: dict[ColorFilter, int]
+    possibilities: dict[ResourceFilter, int]
 
     def matches_exact(self, resources: Counter[Color]):
         """Returns the first ColorFilter it matched"""
@@ -87,8 +87,20 @@ class EffectExecInfo:
     def game(self):
         return self.player.game
 
+    @property
+    def frontend(self):
+        return self.game.frontend
+
 
 class CardEffect(abc.ABC):
+    """An interface representing an executable effect of a card. Must be
+    hashable to enable hashing of CardTemplate objects. Therefore, it
+    must also be immutable. A @dataclass(frozen=True) class is recommended"""
+
     @abc.abstractmethod
     def execute(self, info: EffectExecInfo):
         ...
+
+
+class CannotExecute(Exception):
+    pass

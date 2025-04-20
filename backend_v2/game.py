@@ -4,7 +4,7 @@ from collections import Counter
 from dataclasses import dataclass
 
 from .card import Card
-from .enums import MoonPhase, Area, AnyResource
+from .enums import *
 
 
 @dataclass
@@ -20,6 +20,13 @@ class Player:
     resources: Counter[AnyResource]  # points are also a resource...
     # Used only at the final evaluation:
     final_score: int | None = None
+
+    def num_cards_of_type(self, tp: PlaceableCardType | Area):
+        assert tp in PlaceableCardType
+        for card in self.areas [ tp]:
+            ...
+        ...
+
 
 
 @dataclass
