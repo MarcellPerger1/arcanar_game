@@ -9,7 +9,8 @@ __all__ = ['ExtendableEnumMeta2', 'ExtendableEnum2']
 
 
 T = TypeVar('T')
-lookup_member = object()
+LOOKUP_MEMBER = object()
+EXCLUDE_MEMBER = object()
 
 
 def _is_descriptor_or_func(a: object):
@@ -19,7 +20,6 @@ def _is_descriptor_or_func(a: object):
             hasattr(a, '__delete__'))
 
 
-# ----------------- NEW ----------------
 @dataclass
 class EnumHierarchyData:
     name_to_inst: dict[str, ExtendableEnum2[T]]
@@ -66,18 +66,12 @@ class EnumHierarchyData:
             return self.value_to_inst[item]
 
 
-EXCLUDE_MEMBER = object()
-
-
 # Inverted class hierarchy: if Bar adds extra enum members to Foo,
 #  Foo is a subclass of Bar as all instances of Foo are instances of Bar too.
 class ExtendableEnumMeta2(type, Generic[T]):
     _eenum_top_: type[ExtendableEnum2[T]] | None = None
     _eenum_data_: EnumHierarchyData
     _eenum_members_: set[ExtendableEnum2[T]]
-
-    def _normalise_members_list(cls, members: Iterable[ExtendableEnum2[T] | str | T]):
-        return {cls[a] for a in members}
 
     @classmethod
     def _is_special_name(cls, name: str):
@@ -111,7 +105,7 @@ class ExtendableEnumMeta2(type, Generic[T]):
         # TODO: branches v. similar, extract into one bit w/ callback like
         #  on_inst_error or maybe just a allow_new_inst kwarg
         if concrete_bases:
-            # 'Simple' case  (in theory) - no additions allowed
+            # 'Simple' case (in theory) - no additions allowed
             possible_members = functools.reduce(
                 operator.and_, [b._eenum_members_ for b in concrete_bases])
             # TODO: option to use an attribute for these which overrides everything
@@ -188,12 +182,12 @@ class ExtendableEnum2(Generic[T], metaclass=ExtendableEnumMeta2[T]):
     _init_ran_: bool = False
     _eenum_special_: bool = True
 
-    def __new__(cls, name: str, value: T = lookup_member):
-        if value is lookup_member:
+    def __new__(cls, name: str, value: T = LOOKUP_MEMBER):
+        if value is LOOKUP_MEMBER:
             return cls[name]
         return super().__new__(cls)
 
-    def __init__(self, name: str, value: T = lookup_member):
+    def __init__(self, name: str, value: T = LOOKUP_MEMBER):
         if self._init_ran_:
             return
         self._init_ran_ = True
