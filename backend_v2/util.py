@@ -3,7 +3,7 @@ from __future__ import annotations
 import functools
 import operator
 from dataclasses import dataclass
-from typing import Generic, TypeVar
+from typing import Generic, TypeVar, Iterable
 
 __all__ = ['ExtendableEnumMeta2', 'ExtendableEnum2']
 
@@ -30,11 +30,13 @@ class EnumHierarchyData:
     def empty(cls):
         return cls({}, {}, set())
 
-    def inst_from_value(self, value: T | ExtendableEnum2[T] | object
-                        ) -> ExtendableEnum2[T] | None:
+    def inst_from_value(self, value: T | ExtendableEnum2[T] | object,
+                        allow_name: bool = False) -> ExtendableEnum2[T] | None:
         if value in self.all_instances:
             return value
         if (inst := self.value_to_inst[value]) is not None:
+            return inst
+        if allow_name and (inst := self.name_to_inst[value]) is not None:
             return inst
         return None
 
@@ -68,6 +70,9 @@ class EnumHierarchyData:
             return self.name_to_inst[item]
         except KeyError:
             return self.value_to_inst[item]
+
+    def normalise_item(self, item: ExtendableEnum2[T] | str | T) -> ExtendableEnum2[T]:
+        return self[item]  # See definition above for why this works
 
 
 # Inverted class hierarchy: if Bar adds extra enum members to Foo,
@@ -119,37 +124,8 @@ class ExtendableEnumMeta2(type, Generic[T]):
         #  it must 'conform' to the concrete superclasses (i.e. have a subset
         #  of their members) so can't add new members.
         allow_extensions = possible_members is None
-        members_by_name = {}
-        exclude_names = set()
-        # TODO: option to use an attribute for these which overrides everything
-        for k, v in ns.items():
-            if cls._is_special_name(k) or _is_func_or_descriptor(v):
-                continue
-            if v is EXCLUDE_MEMBER:
-                if not allow_exclude:
-                    raise TypeError("Cannot exclude value in its defining eenum class")
-                exclude_names.add(k)
-                continue
-            if (inst := cls._eenum_data_.inst_from_value(v)) is None:
-                # New thing, not an alias (No existing value)
-                if not allow_extensions:
-                    raise TypeError(
-                        f"Disallowed new value ({k}) in eenum, "
-                        f"values must be subset of the superclass values")
-                # Also updates _eenum_data_
-                inst = cls._eenum_data_.create_new_inst(cls, k, v)
-                # TODO: ^^^ What if it raises an error later in the
-                #  instantiation? This value thing will stay! BAD!!!
-                #  Fixing it it too convoluted so I will simply call it
-                #  undefined behavior. Enums should only really be declared
-                #  at the top level (where exceptions aren't usually
-                #  caught/ignored), not arbitrarily at runtime (where the
-                #  exceptions could be caught and ignored) so this is only
-                #  a minor problem.
-            else:
-                # noinspection PyProtectedMember
-                inst._on_adopted_(cls)
-            members_by_name[k] = inst
+        members_by_name = cls._get_raw_members_dict(ns, allow_extensions)
+        exclude_names = cls._get_exclude_names_from_ns(ns, allow_exclude)
         if possible_members is not None:
             members_by_name = members_by_name or {m.name: m for m in possible_members}
         if allow_exclude:
@@ -172,6 +148,79 @@ class ExtendableEnumMeta2(type, Generic[T]):
         for k, inst in members_by_name.items():
             setattr(cls, k, inst)  # Replace with instances
         return members
+
+    def _get_exclude_names_from_ns(cls, ns: dict[str, object], allow_exclude: bool):
+        if (excl := getattr(cls, '_eenum_exclude_members_', None)) is not None:
+            if not allow_exclude and excl:
+                raise TypeError("Cannot exclude value in its defining eenum class")
+            cls._eenum_exclude_members_ = None  # Don't inherit this
+            return {cls._eenum_data_.normalise_item(m).name for m in excl}
+        exclude_names = set()
+        # TODO: option to use an attribute for these which overrides everything
+        for k, v in ns.items():
+            if cls._is_special_name(k) or _is_func_or_descriptor(v):
+                continue
+            if v is EXCLUDE_MEMBER:
+                if not allow_exclude:
+                    raise TypeError("Cannot exclude value in its defining eenum class")
+                exclude_names.add(k)
+        return exclude_names
+
+    def _get_raw_members_dict(cls, ns: dict[str, object], allow_extensions: bool):
+        if (members := getattr(cls, '_eenum_members_', None)) is not None:
+            cls._eenum_members_ = None  # Don't inherit this
+            # Need special-case method due to new 'extension' members
+            return cls._get_members_from_attr(members, allow_extensions)
+        members_by_name = {}
+        for k, v in ns.items():
+            if cls._is_special_name(k) or _is_func_or_descriptor(v):
+                continue
+            if v is EXCLUDE_MEMBER:
+                continue
+            if (inst := cls._eenum_data_.inst_from_value(v)) is None:
+                # New thing, not an alias (No existing value)
+                if not allow_extensions:
+                    raise TypeError(
+                        f"Disallowed new value ({k}) in eenum, "
+                        f"values must be subset of the superclass values")
+                # TODO: What if it raises an error later in the
+                #  instantiation? This value thing will stay! BAD!!!
+                #  Fixing it it too convoluted so I will simply call it
+                #  undefined behavior. Enums should only really be declared
+                #  at the top level (where exceptions aren't usually
+                #  caught/ignored), not arbitrarily at runtime (where the
+                #  exceptions could be caught and ignored) so this is only
+                #  a minor problem.
+                inst = cls._eenum_data_.create_new_inst(cls, k, v)
+            else:
+                # noinspection PyProtectedMember
+                inst._on_adopted_(cls)
+            members_by_name[k] = inst
+        return members_by_name
+
+    def _get_members_from_attr(cls, members: Iterable[str | T | ExtendableEnum2[T]],
+                               allow_extensions: bool):
+        members_by_name = {}
+        for v in members:
+            if (inst := cls._eenum_data_.inst_from_value(v, allow_name=True)) is None:
+                # New thing, not an alias (No existing value)
+                if not allow_extensions:
+                    raise TypeError(
+                        f"Disallowed new value ({v}) in eenum, "
+                        f"values must be subset of the superclass values")
+                if isinstance(v, ExtendableEnum2):  # Using ExtendableEnum2 ctor. nerd.
+                    k = v.name
+                    v = v.value
+                elif isinstance(v, str):
+                    k = v
+                else:
+                    raise TypeError("_eenum_members_ new values must be str (or instances)")
+                inst = cls._eenum_data_.create_new_inst(cls, k, v)
+            else:
+                # noinspection PyProtectedMember
+                inst._on_adopted_(cls)
+            members_by_name[inst.name] = inst
+        return members_by_name
 
     def __contains__(cls, item):
         try:
