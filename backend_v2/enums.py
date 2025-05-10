@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from backend_v2.util import ExtendableEnum
+from backend_v2.eenum import ExtendableEnum
 
 __all__ = ['Color', 'PlaceableCardType', 'CardType', 'MoonPhase', 'Area', 'AnyResource']
 

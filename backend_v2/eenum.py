@@ -25,7 +25,7 @@ import operator
 from dataclasses import dataclass
 from typing import Generic, TypeVar, Iterable
 
-__all__ = ['ExtendableEnumMeta2', 'ExtendableEnum2', 'EXCLUDE_MEMBER']
+__all__ = ['ExtendableEnumMeta', 'ExtendableEnum', 'EXCLUDE_MEMBER']
 
 
 T = TypeVar('T')
@@ -42,16 +42,16 @@ def _is_func_or_descriptor(a: object):
 
 @dataclass
 class EnumHierarchyData:
-    name_to_inst: dict[str, ExtendableEnum2[T]]
-    value_to_inst: dict[T, ExtendableEnum2[T]]
-    all_instances: set[ExtendableEnum2[T]]  # Fast containment check
+    name_to_inst: dict[str, ExtendableEnum[T]]
+    value_to_inst: dict[T, ExtendableEnum[T]]
+    all_instances: set[ExtendableEnum[T]]  # Fast containment check
 
     @classmethod
     def empty(cls):
         return cls({}, {}, set())
 
-    def inst_from_value(self, value: T | ExtendableEnum2[T] | object,
-                        allow_name: bool = False) -> ExtendableEnum2[T] | None:
+    def inst_from_value(self, value: T | ExtendableEnum[T] | object,
+                        allow_name: bool = False) -> ExtendableEnum[T] | None:
         if value in self.all_instances:
             return value
         if (inst := self.value_to_inst[value]) is not None:
@@ -61,13 +61,13 @@ class EnumHierarchyData:
         return None
 
     def create_new_inst(
-            self, cls: type[ExtendableEnum2[T]] | ExtendableEnumMeta2[T],
+            self, cls: type[ExtendableEnum[T]] | ExtendableEnumMeta[T],
             name: str, value: T):
         inst = cls(name, value)
         self.register_new_inst(inst)
         return inst
 
-    def register_new_inst(self, inst: ExtendableEnum2[T]):
+    def register_new_inst(self, inst: ExtendableEnum[T]):
         if inst.name in self.name_to_inst:
             raise ValueError("Duplicate name in eenum")
         if inst.value in self.value_to_inst:
@@ -77,12 +77,12 @@ class EnumHierarchyData:
         self.value_to_inst[inst.value] = inst
 
     def __contains__(self, item):
-        if isinstance(item, ExtendableEnum2):
+        if isinstance(item, ExtendableEnum):
             return item in self.all_instances
         return item in self.name_to_inst or item in self.value_to_inst
 
-    def __getitem__(self, item) -> ExtendableEnum2[T]:
-        if isinstance(item, ExtendableEnum2):
+    def __getitem__(self, item) -> ExtendableEnum[T]:
+        if isinstance(item, ExtendableEnum):
             if item in self.all_instances:
                 return item
             raise KeyError(item)
@@ -91,16 +91,16 @@ class EnumHierarchyData:
         except KeyError:
             return self.value_to_inst[item]
 
-    def normalise_item(self, item: ExtendableEnum2[T] | str | T) -> ExtendableEnum2[T]:
+    def normalise_item(self, item: ExtendableEnum[T] | str | T) -> ExtendableEnum[T]:
         return self[item]  # See definition above for why this works
 
 
 # Inverted class hierarchy: if Bar adds extra enum members to Foo,
 #  Foo is a subclass of Bar as all instances of Foo are instances of Bar too.
-class ExtendableEnumMeta2(type, Generic[T]):
-    _eenum_top_: type[ExtendableEnum2[T]] | None = None
+class ExtendableEnumMeta(type, Generic[T]):
+    _eenum_top_: type[ExtendableEnum[T]] | None = None
     _eenum_data_: EnumHierarchyData
-    _eenum_members_: set[ExtendableEnum2[T]] | None
+    _eenum_members_: set[ExtendableEnum[T]] | None
 
     @classmethod
     def _is_special_name(cls, name: str):
@@ -114,8 +114,8 @@ class ExtendableEnumMeta2(type, Generic[T]):
         else:
             cls._eenum_special_ = False  # Suppress inherited value
         # Ignore irrelevant non-enum mixins
-        eenum_bases = [b for b in bases if (issubclass(b, ExtendableEnum2)
-                                            and b != ExtendableEnum2)]
+        eenum_bases = [b for b in bases if (issubclass(b, ExtendableEnum)
+                                            and b != ExtendableEnum)]
         if len(eenum_bases) == 0:
             cls._eenum_top_ = None
             cls._eenum_members_ = None
@@ -137,7 +137,7 @@ class ExtendableEnumMeta2(type, Generic[T]):
             ns, possible_members, allow_exclude=possible_members is not None)
 
     def _get_members_from_ns(cls, ns: dict[str, object],
-                             possible_members: set[ExtendableEnum2[T]] | None,
+                             possible_members: set[ExtendableEnum[T]] | None,
                              allow_exclude: bool):
         # If it only inherits from the top (possible_members=None), it can
         #  add new values (top might not list all possible members). Otherwise,
@@ -218,7 +218,7 @@ class ExtendableEnumMeta2(type, Generic[T]):
             members_by_name[k] = inst
         return members_by_name
 
-    def _get_members_from_attr(cls, members: Iterable[str | T | ExtendableEnum2[T]],
+    def _get_members_from_attr(cls, members: Iterable[str | T | ExtendableEnum[T]],
                                allow_extensions: bool):
         members_by_name = {}
         for v in members:
@@ -228,7 +228,7 @@ class ExtendableEnumMeta2(type, Generic[T]):
                     raise TypeError(
                         f"Disallowed new value ({v}) in eenum, "
                         f"values must be subset of the superclass values")
-                if isinstance(v, ExtendableEnum2):  # Using ExtendableEnum2 ctor. nerd.
+                if isinstance(v, ExtendableEnum):  # Using ExtendableEnum ctor. nerd.
                     k = v.name
                     v = v.value
                 elif isinstance(v, str):
@@ -262,7 +262,7 @@ class ExtendableEnumMeta2(type, Generic[T]):
         return len(cls._eenum_members_)
 
 
-class ExtendableEnum2(Generic[T], metaclass=ExtendableEnumMeta2[T]):
+class ExtendableEnum(Generic[T], metaclass=ExtendableEnumMeta[T]):
     name: str
     value: T
 
@@ -270,7 +270,7 @@ class ExtendableEnum2(Generic[T], metaclass=ExtendableEnumMeta2[T]):
     #  uniquely as there may be two disjoint bottom classes. Therefore, it
     #  tries to find a sensible 'more specific class' (currently the one
     #  with the least other members)
-    _eenum_canonical_class_: ExtendableEnumMeta2[T]
+    _eenum_canonical_class_: ExtendableEnumMeta[T]
     _init_ran_: bool = False
 
     _eenum_special_: bool = True  # ClassVar
@@ -297,7 +297,7 @@ class ExtendableEnum2(Generic[T], metaclass=ExtendableEnumMeta2[T]):
     def __eq__(self, other):
         if id(self) == id(other):
             return True
-        if not isinstance(other, ExtendableEnum2):
+        if not isinstance(other, ExtendableEnum):
             return NotImplemented
         # Should really be a single shared reference but we check this anyway
         # noinspection PyProtectedMember
@@ -307,7 +307,7 @@ class ExtendableEnum2(Generic[T], metaclass=ExtendableEnumMeta2[T]):
         # Value because name could have aliases
         return hash((self._eenum_top_, self.value))
 
-    def _on_adopted_(self, into: ExtendableEnumMeta2[T]):
+    def _on_adopted_(self, into: ExtendableEnumMeta[T]):
         if (self._eenum_canonical_class_ is None
                 or len(into) < len(self._eenum_canonical_class_)):
             self._eenum_canonical_class_ = into
