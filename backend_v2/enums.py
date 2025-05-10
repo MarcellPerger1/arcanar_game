@@ -5,6 +5,8 @@ from backend_v2.eenum import ExtendableEnum
 __all__ = ['Color', 'PlaceableCardType', 'CardType', 'MoonPhase', 'Area', 'AnyResource']
 
 
+# TODO this must be updated to be compatible with the new ExtendableEnum
+#  (i.e. reverse this 'tree' of enums...)
 class Color(ExtendableEnum):
     PURPLE = 1
     GREEN = 2
