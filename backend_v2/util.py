@@ -1,3 +1,23 @@
+"""eenum.py - A type-safe enum class that supports inheritance.
+
+Conceptually it works this way:
+
+- Say we want enum ``Color`` to have members (R, G, B) and we want enum
+  ``ColorEx`` to have (R, G, B, C, M, Y). Here, all instances of ``Color`` are
+  instances of ``ColorEx`` (but not the other way round!).
+- Hence, the set of instances of ``Color`` < set of instances of ``ColorEx``
+  and so ``Color`` is a subclass of ``ColorEx`` (as it has LESS members).
+- In terms of type theory, this is because enums are a sum type (like unions),
+  not a product type (like structs).
+
+Therefore, we 'ignore' (instead of add) members in subclasses using the
+syntax ``CYAN=EXCLUDE_MEMBER`` or ``_eenum_exclude_members_=(...)``.
+We also need a 'root' class for each 'enum tree' to indicate which classes
+are compatible with each other (because multiple inheritance is supported).
+
+For more details, read the code.
+"""
+
 from __future__ import annotations
 
 import functools
@@ -5,7 +25,7 @@ import operator
 from dataclasses import dataclass
 from typing import Generic, TypeVar, Iterable
 
-__all__ = ['ExtendableEnumMeta2', 'ExtendableEnum2']
+__all__ = ['ExtendableEnumMeta2', 'ExtendableEnum2', 'EXCLUDE_MEMBER']
 
 
 T = TypeVar('T')
