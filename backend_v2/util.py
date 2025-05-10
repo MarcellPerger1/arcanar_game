@@ -101,69 +101,66 @@ class ExtendableEnumMeta2(type, Generic[T]):
             raise TypeError("Two unrelated enum trees have a null intersection")
         (top,) = eenum_tops
         cls._eenum_top_ = top
-        info = cls._eenum_data_ = top._eenum_data_
-        # Bases without the `top` of the hierarchy
+        cls._eenum_data_ = top._eenum_data_
         concrete_bases = [b for b in eenum_bases if b != top]
-        # If it only inherits from the top, it can add new values
-        #  (top might not list all possible members). Otherwise, it must
-        #  'conform' to the concrete superclasses (i.e. have a subset of
-        #  their members)
+        possible_members = functools.reduce(
+            operator.and_, [b._eenum_members_ for b in concrete_bases]
+        ) if concrete_bases else None
+        cls._eenum_members_ = cls._get_members_from_ns(
+            # Makes no sense to allow exclude in a root class (would
+            #  only be excluding from the current class)
+            ns, possible_members, allow_exclude=possible_members is not None)
 
-        # TODO: branches v. similar, extract into one bit w/ callback like
-        #  on_inst_error or maybe just a allow_new_inst kwarg
-        if concrete_bases:
-            # 'Simple' case (in theory) - no additions allowed
-            possible_members = functools.reduce(
-                operator.and_, [b._eenum_members_ for b in concrete_bases])
-            # TODO: option to use an attribute for these which overrides everything
-            ns_members_by_name = {}
-            ns_exclude_names = set()
-            for k, v in ns.items():
-                if cls._is_special_name(k) or _is_descriptor_or_func(v):
-                    continue
-                if v is EXCLUDE_MEMBER:
-                    ns_exclude_names.add(k)
-                    continue
-                if (inst := info.inst_from_value(v)) is None:
-                    raise TypeError(  # New thing, not an alias, ERROR!
+    def _get_members_from_ns(cls, ns: dict[str, object],
+                             possible_members: set[ExtendableEnum2[T]] | None,
+                             allow_exclude: bool):
+        # If it only inherits from the top (possible_members=None), it can
+        #  add new values (top might not list all possible members). Otherwise,
+        #  it must 'conform' to the concrete superclasses (i.e. have a subset
+        #  of their members) so can't add new members.
+        allow_extensions = possible_members is None
+        members_by_name = {}
+        exclude_names = set()
+        # TODO: option to use an attribute for these which overrides everything
+        for k, v in ns.items():
+            if cls._is_special_name(k) or _is_descriptor_or_func(v):
+                continue
+            if v is EXCLUDE_MEMBER:
+                if not allow_exclude:
+                    raise TypeError("Cannot exclude value in its defining eenum class")
+                exclude_names.add(k)
+                continue
+            if (inst := cls._eenum_data_.inst_from_value(v)) is None:
+                # New thing, not an alias (No existing value)
+                if not allow_extensions:
+                    raise TypeError(
                         f"Disallowed new value ({k}) in eenum, "
                         f"values must be subset of the superclass values")
-                ns_members_by_name[k] = inst
-            members_by_name = ns_members_by_name or {m.name: m for m in possible_members}
+                # Also updates _eenum_data_
+                inst = cls._eenum_data_.create_new_inst(cls, k, v)
+                # TODO: ^^^ What if it raises an error later in the
+                #  instantiation? This value thing will stay! BAD!!!
+            members_by_name[k] = inst
+        if possible_members is not None:
+            members_by_name = members_by_name or {m.name: m for m in possible_members}
+        if allow_exclude:
             # We exclude based on instances, not names so excluding the base
             #  value excludes all the aliases too
             exclude_inst = {
-                members_by_name[name] for name in ns_exclude_names
+                members_by_name[name] for name in exclude_names
                 if name in members_by_name}  # Don't exclude if not present
             members_by_name = {
                 name: inst for name, inst in members_by_name.items()
                 if inst not in exclude_inst
             }
-            members = {*members_by_name.values()}
+        members = {*members_by_name.values()}
+        if possible_members is not None:
             if not members.issubset(possible_members):
                 raise TypeError("Disallowed value in eenum, expected values to"
                                 " be a subset of the superclass values.")
-            if not members:
-                raise TypeError("eenum has no possible values.")
-        else:
-            # We have no default set of members here so require the class
-            #  to list all of them. There is also little need for
-            #  EXCLUDE_MEMBER logic as we could just not define the member.
-            # Therefore, for simplicity, we don't implement this here.
-            members_by_name = {}
-            for k, v in ns.items():
-                if cls._is_special_name(k) or _is_descriptor_or_func(v):
-                    continue
-                if v is EXCLUDE_MEMBER:
-                    raise TypeError("Cannot exclude value in its defining eenum class")
-                # If we already have an instance, try to reuse it as much as possible
-                if (inst := info.inst_from_value(v)) is None:
-                    inst = info.create_new_inst(cls, k, v)  # Also updates _eenum_data_
-                members_by_name[k] = inst
-            members = {*members_by_name.values()}
-            if not members:
-                raise TypeError("eenum has no possible values.")
-        cls._eenum_members_ = members
+        if not members:
+            raise TypeError("eenum has no possible values.")
+        return members
 
     def __contains__(cls, item):
         try:
