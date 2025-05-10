@@ -13,7 +13,7 @@ LOOKUP_MEMBER = object()
 EXCLUDE_MEMBER = object()
 
 
-def _is_descriptor_or_func(a: object):
+def _is_func_or_descriptor(a: object):
     # Functions also have the descriptor stuff
     return (hasattr(a, '__get__') or
             hasattr(a, '__set__') or
@@ -89,8 +89,8 @@ class ExtendableEnumMeta2(type, Generic[T]):
         else:
             cls._eenum_special_ = False  # Suppress inherited value
         # Ignore irrelevant non-enum mixins
-        eenum_bases = [b for b in bases if issubclass(b, ExtendableEnum2)
-                       and b != ExtendableEnum2]
+        eenum_bases = [b for b in bases if (issubclass(b, ExtendableEnum2)
+                                            and b != ExtendableEnum2)]
         if len(eenum_bases) == 0:
             cls._eenum_top_ = None
             cls._eenum_members_ = None
@@ -123,7 +123,7 @@ class ExtendableEnumMeta2(type, Generic[T]):
         exclude_names = set()
         # TODO: option to use an attribute for these which overrides everything
         for k, v in ns.items():
-            if cls._is_special_name(k) or _is_descriptor_or_func(v):
+            if cls._is_special_name(k) or _is_func_or_descriptor(v):
                 continue
             if v is EXCLUDE_MEMBER:
                 if not allow_exclude:
@@ -140,6 +140,15 @@ class ExtendableEnumMeta2(type, Generic[T]):
                 inst = cls._eenum_data_.create_new_inst(cls, k, v)
                 # TODO: ^^^ What if it raises an error later in the
                 #  instantiation? This value thing will stay! BAD!!!
+                #  Fixing it it too convoluted so I will simply call it
+                #  undefined behavior. Enums should only really be declared
+                #  at the top level (where exceptions aren't usually
+                #  caught/ignored), not arbitrarily at runtime (where the
+                #  exceptions could be caught and ignored) so this is only
+                #  a minor problem.
+            else:
+                # noinspection PyProtectedMember
+                inst._on_adopted_(cls)
             members_by_name[k] = inst
         if possible_members is not None:
             members_by_name = members_by_name or {m.name: m for m in possible_members}
@@ -160,6 +169,8 @@ class ExtendableEnumMeta2(type, Generic[T]):
                                 " be a subset of the superclass values.")
         if not members:
             raise TypeError("eenum has no possible values.")
+        for k, inst in members_by_name.items():
+            setattr(cls, k, inst)  # Replace with instances
         return members
 
     def __contains__(cls, item):
@@ -178,13 +189,22 @@ class ExtendableEnumMeta2(type, Generic[T]):
     def __iter__(cls):
         yield from cls._eenum_members_
 
+    def __len__(cls):
+        return len(cls._eenum_members_)
+
 
 class ExtendableEnum2(Generic[T], metaclass=ExtendableEnumMeta2[T]):
     name: str
     value: T
 
+    # 'Lowest-down' class containing this instance. This might not exist
+    #  uniquely as there may be two disjoint bottom classes. Therefore, it
+    #  tries to find a sensible 'more specific class' (currently the one
+    #  with the least other members)
+    _eenum_canonical_class_: ExtendableEnumMeta2[T]
     _init_ran_: bool = False
-    _eenum_special_: bool = True
+
+    _eenum_special_: bool = True  # ClassVar
 
     def __new__(cls, name: str, value: T = LOOKUP_MEMBER):
         if value is LOOKUP_MEMBER:
@@ -197,14 +217,28 @@ class ExtendableEnum2(Generic[T], metaclass=ExtendableEnumMeta2[T]):
         self._init_ran_ = True
         self.name = name
         self.value = value
+        # This will be instantiated from the class first defining it which we
+        #  treat as canonical until there's a better candidate.
+        self._eenum_canonical_class_ = type(self)
 
     def __repr__(self):
-        return f'{type(self).__name__}.{self.name}'
+        # TODO: behavior is undefined if name is not always the same.
+        return f'{self._eenum_canonical_class_.__name__}.{self.name}'
 
     def __eq__(self, other):
-        if type(self) is not type(other):
+        if id(self) == id(other):
+            return True
+        if not isinstance(other, ExtendableEnum2):
             return NotImplemented
-        return self.name == other.name
+        # Should really be a single shared reference but we check this anyway
+        # noinspection PyProtectedMember
+        return self._eenum_top_ == other._eenum_top_ and self.value == other.value
 
     def __hash__(self):
-        return hash((type(self), self.name))
+        # Value because name could have aliases
+        return hash((self._eenum_top_, self.value))
+
+    def _on_adopted_(self, into: ExtendableEnumMeta2[T]):
+        if (self._eenum_canonical_class_ is None
+                or len(into) < len(self._eenum_canonical_class_)):
+            self._eenum_canonical_class_ = into
