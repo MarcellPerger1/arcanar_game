@@ -3,7 +3,7 @@ from __future__ import annotations
 import functools
 import operator
 from dataclasses import dataclass
-from typing import Generic, TypeVar, Iterable
+from typing import Generic, TypeVar
 
 __all__ = ['ExtendableEnumMeta2', 'ExtendableEnum2']
 
@@ -25,6 +25,10 @@ class EnumHierarchyData:
     name_to_inst: dict[str, ExtendableEnum2[T]]
     value_to_inst: dict[T, ExtendableEnum2[T]]
     all_instances: set[ExtendableEnum2[T]]  # Fast containment check
+
+    @classmethod
+    def empty(cls):
+        return cls({}, {}, set())
 
     def inst_from_value(self, value: T | ExtendableEnum2[T] | object
                         ) -> ExtendableEnum2[T] | None:
@@ -71,7 +75,7 @@ class EnumHierarchyData:
 class ExtendableEnumMeta2(type, Generic[T]):
     _eenum_top_: type[ExtendableEnum2[T]] | None = None
     _eenum_data_: EnumHierarchyData
-    _eenum_members_: set[ExtendableEnum2[T]]
+    _eenum_members_: set[ExtendableEnum2[T]] | None
 
     @classmethod
     def _is_special_name(cls, name: str):
@@ -88,7 +92,10 @@ class ExtendableEnumMeta2(type, Generic[T]):
         eenum_bases = [b for b in bases if issubclass(b, ExtendableEnum2)
                        and b != ExtendableEnum2]
         if len(eenum_bases) == 0:
-            ...  # TODO init top!
+            cls._eenum_top_ = None
+            cls._eenum_members_ = None
+            cls._eenum_data_ = EnumHierarchyData.empty()
+            return
         eenum_tops = {b._eenum_top_ for b in eenum_bases}
         if len(eenum_tops) > 1:
             raise TypeError("Two unrelated enum trees have a null intersection")
