@@ -283,6 +283,9 @@ class ExtendableEnum(Generic[T], metaclass=ExtendableEnumMeta[T]):
 
     _eenum_special_: bool = True  # ClassVar
 
+    _eenum_members_: Iterable[str | T | ExtendableEnum[T]]  # For Pycharm autocompletion
+    _eenum_exclude_members_: Iterable[str | T | ExtendableEnum[T]]  # ^^^
+
     def __new__(cls, name: str, value: T = LOOKUP_MEMBER):
         if value is LOOKUP_MEMBER:
             return cls[name]
