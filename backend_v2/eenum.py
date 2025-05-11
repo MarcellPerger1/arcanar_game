@@ -120,6 +120,7 @@ class ExtendableEnumMeta(type, Generic[T]):
             cls._eenum_top_ = None
             cls._eenum_members_ = None
             cls._eenum_data_ = EnumHierarchyData.empty()
+            cls._init_members_from_ns(ns, None, allow_exclude=False)
             return
         eenum_tops = {b._eenum_top_ for b in eenum_bases}
         if len(eenum_tops) > 1:
@@ -131,14 +132,20 @@ class ExtendableEnumMeta(type, Generic[T]):
         possible_members = functools.reduce(
             operator.and_, [b._eenum_members_ for b in concrete_bases]
         ) if concrete_bases else None
-        cls._eenum_members_ = cls._get_members_from_ns(
+        cls._eenum_members_ = cls._init_members_from_ns(
             # Makes no sense to allow exclude in a root class (would
             #  only be excluding from the current class)
             ns, possible_members, allow_exclude=possible_members is not None)
 
-    def _get_members_from_ns(cls, ns: dict[str, object],
-                             possible_members: set[ExtendableEnum[T]] | None,
-                             allow_exclude: bool):
+    def _init_members_from_ns(cls, ns: dict[str, object],
+                              possible_members: set[ExtendableEnum[T]] | None,
+                              allow_exclude: bool):
+        """Sets members on class and updates hierarchy. Returns set of member
+        objects (doesn't set _eenum_members_ because this effectively adds
+        some possible values to the hierarchy but doesn't actually dictate
+        that this class uses them. This is needed because the top should
+        be able to declare some values that some classes could use (but
+        subclasses can declare new ones)"""
         # If it only inherits from the top (possible_members=None), it can
         #  add new values (top might not list all possible members). Otherwise,
         #  it must 'conform' to the concrete superclasses (i.e. have a subset
@@ -242,7 +249,7 @@ class ExtendableEnumMeta(type, Generic[T]):
             members_by_name[inst.name] = inst
         return members_by_name
 
-    def __contains__(cls, item):
+    def __contains__(cls, item):  # TODO this should be the equivalent of isinstance
         try:
             inst = cls._eenum_data_[item]
         except KeyError:
@@ -311,3 +318,4 @@ class ExtendableEnum(Generic[T], metaclass=ExtendableEnumMeta[T]):
         if (self._eenum_canonical_class_ is None
                 or len(into) < len(self._eenum_canonical_class_)):
             self._eenum_canonical_class_ = into
+            # self.__class__ = into  # TODO: is this a good idea??
