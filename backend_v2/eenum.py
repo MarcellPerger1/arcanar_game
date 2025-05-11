@@ -195,8 +195,8 @@ class ExtendableEnumMeta(type, Generic[T]):
         return exclude_names
 
     def _get_raw_members_dict(cls, ns: dict[str, object], allow_extensions: bool):
-        if (members := getattr(cls, '_eenum_members_', None)) is not None:
-            cls._eenum_members_ = None  # Don't inherit this
+        if (members := getattr(cls, '_eenum_include_members_', None)) is not None:
+            cls._eenum_include_members_ = None  # Don't inherit this
             # Need special-case method due to new 'extension' members
             return cls._get_members_from_attr(members, allow_extensions)
         members_by_name = {}
@@ -283,8 +283,9 @@ class ExtendableEnum(Generic[T], metaclass=ExtendableEnumMeta[T]):
 
     _eenum_special_: bool = True  # ClassVar
 
-    _eenum_members_: Iterable[str | T | ExtendableEnum[T]]  # For Pycharm autocompletion
-    _eenum_exclude_members_: Iterable[str | T | ExtendableEnum[T]]  # ^^^
+    # For Pycharm autocompletion, only present at class creation-time, not at runtime.
+    _eenum_include_members_: Iterable[str | T | ExtendableEnum[T]]
+    _eenum_exclude_members_: Iterable[str | T | ExtendableEnum[T]]
 
     def __new__(cls, name: str, value: T = LOOKUP_MEMBER):
         if value is LOOKUP_MEMBER:
