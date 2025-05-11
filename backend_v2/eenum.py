@@ -54,9 +54,9 @@ class EnumHierarchyData:
                         allow_name: bool = False) -> ExtendableEnum[T] | None:
         if value in self.all_instances:
             return value
-        if (inst := self.value_to_inst[value]) is not None:
+        if (inst := self.value_to_inst.get(value)) is not None:
             return inst
-        if allow_name and (inst := self.name_to_inst[value]) is not None:
+        if allow_name and (inst := self.name_to_inst.get(value)) is not None:
             return inst
         return None
 
@@ -120,7 +120,8 @@ class ExtendableEnumMeta(type, Generic[T]):
             cls._eenum_top_ = None
             cls._eenum_members_ = None
             cls._eenum_data_ = EnumHierarchyData.empty()
-            cls._init_members_from_ns(ns, None, allow_exclude=False)
+            cls._init_members_from_ns(ns, possible_members=None,
+                                      allow_exclude=False, allow_none=True)
             return
         eenum_tops = {b._eenum_top_ for b in eenum_bases}
         if len(eenum_tops) > 1:
@@ -139,7 +140,7 @@ class ExtendableEnumMeta(type, Generic[T]):
 
     def _init_members_from_ns(cls, ns: dict[str, object],
                               possible_members: set[ExtendableEnum[T]] | None,
-                              allow_exclude: bool):
+                              allow_exclude: bool, allow_none: bool = False):
         """Sets members on class and updates hierarchy. Returns set of member
         objects (doesn't set _eenum_members_ because this effectively adds
         some possible values to the hierarchy but doesn't actually dictate
@@ -170,7 +171,7 @@ class ExtendableEnumMeta(type, Generic[T]):
             if not members.issubset(possible_members):
                 raise TypeError("Disallowed value in eenum, expected values to"
                                 " be a subset of the superclass values.")
-        if not members:
+        if not allow_none and len(members) == 0:
             raise TypeError("eenum has no possible values.")
         for k, inst in members_by_name.items():
             setattr(cls, k, inst)  # Replace with instances
