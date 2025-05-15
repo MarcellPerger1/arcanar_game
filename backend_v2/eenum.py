@@ -23,7 +23,7 @@ from __future__ import annotations
 import functools
 import operator
 from dataclasses import dataclass
-from typing import Generic, TypeVar, Iterable
+from typing import Generic, TypeVar, Iterable, TypeGuard, Self
 
 __all__ = ['ExtendableEnumMeta', 'ExtendableEnum', 'EXCLUDE_MEMBER']
 
@@ -31,6 +31,7 @@ __all__ = ['ExtendableEnumMeta', 'ExtendableEnum', 'EXCLUDE_MEMBER']
 T = TypeVar('T')
 LOOKUP_MEMBER = object()
 EXCLUDE_MEMBER = object()
+MISSING = object()
 
 
 def _is_func_or_descriptor(a: object):
@@ -41,7 +42,7 @@ def _is_func_or_descriptor(a: object):
 
 
 @dataclass
-class EnumHierarchyData:
+class EnumHierarchyData(Generic[T]):
     name_to_inst: dict[str, ExtendableEnum[T]]
     value_to_inst: dict[T, ExtendableEnum[T]]
     all_instances: set[ExtendableEnum[T]]  # Fast containment check
@@ -184,7 +185,6 @@ class ExtendableEnumMeta(type, Generic[T]):
             cls._eenum_exclude_members_ = None  # Don't inherit this
             return {cls._eenum_data_.normalise_item(m).name for m in excl}
         exclude_names = set()
-        # TODO: option to use an attribute for these which overrides everything
         for k, v in ns.items():
             if cls._is_special_name(k) or _is_func_or_descriptor(v):
                 continue
@@ -250,12 +250,11 @@ class ExtendableEnumMeta(type, Generic[T]):
             members_by_name[inst.name] = inst
         return members_by_name
 
-    def __contains__(cls, item):  # TODO this should be the equivalent of isinstance
-        try:
-            inst = cls._eenum_data_[item]
-        except KeyError:
-            return False
-        return inst in cls._eenum_members_
+    def __contains__(cls, item) -> TypeGuard[Self]:
+        return item in cls._eenum_members_
+
+    def has_instance(cls, item) -> TypeGuard[Self]:
+        return item in cls
 
     def __getitem__(cls, item):
         inst = cls._eenum_data_[item]
@@ -270,7 +269,7 @@ class ExtendableEnumMeta(type, Generic[T]):
         return len(cls._eenum_members_)
 
 
-class ExtendableEnum(Generic[T], metaclass=ExtendableEnumMeta[T]):
+class ExtendableEnum(Generic[T], metaclass=ExtendableEnumMeta):
     name: str
     value: T
 
@@ -318,6 +317,10 @@ class ExtendableEnum(Generic[T], metaclass=ExtendableEnumMeta[T]):
     def __hash__(self):
         # Value because name could have aliases
         return hash((self._eenum_top_, self.value))
+
+    @classmethod
+    def has_instance(cls, inst: object) -> TypeGuard[Self]:
+        return inst in cls
 
     def _on_adopted_(self, into: ExtendableEnumMeta[T]):
         if (self._eenum_canonical_class_ is None

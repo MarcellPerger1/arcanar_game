@@ -2,6 +2,9 @@ from __future__ import annotations
 
 from collections import Counter
 from dataclasses import dataclass
+from typing import Self
+
+from typing_extensions import TypeGuard
 
 from .card import Card
 from .enums import *
@@ -21,12 +24,9 @@ class Player:
     # Used only at the final evaluation:
     final_score: int | None = None
 
-    def num_cards_of_type(self, tp: PlaceableCardType | Area):
-        assert tp in PlaceableCardType
-        for card in self.areas [ tp]:
-            ...
-        ...
-
+    def num_cards_of_type(self, tp: Area, include_starting=False):
+        return len(self.areas[tp] if include_starting else
+                   [c for c in self.areas[tp] if not c.is_starting_card])
 
 
 @dataclass
