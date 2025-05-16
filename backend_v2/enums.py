@@ -7,22 +7,22 @@ __all__ = ['Color', 'PlaceableCardType', 'CardType', 'MoonPhase', 'Area', 'AnyRe
 
 class _ColorEnumTree(ExtendableEnum):
     # Colors
-    PURPLE = 1
-    GREEN = 2
-    RED = 3
-    BLUE = 4
-    YELLOW = 5
+    PURPLE: Color = 1
+    GREEN: Color = 2
+    RED: Color = 3
+    BLUE: Color = 4
+    YELLOW: Color = 5
     # Card types
-    ARTIFACT = 6
-    EVENT = 7
+    ARTIFACT: PlaceableCardType = 6
+    EVENT: CardType = 7
     # Moon phases
-    LAST_TURN = 8
+    LAST_TURN: MoonPhase = 8
     # Locations
-    DISCARD = 9
-    HAND = 10
-    SPARE = 11  # Card not used in the current game
+    DISCARD: Area = 9
+    HAND: Area = 10
+    SPARE: Area = 11  # Card not used in the current game
     # Resources
-    POINTS = 12
+    POINTS: AnyResource = 12
 
 
 class AnyResource(_ColorEnumTree):
