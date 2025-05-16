@@ -103,6 +103,7 @@ class _EffectManyTimes(CardEffect, abc.ABC):
         ...
 
     def execute(self, info: EffectExecInfo):
+        # No better way - cards may have varying (possibly Turing-complete) side effects.
         for _ in range(self.get_times(info)):
             self.effect.execute(info)
 
@@ -115,6 +116,38 @@ class ForEachMarker(_EffectManyTimes):
 
 @dataclass(frozen=True)
 class ForEachCardOfType(_EffectManyTimes):
-    def get_times(self, info: EffectExecInfo) -> int:
-        return ...
+    tp: Area
 
+    def get_times(self, info: EffectExecInfo) -> int:
+        return info.player.num_cards_of_type(self.tp)
+
+
+@dataclass(frozen=True)
+class ForEachColorSet(_EffectManyTimes):
+    def get_times(self, info: EffectExecInfo) -> int:
+        return min(info.player.num_cards_of_type(c) for c in Color.members())
+
+
+@dataclass(frozen=True)
+class ForEachDiscard(_EffectManyTimes):
+    def get_times(self, info: EffectExecInfo) -> int:
+        return info.player.num_cards_of_type(Area.DISCARD)
+
+
+@dataclass(frozen=True)
+class ForEachPlacedMagic(_EffectManyTimes):  # (NOT artifact!)
+    def get_times(self, info: EffectExecInfo) -> int:
+        return sum(info.player.num_cards_of_type(c) for c in Color.members())
+
+
+@dataclass(frozen=True)
+class ForEachEmptyColor(_EffectManyTimes):
+    def get_times(self, info: EffectExecInfo) -> int:
+        return len([c for c in Color.members() if info.player.num_cards_of_type(c) == 0])
+
+
+@dataclass(frozen=True)
+class ForEachDynChosenColor(_EffectManyTimes):
+    def get_times(self, info: EffectExecInfo) -> int:
+        c = info.frontend.get_color()
+        return info.player.num_cards_of_type(c)
