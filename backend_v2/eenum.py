@@ -322,6 +322,12 @@ class ExtendableEnum(Generic[T], metaclass=ExtendableEnumMeta):
     def has_instance(cls, inst: object) -> TypeGuard[Self]:
         return inst in cls
 
+    # Just for the typing (doesn't work properly on the __iter__ as it's
+    #  defined on the metaclass)
+    @classmethod
+    def members(cls) -> tuple[Self, ...]:
+        return tuple(cls)  # Already iterable
+
     def _on_adopted_(self, into: ExtendableEnumMeta[T]):
         if (self._eenum_canonical_class_ is None
                 or len(into) < len(self._eenum_canonical_class_)):
