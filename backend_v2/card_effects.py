@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import abc
+import operator
 from collections import Counter
 from dataclasses import dataclass
 
@@ -151,3 +152,122 @@ class ForEachDynChosenColor(_EffectManyTimes):
     def get_times(self, info: EffectExecInfo) -> int:
         c = info.frontend.get_color()
         return info.player.num_cards_of_type(c)
+
+
+@dataclass(frozen=True)
+class ConditionalEffect(CardEffect):
+    cond: ICondition
+    if_true: CardEffect
+    if_false: CardEffect
+
+    def execute(self, info: EffectExecInfo):
+        if self.cond.evaluate(info):
+            return self.if_true.execute(info)
+        return self.if_false.execute(info)
+
+
+# region Condition
+class ICondition(abc.ABC):
+    @abc.abstractmethod
+    def evaluate(self, info: EffectExecInfo) -> bool:
+        pass
+
+
+@dataclass(frozen=True)
+class _ComparisonCond(ICondition, abc.ABC):
+    left: IMeasure
+    right: IMeasure
+
+    @classmethod
+    @abc.abstractmethod
+    def cmp(cls, a: float, b: float) -> bool:
+        pass
+
+    def evaluate(self, info: EffectExecInfo) -> bool:
+        return self.cmp(self.left.get(info), self.right.get(info))
+
+
+@dataclass(frozen=True)
+class LessThanCond(_ComparisonCond):
+    cmp = operator.lt
+
+
+@dataclass(frozen=True)
+class LessEqCond(_ComparisonCond):
+    cmp = operator.le
+
+
+@dataclass(frozen=True)
+class GreaterThanCond(_ComparisonCond):
+    cmp = operator.gt
+
+
+@dataclass(frozen=True)
+class GreaterEqCond(_ComparisonCond):
+    cmp = operator.gt
+
+
+@dataclass(frozen=True)
+class EqualsCond(_ComparisonCond):
+    cmp = operator.eq
+
+
+@dataclass(frozen=True)
+class NotEqualsCond(_ComparisonCond):
+    cmp = operator.ne
+
+
+@dataclass(frozen=True)
+class MostCardsOfType(ICondition):
+    tp: Area
+    include_tie: bool = False
+
+    def evaluate(self, info: EffectExecInfo) -> bool:
+        player_cards = info.player.num_cards_of_type(self.tp)
+        for p in info.game.players:
+            if p == info.player:
+                continue  # (Check if other players have more cards)
+            n_cards = p.num_cards_of_type(self.tp)
+            # false if tie for 1st place
+            if n_cards > player_cards:
+                return False  # We've been beaten in any case
+            if n_cards == player_cards and not self.include_tie:
+                return False  # Ties don't count as wins here
+        return True
+# endregion
+
+
+# region Measure (as in measure theory or whatever)
+class IMeasure(abc.ABC):
+    @abc.abstractmethod
+    def get(self, info: EffectExecInfo) -> float | int:
+        pass
+
+
+@dataclass(frozen=True)
+class ConstMeasure(IMeasure):
+    value: float | int
+
+    def get(self, info: EffectExecInfo) -> float | int:
+        return self.value
+
+
+@dataclass(frozen=True)
+class CardsOfType(IMeasure):
+    tp: Area
+
+    def get(self, info: EffectExecInfo) -> float | int:
+        return info.player.num_cards_of_type(self.tp)
+
+
+@dataclass(frozen=True)
+class DiscardedCards(IMeasure):
+    def get(self, info: EffectExecInfo) -> float | int:
+        return info.player.num_cards_of_type(Area.DISCARD)
+
+
+@dataclass(frozen=True)
+class NumMarkers(IMeasure):
+    def get(self, info: EffectExecInfo) -> float | int:
+        return info.card.markers
+# endregion
