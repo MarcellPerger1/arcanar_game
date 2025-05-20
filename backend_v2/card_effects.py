@@ -155,6 +155,14 @@ class ForEachDynChosenColor(_EffectManyTimes):
 
 
 @dataclass(frozen=True)
+class ForEachM(_EffectManyTimes):
+    measure: IMeasure
+
+    def get_times(self, info: EffectExecInfo) -> int:
+        return self.measure.get(info)
+
+
+@dataclass(frozen=True)
 class ConditionalEffect(CardEffect):
     cond: ICondition
     if_true: CardEffect
