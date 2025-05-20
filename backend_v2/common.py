@@ -1,16 +1,31 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import AbstractSet
+from typing import AbstractSet, TYPE_CHECKING
 
-from backend_v2.enums import Area, Color, AnyResource
+from .enums import Area, AnyResource
+from .game import Game
+
+if TYPE_CHECKING:
+    from .card import Card
 
 
 @dataclass
 class Location:
-    area: Area
-    idx: int | None
     player: int | None
+    area: Area
+    key: int
+
+    def clear(self, game: Game) -> Card:
+        return game.get_areas_for(self.player)[self.area].pop(self.key)
+
+    def put(self, game: Game, card: Card):
+        dest_area = game.get_areas_for(self.player)[self.area]
+        # I wish there was a Python function for these 3 lines (insert value
+        #  and return previous value)
+        prev = dest_area.get(self.key)
+        dest_area[self.key] = card
+        return prev
 
 
 @dataclass(frozen=True)

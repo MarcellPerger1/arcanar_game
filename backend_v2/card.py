@@ -6,10 +6,10 @@ from dataclasses import dataclass, fields
 from typing import TYPE_CHECKING
 
 from .common import Location, ResourceFilter
-from .enums import CardType, Color
+from .enums import CardType, Color, Area
 
 if TYPE_CHECKING:
-    from backend_v2.game import Player
+    from backend_v2.game import Player, Game
 
 
 # Card types: CardTemplate should have frozen immutable attributes 'printed on
@@ -42,6 +42,31 @@ class CardTemplate:  # Frozen-by-convention
 class Card(CardTemplate):
     location: Location = None
     markers: int = 0
+
+    def detach(self, game: Game):
+        """Detach ourself from `self.location`"""
+        popped = self.location.clear(game)
+        # If we're not at that location, something has gone very, very wrong.
+        assert popped is self
+
+    def attach(self, game: Game):
+        """Attach to `self.location` in the `Game`"""
+        prev = self.location.put(game, self)
+        assert prev is None  # Hope we haven't overwritten anything,
+
+    def attach_to(self, game: Game, location: Location):
+        self.location = location
+        self.attach(game)
+
+    def move(self, game: Game, to: Location):
+        self.detach(game)
+        self.attach_to(game, to)
+
+    def append_to(self, game: Game, area: Area, player_id: int = None):
+        if player_id is None:
+            player_id = self.location.player
+        player = game.players[player_id]
+        self.move(game, Location(player_id, area, player.area_next_key(area)))
 
     def __eq__(self, other):
         return object.__eq__(self, other)  # id()-bsed equality for consistency
