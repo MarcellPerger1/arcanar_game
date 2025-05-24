@@ -34,6 +34,16 @@ class Player:
     # Used only at the final evaluation:
     final_score: int | None = None
 
+    @classmethod
+    def new(cls, idx: int, game: Game, init_cards=True):
+        self = cls(idx, game, {a: OrderedDict() for a in Area.members()}, Counter())
+        if init_cards:
+            self.init_cards()
+        return self
+
+    def init_cards(self):
+        ...  # TODO init_cards, maybe load from function, Game.rules.starting_cards()
+
     def place_card(self, card: Card):
         card_type = card.card_type
         assert PlaceableCardType.has_instance(card_type)
