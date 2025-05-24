@@ -52,6 +52,18 @@ class AddMarker(CardEffect):
 
 
 @dataclass(frozen=True)
+class RemoveMarker(CardEffect):
+    # Not actually used in the base game but seems like it could make for
+    #  interesting gameplay (e.g. managing amount of markers on a card)
+    amount: int = 1
+
+    def execute(self, info: EffectExecInfo) -> object | None:
+        if info.card.markers < self.amount:
+            return CANT_EXEC
+        info.card.markers -= self.amount
+
+
+@dataclass(frozen=True)
 class DiscardThis(CardEffect):
     def execute(self, info: EffectExecInfo):
         info.card.discard(info.game)
@@ -120,6 +132,14 @@ class ConvertEffect(EffectGroup):
             return  # You don't get the gain effect
         self.gain.execute(info)
         self.effect.execute(info)
+
+
+@dataclass(frozen=True)
+class SuppressFail(CardEffect):
+    effect: CardEffect
+
+    def execute(self, info: EffectExecInfo) -> object | None:
+        self.effect.execute(info)  # Deliberately not `return`
 # endregion
 
 
