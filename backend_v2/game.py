@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import Counter
 from dataclasses import dataclass
-from typing import OrderedDict
+from typing import OrderedDict, Callable
 
 from .card import Card
 from .enums import *
@@ -55,6 +55,14 @@ class Player:
     def nth_next_player(self, player_offset: int):
         new_idx = (self.idx + player_offset) % self.game.n_players
         return self.game.players[new_idx]
+
+    def exec_color(self, tp: Area, cond: Callable[[Card], bool] = None):
+        for c in self.cards_of_type(tp):
+            if cond is None or cond(c):
+                c.execute(self)
+
+    def exec_color_evergreens(self, tp: Area):
+        self.exec_color(tp, lambda c: c.always_triggers)
 
 
 @dataclass

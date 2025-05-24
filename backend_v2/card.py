@@ -82,6 +82,9 @@ class Card(CardTemplate):
     def is_placed(self):
         return PlaceableCardType.has_instance(self.location.area)
 
+    def is_dyn_executable(self):
+        return CardType.has_instance(self.location.area)
+
     def __eq__(self, other):
         return object.__eq__(self, other)  # id()-bsed equality for consistency
 
