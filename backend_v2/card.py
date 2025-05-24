@@ -3,10 +3,11 @@ from __future__ import annotations
 import abc
 from collections import Counter
 from dataclasses import dataclass, fields
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Mapping
 
 from .common import Location, ResourceFilter
 from .enums import CardType, Color, Area, PlaceableCardType
+from .util import FrozenDict
 
 if TYPE_CHECKING:
     from .game import Player, Game
@@ -36,6 +37,12 @@ class CardTemplate:  # Frozen-by-convention
     cost: CardCost
     always_triggers: bool = False
     is_starting_card: bool = False
+
+    def instantiate(self, to_location: Location = None, markers: int = 0):
+        return Card(
+            self.card_type, self.effect, self.cost, self.always_triggers,
+            self.is_starting_card, to_location, markers
+        )
 
 
 @dataclass(eq=False)
@@ -103,9 +110,12 @@ class Card(CardTemplate):
         return object.__hash__(self)  # id()-based hash
 
 
-@dataclass
+@dataclass(init=False, frozen=True)
 class CardCost:
-    possibilities: dict[ResourceFilter, int]
+    possibilities: FrozenDict[ResourceFilter, int]
+
+    def __init__(self, possibilities: Mapping[ResourceFilter, int]):
+        object.__setattr__(self, 'possibilities', FrozenDict(possibilities))
 
     def matches_exact(self, resources: Counter[Color]):
         """Returns the first ColorFilter it matched"""
