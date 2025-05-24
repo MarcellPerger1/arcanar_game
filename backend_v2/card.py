@@ -68,6 +68,9 @@ class Card(CardTemplate):
         player = game.players[player_id]
         self.move(game, Location(player_id, area, player.area_next_key(area)))
 
+    def discard(self, game: Game):
+        self.append_to(game, Area.DISCARD)
+
     def __eq__(self, other):
         return object.__eq__(self, other)  # id()-bsed equality for consistency
 

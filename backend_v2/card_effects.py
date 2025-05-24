@@ -96,6 +96,13 @@ class AddMarker(CardEffect):
 
 
 @dataclass(frozen=True)
+class DiscardThis(CardEffect):
+    def execute(self, info: EffectExecInfo):
+        info.card.discard(info.game)
+
+
+# region ForEach*
+@dataclass(frozen=True)
 class _EffectManyTimes(CardEffect, abc.ABC):
     effect: CardEffect
 
@@ -160,6 +167,7 @@ class ForEachM(_EffectManyTimes):
 
     def get_times(self, info: EffectExecInfo) -> int:
         return self.measure.get(info)
+# endregion
 
 
 @dataclass(frozen=True)
