@@ -5,8 +5,8 @@ import operator
 from collections import Counter
 from dataclasses import dataclass
 
-from .card import CardEffect, EffectExecInfo, CannotExecute
-from .common import ResourceFilter
+from .card import CardEffect, EffectExecInfo, CannotExecute, Card
+from .common import ResourceFilter, CardTypeFilter
 from .enums import *
 
 
@@ -25,6 +25,11 @@ class GainResource(CardEffect):
         info.player.resources[self.resource] += self.amount
 
 
+# TODO: this is done really badly: the exception is used in very few (~2)
+#  places and making code handle it is very annoying (exceptions stinky!)
+#  Therefore, we should change SpendResource to not raise an exception
+#  but signal failure another way (e.g. returning a specific FAILED object)
+#  and this is only checked by Convert or maybe some type of conditional.
 @dataclass(frozen=True)
 class SpendResource(CardEffect):
     colors: ResourceFilter
@@ -168,6 +173,54 @@ class ForEachM(_EffectManyTimes):
     def get_times(self, info: EffectExecInfo) -> int:
         return self.measure.get(info)
 # endregion
+
+
+@dataclass(frozen=True)
+class ChooseFromDiscardOf(CardEffect):
+    # player_offset:
+    # +1 = to left of (i.e. net player to go)
+    # 0 = this player
+    # -1 = to right of
+    player_offset: int
+    filters: CardTypeFilter = None
+    fail_if_unable: bool = False
+
+    def __post_init__(self):
+        if self.filters is None:
+            # Just the regular 'color' cards as the default
+            object.__setattr__(self, 'filters', CardTypeFilter(Color.members()))
+
+    def on_unable(self):
+        if self.fail_if_unable:
+            raise CannotExecute()
+
+    def execute(self, info: EffectExecInfo) -> None:
+        target = info.player.nth_next_player(self.player_offset)
+        if len(target.discard):
+            return self.on_unable()
+        card: Card = info.frontend.choose_from_discard(target, self.filters)
+        if card is None:
+            return self.on_unable()
+        assert self.filters.is_allowed(card.card_type)
+        if card.card_type == CardType.EVENT:
+            card.execute(info.player)  # Cannot be placed so sensible default: execute it
+            # Don't forget to move it into **OUR** discard
+            return card.discard(info.game, info.player)
+        return info.player.place_card(card)
+
+
+@dataclass(frozen=True)
+class ExecOwnPlacedCard(CardEffect):
+    n_times: int = 1
+
+    def execute(self, info: EffectExecInfo):
+        card: Card = info.frontend.choose_card_exec(self.n_times)
+        assert PlaceableCardType.has_instance(card.location.area)
+        assert card.location.player == info.player.idx
+        for i in range(self.n_times):
+            if not card.is_placed():
+                return
+            card.execute(info.player)
 
 
 @dataclass(frozen=True)
