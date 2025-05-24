@@ -4,10 +4,12 @@ import abc
 import operator
 from collections import Counter
 from dataclasses import dataclass
+from typing import Sequence, Mapping
 
 from .card import CardEffect, EffectExecInfo, Card, CANT_EXEC
 from .common import ResourceFilter, CardTypeFilter
 from .enums import *
+from .util import FrozenDict
 
 
 # region simple/atomic effects (non-compound)
@@ -373,4 +375,100 @@ class ExecOwnPlacedCard(CardEffect):
             if not card.is_placed():
                 return
             card.execute(info.player)
+
+
+@dataclass(frozen=True)
+class ExecChosenColorNTimes(CardEffect):
+    amount: int = 2
+    evergreen_amount: int = 0  # e, Should really be 0-n but we won't check
+
+    def execute(self, info: EffectExecInfo) -> object | None:
+        chosen: Color = info.frontend.choose_color_exec_twice()
+        # Can't execute artifacts, events aren't placed down, so must be color
+        assert Color.has_instance(chosen)
+        for i in range(self.amount):
+            for c in Color.members():
+                if c == chosen:
+                    info.player.exec_color(c)
+                elif i <= self.evergreen_amount - 1:  # First e iterations
+                    info.player.exec_color_evergreens(c)
+
+
+@dataclass(frozen=True)
+class ExecColorsNotBiggest(CardEffect):
+    do_evergreens: bool = True
+
+    def execute(self, info: EffectExecInfo) -> object | None:
+        max_count = 0
+        top_colors = []
+        for c in Color.members():
+            n = info.player.num_cards_of_type(c)
+            if n > max_count:
+                top_colors = [c]
+                max_count = n
+            elif n == max_count:
+                top_colors.append(c)
+        if len(top_colors) <= 1:
+            excl_color = top_colors[0]
+        else:
+            excl_color = info.frontend.choose_excl_color(top_colors)
+        for c in Color.members():
+            if c != excl_color:
+                info.player.exec_color(c)
+            elif self.do_evergreens:
+                info.player.exec_color_evergreens(c)
+
+
+@dataclass(frozen=True)
+class ExecChosenNTimesAndDiscard(CardEffect):
+    n: int = 3
+
+    def execute(self, info: EffectExecInfo) -> object | None:
+        card = info.frontend.choose_card_exec(self.n)
+        assert card.is_dyn_executable()
+        for _ in range(self.n):
+            if not card.is_placed():
+                return
+            card.execute(info.player)
+        card.discard()
+
+
+_AdjMappingT = Mapping[PlaceableCardType, Sequence[PlaceableCardType]]
+_AdjFrDictT = Mapping[PlaceableCardType, Sequence[PlaceableCardType]]
+
+
+@dataclass(frozen=True, init=False)
+class MoveChosenAndExecNewColor(CardEffect):
+    adjacencies: _AdjFrDictT
+
+    def __init__(self, adjacencies: _AdjMappingT = None):
+        object.__setattr__(self, 'adjacencies', FrozenDict(adjacencies))
+
+    def execute(self, info: EffectExecInfo) -> object | None:
+        # Choose card to move
+        if (card := self._choose_card(info)) is None:
+            return CANT_EXEC
+        if (dest_color := self._get_dest_color(info, card)) is None:
+            return CANT_EXEC
+        card.append_to(info.game, dest_color)
+        # Exec new color
+        info.player.exec_color(dest_color)
+
+    def _choose_card(self, info: EffectExecInfo):
+        card: Card = info.frontend.choose_card_move(self.adjacencies)
+        if card is None:
+            return None
+        assert not card.is_starting_card
+        return card
+
+    def _get_dest_color(self, info: EffectExecInfo, card: Card):
+        orig_color = card.location.area
+        assert PlaceableCardType.has_instance(orig_color)
+        dest_color = info.frontend.choose_move_where(
+            card, self.adjacencies.get(orig_color, ()))
+        if dest_color is None:
+            return None
+        assert PlaceableCardType.has_instance(dest_color)
+        assert dest_color in self.adjacencies.get(orig_color, ())
+        return dest_color
 # endregion
