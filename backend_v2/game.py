@@ -31,6 +31,15 @@ class Player:
     # Used only at the final evaluation:
     final_score: int | None = None
 
+    def place_card(self, card: Card):
+        card_type = card.card_type
+        assert PlaceableCardType.has_instance(card_type)
+        return card.append_to(self.game, card_type)
+
+    @property
+    def discard(self):
+        return self.areas[Area.DISCARD]
+
     def cards_of_type(self, tp: Area, include_starting=True):
         return (self.areas[tp] if include_starting else
                 [c for c in self.areas[tp].values() if not c.is_starting_card])
@@ -42,6 +51,11 @@ class Player:
         last_key = next(reversed(self.areas[area].keys()))
         return last_key + 1  # Last one is biggest so should be no conflicts
 
+    # player_offset can be negative (i.e. previous player)
+    def nth_next_player(self, player_offset: int):
+        new_idx = (self.idx + player_offset) % self.game.n_players
+        return self.game.players[new_idx]
+
 
 @dataclass
 class Game:
@@ -51,6 +65,10 @@ class Game:
     frontend: ...
     round_num: int
     turn_num: int
+
+    @property
+    def n_players(self):
+        return len(self.players)
 
     def get_areas_for(self, player: int | None):
         if player is None:

@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import AbstractSet, TYPE_CHECKING
+from typing import AbstractSet, TYPE_CHECKING, Iterable
 
-from .enums import Area, AnyResource
+from .enums import Area, AnyResource, CardType
 from .game import Game
 
 if TYPE_CHECKING:
@@ -37,3 +37,18 @@ class ResourceFilter:
 
     def is_allowed(self, c: AnyResource):
         return c in self.allowed_resources
+
+
+@dataclass(frozen=True)
+class CardTypeFilter:
+    allowed_types: frozenset[CardType]
+
+    def __init__(self, allowed_types: Iterable[CardType]):
+        object.__setattr__(self, 'allowed_types', frozenset(allowed_types))
+
+    def is_allowed(self, c: CardType):
+        return c in self.allowed_types
+
+    @classmethod
+    def any_type(cls):
+        return cls(CardType.members())

@@ -6,10 +6,10 @@ from dataclasses import dataclass, fields
 from typing import TYPE_CHECKING
 
 from .common import Location, ResourceFilter
-from .enums import CardType, Color, Area
+from .enums import CardType, Color, Area, PlaceableCardType
 
 if TYPE_CHECKING:
-    from backend_v2.game import Player, Game
+    from .game import Player, Game
 
 
 # Card types: CardTemplate should have frozen immutable attributes 'printed on
@@ -43,6 +43,13 @@ class Card(CardTemplate):
     location: Location = None
     markers: int = 0
 
+    def execute(self, player: Player):
+        # Player is the player to execute the effects for (other players can
+        #  execute a player's card and get the effect for themselves in
+        #  theory - although maybe not with the base cards)
+        info = EffectExecInfo(self, player)
+        self.effect.execute(info)
+
     def detach(self, game: Game):
         """Detach ourself from `self.location`"""
         popped = self.location.clear(game)
@@ -62,14 +69,18 @@ class Card(CardTemplate):
         self.detach(game)
         self.attach_to(game, to)
 
-    def append_to(self, game: Game, area: Area, player_id: int = None):
-        if player_id is None:
-            player_id = self.location.player
-        player = game.players[player_id]
-        self.move(game, Location(player_id, area, player.area_next_key(area)))
+    def append_to(self, game: Game, area: Area, player: int | Player = None):
+        if player is None:
+            player = self.location.player
+        if not isinstance(player, Player):
+            player = game.players[player]
+        self.move(game, Location(player.idx, area, player.area_next_key(area)))
 
-    def discard(self, game: Game):
-        self.append_to(game, Area.DISCARD)
+    def discard(self, game: Game, player: int | Player = None):
+        self.append_to(game, Area.DISCARD, player)
+
+    def is_placed(self):
+        return PlaceableCardType.has_instance(self.location.area)
 
     def __eq__(self, other):
         return object.__eq__(self, other)  # id()-bsed equality for consistency
