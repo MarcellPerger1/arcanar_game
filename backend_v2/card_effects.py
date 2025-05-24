@@ -5,7 +5,7 @@ import operator
 from collections import Counter
 from dataclasses import dataclass
 
-from .card import CardEffect, EffectExecInfo, CannotExecute, Card
+from .card import CardEffect, EffectExecInfo, Card, CANT_EXEC
 from .common import ResourceFilter, CardTypeFilter
 from .enums import *
 
@@ -25,11 +25,6 @@ class GainResource(CardEffect):
         info.player.resources[self.resource] += self.amount
 
 
-# TODO: this is done really badly: the exception is used in very few (~2)
-#  places and making code handle it is very annoying (exceptions stinky!)
-#  Therefore, we should change SpendResource to not raise an exception
-#  but signal failure another way (e.g. returning a specific FAILED object)
-#  and this is only checked by Convert or maybe some type of conditional.
 @dataclass(frozen=True)
 class SpendResource(CardEffect):
     colors: ResourceFilter
@@ -39,21 +34,29 @@ class SpendResource(CardEffect):
         # Let frontend handle the unambiguous case itself
         spent: Counter[AnyResource] = info.frontend.get_spend(self.colors, self.amount, info)
         if spent is None:
-            raise CannotExecute()
-        assert spent <= info.player.resources
+            return CANT_EXEC
+        spent += {}  # Keep only positive values
+        assert spent <= info.player.resources  # (Subset)
         assert spent.total() == self.amount
-        assert all(map(self.colors.is_allowed, +spent))  # are all positive colors allowed?
+        assert all(map(self.colors.is_allowed, spent))
         info.player.resources -= spent
 
 
 @dataclass(frozen=True, init=False)
-class EffectGroup(CardEffect):
-    """Will stop and fail itself if any of the sub-effects fail"""
+class _AnyEffectGroup(CardEffect, abc.ABC):
+    """Stores a group of effects without specifying or mandating any logic.
+    Subclass must provide the .execute() method, this only handles the
+    attributes/constructor."""
 
     effects: tuple[CardEffect, ...]
 
     def __init__(self, *effects: CardEffect):
         object.__setattr__(self, 'effects', effects)
+
+
+@dataclass(frozen=True, init=False)
+class EffectGroup(_AnyEffectGroup):
+    """A group of effects that keeps going even if one of the effects fails"""
 
     def execute(self, info: EffectExecInfo):
         for e in self.effects:
@@ -61,10 +64,22 @@ class EffectGroup(CardEffect):
 
 
 @dataclass(frozen=True, init=False)
+class StrictEffectGroup(_AnyEffectGroup):
+    """A group of effects that stops if one of the effects fails.
+    If an inner StrictEffectGroup fails, the outer one fails too.
+    This allows Convert(spend=StrictEffectGroup(...), ...) to work."""
+
+    def execute(self, info: EffectExecInfo):
+        for e in self.effects:
+            if e.execute(info) is CANT_EXEC:
+                return CANT_EXEC
+
+
+@dataclass(frozen=True, init=False)
 class ConvertEffect(EffectGroup):
     """Gives the player the option to spend a resource(negative action) to
-    get a positive effect and possibly a side effect. Allow the card execution
-    to continue even if 'spend' action can't be met."""
+    get a positive effect and possibly a side effect. Allow the rest of the
+    card execution to continue even if 'spend' action can't be met."""
 
     def __init__(self, spend: CardEffect, gain: CardEffect, effect: CardEffect = None):
         if effect is None:
@@ -84,10 +99,8 @@ class ConvertEffect(EffectGroup):
         return self.effects[2]
 
     def execute(self, info: EffectExecInfo):
-        try:
-            self.spend.execute(info)
-        except CannotExecute:
-            return  # Allow separate parts to still run
+        if self.spend.execute(info) is CANT_EXEC:
+            return  # You don't get the gain effect
         self.gain.execute(info)
         self.effect.execute(info)
 
@@ -183,24 +196,19 @@ class ChooseFromDiscardOf(CardEffect):
     # -1 = to right of
     player_offset: int
     filters: CardTypeFilter = None
-    fail_if_unable: bool = False
 
     def __post_init__(self):
         if self.filters is None:
             # Just the regular 'color' cards as the default
             object.__setattr__(self, 'filters', CardTypeFilter(Color.members()))
 
-    def on_unable(self):
-        if self.fail_if_unable:
-            raise CannotExecute()
-
     def execute(self, info: EffectExecInfo) -> None:
         target = info.player.nth_next_player(self.player_offset)
-        if len(target.discard):
-            return self.on_unable()
+        if len(target.discard) == 0:
+            return CANT_EXEC
         card: Card = info.frontend.choose_from_discard(target, self.filters)
         if card is None:
-            return self.on_unable()
+            return CANT_EXEC
         assert self.filters.is_allowed(card.card_type)
         if card.card_type == CardType.EVENT:
             card.execute(info.player)  # Cannot be placed so sensible default: execute it

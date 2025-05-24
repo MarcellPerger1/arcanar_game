@@ -137,9 +137,8 @@ class CardEffect(abc.ABC):
     must also be immutable. A @dataclass(frozen=True) class is recommended"""
 
     @abc.abstractmethod
-    def execute(self, info: EffectExecInfo):
+    def execute(self, info: EffectExecInfo) -> object | None:
         ...
 
 
-class CannotExecute(Exception):
-    pass
+CANT_EXEC = object()
