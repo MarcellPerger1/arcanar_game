@@ -2,9 +2,7 @@ from __future__ import annotations
 
 from collections import Counter
 from dataclasses import dataclass
-from typing import Self, OrderedDict
-
-from typing_extensions import TypeGuard
+from typing import OrderedDict
 
 from .card import Card
 from .enums import *
