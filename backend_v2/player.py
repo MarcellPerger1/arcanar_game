@@ -91,7 +91,43 @@ class Player:
             c.append_to(self.game, Area.HAND, self)
 
     def do_turn(self):
-        ...  # TODO: implement this, connect to frontend
+        cards_before = len(self.hand)
+        action = self.frontend.get_action_type()
+        if action == 'buy':
+            self.action_place()
+        elif action == 'execute':
+            self.action_execute()
+        else:
+            raise AssertionError("Bad action from frontend")
+        assert len(self.hand) == cards_before - 1
+
+    def action_place(self):
+        card = self.frontend.get_card_buy()
+        if card.card_type == CardType.EVENT:
+            card.execute()
+            card.discard()
+        else:
+            self.place_card(card)
+
+    def action_execute(self):
+        self.frontend.get_discard().discard()
+        self.run_curr_magics()
+
+    def run_curr_magics(self):
+        self.execute_filtered(self.can_run_card)  # Cool!
+
+    def can_run_card(self, card: Card):
+        effective_color = card.location.area
+        if not Color.has_instance(effective_color):
+            return False
+        is_last = self.cards_of_type(effective_color)[-1] is card
+        return self.game.does_color_run(effective_color, is_last)
+
+    def execute_filtered(self, predicate: Callable[[Card], bool]):
+        for c in Color:
+            for a in self.cards_of_type(c):
+                if predicate(a):
+                    a.execute(self)
 
     def count_points(self):
         for a in self.areas[Area.ARTIFACT].values():
@@ -107,7 +143,7 @@ class Player:
         return area
 
     def cards_of_type(self, tp: Area, include_starting=True):
-        return (self.areas[tp] if include_starting else
+        return (list(self.areas[tp].values()) if include_starting else
                 [c for c in self.areas[tp].values() if not c.is_starting_card])
 
     def num_cards_of_type(self, tp: Area, include_starting=False):

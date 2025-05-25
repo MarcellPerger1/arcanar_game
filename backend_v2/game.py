@@ -85,9 +85,18 @@ class Game:
             p.count_points()
         self.players_ranked = sorted(self.players, key=lambda pl: pl.final_score)
 
+    # TODO: could there be a cleaner way of doing this?
+    def does_color_run(self, color: Color, is_last: bool):
+        return color in self.curr_moons or (
+            is_last and MoonPhase.LAST_TURN in self.curr_moons)
+
     def get_rng(self, reason: str, *args: object):
         seed_str = f'{self.seed}+[{reason}@{args!s}]'
         return random.Random(seed_str)
+
+    @property
+    def curr_moons(self):
+        return self.moon_phases[self.turn_num]
 
     @property
     def n_players(self):
