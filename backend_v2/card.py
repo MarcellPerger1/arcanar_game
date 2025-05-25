@@ -39,6 +39,15 @@ class CardTemplate:  # Frozen-by-convention
     is_starting_card: bool = False
 
     def instantiate(self, to_location: Location = None, markers: int = 0):
+        """Recommended usage: don't specify new_location as computing that may
+        be annoying and it doesn't actually attach this to the game. Instead,
+        call with no args, then use one of ``attach_to()`` or ``append_to()``.
+        Note that this method returns the Card in a slightly inconsistent state
+        (location set to None). This means that any movement methods that
+        attempt to remove the card from a previous location fail
+        (apart from ``move()`` which is built to handle this).
+        Also note that ``player`` **MUST** be specified otherwise the
+        card doesn't know which player to attach to."""
         return Card(
             self.card_type, self.effect, self.cost, self.always_triggers,
             self.is_starting_card, to_location, markers
@@ -73,7 +82,9 @@ class Card(CardTemplate):
         self.attach(game)
 
     def move(self, game: Game, to: Location):
-        self.detach(game)
+        # Check for the case where it didn't have a location before
+        if self.location is not None:
+            self.detach(game)
         self.attach_to(game, to)
 
     def append_to(self, game: Game, area: Area, player: int | Player = None):
