@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import OrderedDict
 
-from .card import Card
 from .enums import *
 from .player import Player
 from .ruleset import IRuleset
@@ -15,7 +13,6 @@ class Game:
     ruleset: IRuleset  # Defines starting cards, deck, passing order, etc.
     players: list[Player]
     moon_phases: list[set[MoonPhase]]
-    general_areas: dict[Area, OrderedDict[int, Card]]  # Areas not associated with a player
     round_num: int
     turn_num: int
     # Only used at end
@@ -25,7 +22,6 @@ class Game:
         self.frontend = frontend
         self.ruleset = ruleset
         self.players = [Player.new(i, self) for i in range(n_players)]
-        self.general_areas = {a: OrderedDict() for a in Area.members()}
         self.round_num = 0
         # TODO: finish the Game logic
 
@@ -33,7 +29,7 @@ class Game:
     def n_players(self):
         return len(self.players)
 
-    def get_areas_for(self, player: int | None):
-        if player is None:
-            return self.general_areas
+    def get_areas_for(self, player: int | Player):
+        if isinstance(player, Player):
+            return player.areas
         return self.players[player].areas
