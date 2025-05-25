@@ -41,13 +41,23 @@ class Player:
             self.init_cards()
         return self
 
-    def init_cards(self):
-        ...  # TODO init_cards, maybe load from function, Game.rules.starting_cards()
+    def init_cards(self):  # Should only be called straight after, or in, new()
+        for c_template in self.ruleset.get_starting_cards():
+            c = c_template.instantiate()
+            self.place_card(c)
 
     def place_card(self, card: Card):
         card_type = card.card_type
         assert PlaceableCardType.has_instance(card_type)
         return card.append_to(self.game, card_type)
+
+    @property
+    def frontend(self):
+        return self.game.frontend
+
+    @property
+    def ruleset(self):
+        return self.game.ruleset
 
     @property
     def discard(self):
