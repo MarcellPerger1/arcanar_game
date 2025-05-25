@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from collections import Counter
-from dataclasses import dataclass
-from typing import OrderedDict, Callable, TYPE_CHECKING
+from dataclasses import dataclass, replace as d_replace
+from typing import OrderedDict, Callable, TYPE_CHECKING, Sequence, MutableSequence
 
-from .card import Card
+from .card import Card, CardTemplate
 from .enums import *
 
 if TYPE_CHECKING:
@@ -63,6 +63,49 @@ class Player:
     def discard(self):
         return self.areas[Area.DISCARD]
 
+    @property
+    def hand(self):
+        return self.areas[Area.HAND]
+
+    @hand.setter
+    def hand(self, value: OrderedDict[int, Card]):
+        self.areas[Area.HAND] = value
+
+    def init_hand_from_deck(self, deck: MutableSequence[CardTemplate]):
+        self.init_hand([deck.pop() for _ in range(self.ruleset.cards_per_player)])
+
+    def init_hand(self, cards: Sequence[CardTemplate], discard_remaining=False):
+        self.set_hand([c.instantiate() for c in cards], discard_remaining)
+
+    def set_hand(self, cards: Sequence[Card], discard_remaining=False):
+        # Clear any remaining cards
+        while (pair := next(iter(self.hand.items()), None)) is not None:
+            pair: tuple[int, Card]
+            _, rem = pair
+            if discard_remaining:
+                rem.discard(self.game, self)
+            else:
+                rem.detach(self.game)
+        for c in cards:
+            # Must specify player (card has never seen us before)
+            c.append_to(self.game, Area.HAND, self)
+
+    def do_turn(self):
+        ...  # TODO: implement this, connect to frontend
+
+    def count_points(self):
+        for a in self.areas[Area.ARTIFACT].values():
+            a.execute(self)
+        self.final_score = sum([v // self.ruleset.resources_per_point(r)
+                                for r, v in self.resources.items()])
+
+    def posses_area_obj(self, area: OrderedDict[int, Card]):
+        """Change the locations of cards in ``area`` to this player. This
+        doesn't actually move the cards so **use with caution**!"""
+        for c in area.values():
+            c.location = d_replace(c.location, player=self.idx)
+        return area
+
     def cards_of_type(self, tp: Area, include_starting=True):
         return (self.areas[tp] if include_starting else
                 [c for c in self.areas[tp].values() if not c.is_starting_card])
@@ -71,6 +114,8 @@ class Player:
         return len(self.cards_of_type(tp, include_starting))
 
     def area_next_key(self, area: Area):
+        if len(self.areas[area]) == 0:
+            return 0  # Default to 0 as the first key.
         last_key = next(reversed(self.areas[area].keys()))
         return last_key + 1  # Last one is biggest so should be no conflicts
 
