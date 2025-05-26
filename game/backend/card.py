@@ -10,7 +10,7 @@ from .enums import CardType, Color, Area, PlaceableCardType, AnyResource
 from .util import FrozenDict
 
 if TYPE_CHECKING:
-    from .game import Player, Game
+    from .backend import Player, GameBackend
 
 
 # Card types: CardTemplate should have frozen immutable attributes 'printed on
@@ -66,35 +66,35 @@ class Card(CardTemplate):
         info = EffectExecInfo(self, player)
         self.effect.execute(info)
 
-    def detach(self, game: Game):
+    def detach(self, game: GameBackend):
         """Detach ourself from `self.location`"""
         popped = self.location.clear(game)
         # If we're not at that location, something has gone very, very wrong.
         assert popped is self
 
-    def attach(self, game: Game):
-        """Attach to `self.location` in the `Game`"""
+    def attach(self, game: GameBackend):
+        """Attach to `self.location` in the `GameBackend`"""
         prev = self.location.put(game, self)
         assert prev is None  # Hope we haven't overwritten anything,
 
-    def attach_to(self, game: Game, location: Location):
+    def attach_to(self, game: GameBackend, location: Location):
         self.location = location
         self.attach(game)
 
-    def move(self, game: Game, to: Location):
+    def move(self, game: GameBackend, to: Location):
         # Check for the case where it didn't have a location before
         if self.location is not None:
             self.detach(game)
         self.attach_to(game, to)
 
-    def append_to(self, game: Game, area: Area, player: int | Player = None):
+    def append_to(self, game: GameBackend, area: Area, player: int | Player = None):
         if player is None:
             player = self.location.player
         if not isinstance(player, Player):
             player = game.players[player]
         self.move(game, Location(player.idx, area, player.area_next_key(area)))
 
-    def discard(self, game: Game, player: int | Player = None):
+    def discard(self, game: GameBackend, player: int | Player = None):
         self.append_to(game, Area.DISCARD, player)
 
     def is_placed(self):

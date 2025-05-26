@@ -10,7 +10,7 @@ from .ruleset import IRuleset
 
 
 @dataclass
-class Game:
+class GameBackend:
     frontend: ...
     ruleset: IRuleset  # Defines starting cards, deck, passing order, etc.
     players: list[Player]
