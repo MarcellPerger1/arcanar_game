@@ -12,6 +12,7 @@ _KT = TypeVar('_KT', covariant=True)
 _VT = TypeVar('_VT', covariant=True)
 
 
+# noinspection PyMethodOverriding
 class FrozenDict(Mapping[_KT, _VT], Generic[_KT, _VT]):
     _dict: dict[_KT, _VT]
 
