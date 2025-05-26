@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import AbstractSet, TYPE_CHECKING, Iterable
 
-from .enums import Area, AnyResource, CardType
+from .enums import Area, AnyResource, CardType, Color
 from .game import Game
 
 if TYPE_CHECKING:
@@ -37,6 +37,18 @@ class ResourceFilter:
 
     def is_allowed(self, c: AnyResource):
         return c in self.allowed_resources
+
+    @classmethod
+    def any_color(cls):
+        return cls({*Color.members()})
+
+    @classmethod
+    def not_yellow(cls):
+        return cls({*Color.members()} - {Color.YELLOW})
+
+    @classmethod
+    def not_red(cls):
+        return cls({*Color.members()} - {Color.RED})
 
 
 @dataclass(frozen=True)

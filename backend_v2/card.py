@@ -6,7 +6,7 @@ from dataclasses import dataclass, fields
 from typing import TYPE_CHECKING, Mapping
 
 from .common import Location, ResourceFilter
-from .enums import CardType, Color, Area, PlaceableCardType
+from .enums import CardType, Color, Area, PlaceableCardType, AnyResource
 from .util import FrozenDict
 
 if TYPE_CHECKING:
@@ -139,6 +139,15 @@ class CardCost:
             if all(map(color_filter.is_allowed, colors_have)):
                 return color_filter
         return None
+
+    @classmethod
+    def free(cls):
+        return cls({ResourceFilter.any_color(): 0})
+
+    @classmethod
+    def color_or_any(cls, color: AnyResource, color_cost: int, wild_cost: int):
+        return cls({ResourceFilter({color}): color_cost,
+                    ResourceFilter.any_color(): wild_cost})
 
 
 @dataclass
