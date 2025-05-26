@@ -13,6 +13,9 @@ if TYPE_CHECKING:
     from .backend import Player, GameBackend
 
 
+__all__ = ['CardTemplate', 'Card', 'CardCost', 'CardEffect', 'EffectExecInfo']
+
+
 # Card types: CardTemplate should have frozen immutable attributes 'printed on
 #  the physical card' and Card should have those attributes as frozen
 #  but should have other non-frozen attributes. This is mainly po
