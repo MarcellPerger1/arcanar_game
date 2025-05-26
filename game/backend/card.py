@@ -13,7 +13,8 @@ if TYPE_CHECKING:
     from .backend import Player, GameBackend
 
 
-__all__ = ['CardTemplate', 'Card', 'CardCost', 'CardEffect', 'EffectExecInfo']
+__all__ = ['CardTemplate', 'Card', 'CardCost', 'CardEffect', 'EffectExecInfo',
+           'CANT_EXEC']
 
 
 # Card types: CardTemplate should have frozen immutable attributes 'printed on

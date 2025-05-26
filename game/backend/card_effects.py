@@ -4,7 +4,7 @@ import abc
 import operator
 from collections import Counter
 from dataclasses import dataclass, field
-from typing import Sequence, Mapping, Collection
+from typing import Mapping, Collection
 
 from .card import CardEffect, EffectExecInfo, Card, CANT_EXEC
 from .common import ResourceFilter, CardTypeFilter
