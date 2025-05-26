@@ -3,7 +3,7 @@ from __future__ import annotations
 import abc
 import operator
 from collections import Counter
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Sequence, Mapping
 
 from .card import CardEffect, EffectExecInfo, Card, CANT_EXEC
@@ -28,6 +28,7 @@ __all__ = [
     'ForEachDynChosenColor', 'ForEachM',
     # Measures
     'IMeasure', 'ConstMeasure', 'CardsOfType', 'DiscardedCards', 'NumMarkers',
+    'ResourceCount',
     # Special one-off stuff (usually events)
     'ChooseFromDiscardOf', 'ExecOwnPlacedCard', 'ExecChosenColorNTimes',
     'ExecColorsNotBiggest', 'ExecChosenNTimesAndDiscard',
@@ -173,7 +174,7 @@ class SuppressFail(CardEffect):
 class ConditionalEffect(CardEffect):
     cond: ICondition
     if_true: CardEffect
-    if_false: CardEffect
+    if_false: CardEffect = field(default_factory=NullEffect)
 
     def execute(self, info: EffectExecInfo):
         if self.cond.evaluate(info):
@@ -353,6 +354,14 @@ class DiscardedCards(IMeasure):
 class NumMarkers(IMeasure):
     def get(self, info: EffectExecInfo) -> float | int:
         return info.card.markers
+
+
+@dataclass(frozen=True)
+class ResourceCount(IMeasure):
+    resource: AnyResource
+
+    def get(self, info: EffectExecInfo) -> float | int:
+        return info.player.resources[self.resource]
 # endregion
 
 
