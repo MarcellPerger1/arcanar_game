@@ -473,7 +473,7 @@ _AdjFrDictT = Mapping[PlaceableCardType, Sequence[PlaceableCardType]]
 class MoveChosenAndExecNewColor(CardEffect):
     adjacencies: _AdjFrDictT
 
-    def __init__(self, adjacencies: _AdjMappingT = None):
+    def __init__(self, adjacencies: _AdjMappingT):
         object.__setattr__(self, 'adjacencies', FrozenDict(adjacencies))
 
     def execute(self, info: EffectExecInfo) -> object | None:

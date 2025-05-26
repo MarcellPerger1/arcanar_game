@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 @dataclass
 class Location:
-    player: int | None
+    player: int
     area: Area
     key: int
 
