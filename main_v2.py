@@ -1,1 +1,1 @@
-from backend_v2.game import Game
+from game.backend.game import Game
