@@ -11,6 +11,7 @@ from .util import FrozenDict
 
 if TYPE_CHECKING:
     from .backend import Player, GameBackend
+    from .ifrontend import IFrontend
 
 
 __all__ = ['CardTemplate', 'Card', 'CardCost', 'CardEffect', 'EffectExecInfo',
@@ -164,7 +165,7 @@ class EffectExecInfo:
         return self.player.game
 
     @property
-    def frontend(self):
+    def frontend(self) -> IFrontend:
         return self.game.frontend
 
     @property

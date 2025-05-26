@@ -5,13 +5,14 @@ import time
 from dataclasses import dataclass
 
 from .enums import *
+from .ifrontend import IFrontend
 from .player import Player
 from .ruleset import IRuleset
 
 
 @dataclass
 class GameBackend:
-    frontend: ...
+    frontend: IFrontend
     ruleset: IRuleset  # Defines starting cards, deck, passing order, etc.
     players: list[Player]
     moon_phases: list[set[MoonPhase]]
@@ -20,7 +21,7 @@ class GameBackend:
     # Only used at end
     players_ranked: list[Player] | None = None
 
-    def __init__(self, n_players: int, frontend: ..., ruleset: IRuleset,
+    def __init__(self, n_players: int, frontend: IFrontend, ruleset: IRuleset,
                  seed: int | str = None):
         self.frontend = frontend
         self.ruleset = ruleset

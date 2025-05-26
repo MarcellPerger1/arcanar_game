@@ -59,7 +59,7 @@ class SpendResource(CardEffect):
 
     def execute(self, info: EffectExecInfo):
         # Let frontend handle the unambiguous case itself
-        spent: Counter[AnyResource] = info.frontend.get_spend(self.colors, self.amount, info)
+        spent: Counter[AnyResource] = info.frontend.get_spend(info, self.colors, self.amount)
         if spent is None:
             return CANT_EXEC
         spent += {}  # Keep only positive values
@@ -307,8 +307,9 @@ class ForEachEmptyColor(_EffectManyTimes):
 
 @dataclass(frozen=True)
 class ForEachDynChosenColor(_EffectManyTimes):
+    # TODO: maybe filter possible card types - artifacts?!
     def get_times(self, info: EffectExecInfo) -> int:
-        c = info.frontend.get_color()
+        c = info.frontend.get_foreach_color(info)
         return info.player.num_cards_of_type(c)
 
 
@@ -384,7 +385,7 @@ class ChooseFromDiscardOf(CardEffect):
         target = info.player.nth_next_player(self.player_offset)
         if len(target.discard) == 0:
             return CANT_EXEC
-        card: Card = info.frontend.choose_from_discard(target, self.filters)
+        card: Card = info.frontend.choose_from_discard(info, target, self.filters)
         if card is None:
             return CANT_EXEC
         assert self.filters.is_allowed(card.card_type)
@@ -400,7 +401,7 @@ class ExecOwnPlacedCard(CardEffect):
     n_times: int = 1
 
     def execute(self, info: EffectExecInfo):
-        card: Card = info.frontend.choose_card_exec(self.n_times)
+        card: Card = info.frontend.choose_card_exec(info, self.n_times)
         assert PlaceableCardType.has_instance(card.location.area)
         assert card.location.player == info.player.idx
         for i in range(self.n_times):
@@ -415,7 +416,7 @@ class ExecChosenColorNTimes(CardEffect):
     evergreen_amount: int = 0  # e, Should really be 0-n but we won't check
 
     def execute(self, info: EffectExecInfo) -> object | None:
-        chosen: Color = info.frontend.choose_color_exec_twice()
+        chosen: Color = info.frontend.choose_color_exec_twice(info)
         # Can't execute artifacts, events aren't placed down, so must be color
         assert Color.has_instance(chosen)
         for i in range(self.amount):
@@ -443,7 +444,7 @@ class ExecColorsNotBiggest(CardEffect):
         if len(top_colors) <= 1:
             excl_color = top_colors[0]
         else:
-            excl_color = info.frontend.choose_excl_color(top_colors)
+            excl_color = info.frontend.choose_excl_color(info, top_colors)
         for c in Color.members():
             if c != excl_color:
                 info.player.exec_color(c)
@@ -456,13 +457,13 @@ class ExecChosenNTimesAndDiscard(CardEffect):
     n: int = 3
 
     def execute(self, info: EffectExecInfo) -> object | None:
-        card = info.frontend.choose_card_exec(self.n)
+        card = info.frontend.choose_card_exec(info, self.n)
         assert card.is_dyn_executable()
         for _ in range(self.n):
             if not card.is_placed():
                 return
             card.execute(info.player)
-        card.discard()
+        card.discard(info.game)
 
 
 _AdjMappingT = Mapping[PlaceableCardType, Collection[PlaceableCardType]]
@@ -489,7 +490,7 @@ class MoveChosenAndExecNewColor(CardEffect):
         info.player.exec_color(dest_color)
 
     def _choose_card(self, info: EffectExecInfo):
-        card: Card = info.frontend.choose_card_move(self.get_adjacencies(info))
+        card: Card = info.frontend.choose_card_move(info, self.get_adjacencies(info))
         if card is None:
             return None
         assert not card.is_starting_card
@@ -499,7 +500,7 @@ class MoveChosenAndExecNewColor(CardEffect):
         orig_color = card.location.area
         assert PlaceableCardType.has_instance(orig_color)
         dest_color = info.frontend.choose_move_where(
-            card, self.get_adjacencies(info).get(orig_color, ()))
+            info, card, self.get_adjacencies(info).get(orig_color, ()))
         if dest_color is None:
             return None
         assert PlaceableCardType.has_instance(dest_color)

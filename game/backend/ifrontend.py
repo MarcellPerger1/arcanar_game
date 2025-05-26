@@ -1,0 +1,63 @@
+from __future__ import annotations
+
+import abc
+from typing import Collection, Mapping, Literal, Counter
+
+from .card import EffectExecInfo, Card
+from .common import ResourceFilter, CardTypeFilter
+from .enums import Color, PlaceableCardType, AnyResource
+from .player import Player
+
+
+_AdjMappingT = Mapping[PlaceableCardType, Collection[PlaceableCardType]]
+
+
+class IFrontend(abc.ABC):
+    @abc.abstractmethod
+    def get_spend(self, info: EffectExecInfo, filters: ResourceFilter,
+                  amount: int) -> Counter[AnyResource]:
+        ...
+
+    @abc.abstractmethod
+    def get_foreach_color(self, info: EffectExecInfo) -> Color:
+        ...
+
+    @abc.abstractmethod
+    def choose_from_discard(self, info: EffectExecInfo, target: Player,
+                            filters: CardTypeFilter) -> Card:
+        ...
+
+    @abc.abstractmethod
+    def choose_card_exec(self, info: EffectExecInfo, n_times: int) -> Card:
+        ...
+
+    @abc.abstractmethod
+    def choose_color_exec_twice(self, info: EffectExecInfo) -> Color:
+        ...
+
+    @abc.abstractmethod
+    def choose_excl_color(self, info: EffectExecInfo,
+                          top_colors: Collection[Color]) -> Color:
+        ...
+
+    @abc.abstractmethod
+    def choose_card_move(self, info: EffectExecInfo, adjacencies: _AdjMappingT) -> Card:
+        ...
+
+    @abc.abstractmethod
+    def choose_move_where(self, info: EffectExecInfo, card_to_move: Card,
+                          possibilities: Collection[PlaceableCardType]
+                          ) -> PlaceableCardType | None:
+        ...
+
+    @abc.abstractmethod
+    def get_action_type(self) -> Literal['buy', 'execute']:
+        ...
+
+    @abc.abstractmethod
+    def get_card_buy(self) -> Card:
+        ...
+
+    @abc.abstractmethod
+    def get_discard(self) -> Card:
+        ...
