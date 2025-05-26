@@ -11,6 +11,29 @@ from .common import ResourceFilter, CardTypeFilter
 from .enums import *
 from .util import FrozenDict
 
+__all__ = [
+    # Basic/atomic effects
+    'NullEffect', 'GainResource', 'SpendResource', 'AddMarker', 'RemoveMarker',
+    'DiscardThis',
+    # Groups / misc. control flow
+    '_AnyEffectGroup', 'EffectGroup', 'StrictEffectGroup', 'ConvertEffect',
+    'SuppressFail',
+    # Conditions
+    'ConditionalEffect', 'ICondition', '_ComparisonCond', 'LessThanCond',
+    'LessEqCond', 'GreaterThanCond', 'GreaterEqCond', 'EqualsCond',
+    'NotEqualsCond', 'MostCardsOfType',
+    # ForEach*
+    '_EffectManyTimes', 'ForEachMarker', 'ForEachCardOfType', 'ForEachColorSet',
+    'ForEachDiscard', 'ForEachPlacedMagic', 'ForEachEmptyColor',
+    'ForEachDynChosenColor', 'ForEachM',
+    # Measures
+    'IMeasure', 'ConstMeasure', 'CardsOfType', 'DiscardedCards', 'NumMarkers',
+    # Special one-off stuff (usually events)
+    'ChooseFromDiscardOf', 'ExecOwnPlacedCard', 'ExecChosenColorNTimes',
+    'ExecColorsNotBiggest', 'ExecChosenNTimesAndDiscard',
+    'MoveChosenAndExecNewColor',
+]
+
 
 # region simple/atomic effects (non-compound)
 @dataclass(frozen=True)
