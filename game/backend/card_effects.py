@@ -4,7 +4,7 @@ import abc
 import operator
 from collections import Counter
 from dataclasses import dataclass, field
-from typing import Sequence, Mapping
+from typing import Sequence, Mapping, Collection
 
 from .card import CardEffect, EffectExecInfo, Card, CANT_EXEC
 from .common import ResourceFilter, CardTypeFilter
@@ -465,16 +465,18 @@ class ExecChosenNTimesAndDiscard(CardEffect):
         card.discard()
 
 
-_AdjMappingT = Mapping[PlaceableCardType, Sequence[PlaceableCardType]]
-_AdjFrDictT = Mapping[PlaceableCardType, Sequence[PlaceableCardType]]
+_AdjMappingT = Mapping[PlaceableCardType, Collection[PlaceableCardType]]
+_AdjFrDictT = Mapping[PlaceableCardType, Collection[PlaceableCardType]]
 
 
 @dataclass(frozen=True, init=False)
 class MoveChosenAndExecNewColor(CardEffect):
-    adjacencies: _AdjFrDictT
+    adjacencies: _AdjFrDictT | None
 
-    def __init__(self, adjacencies: _AdjMappingT):
-        object.__setattr__(self, 'adjacencies', FrozenDict(adjacencies))
+    def __init__(self, adjacencies: _AdjMappingT = None):
+        if adjacencies is not None:
+            adjacencies = FrozenDict(adjacencies)
+        object.__setattr__(self, 'adjacencies', adjacencies)
 
     def execute(self, info: EffectExecInfo) -> object | None:
         # Choose card to move
@@ -487,7 +489,7 @@ class MoveChosenAndExecNewColor(CardEffect):
         info.player.exec_color(dest_color)
 
     def _choose_card(self, info: EffectExecInfo):
-        card: Card = info.frontend.choose_card_move(self.adjacencies)
+        card: Card = info.frontend.choose_card_move(self.get_adjacencies(info))
         if card is None:
             return None
         assert not card.is_starting_card
@@ -497,10 +499,14 @@ class MoveChosenAndExecNewColor(CardEffect):
         orig_color = card.location.area
         assert PlaceableCardType.has_instance(orig_color)
         dest_color = info.frontend.choose_move_where(
-            card, self.adjacencies.get(orig_color, ()))
+            card, self.get_adjacencies(info).get(orig_color, ()))
         if dest_color is None:
             return None
         assert PlaceableCardType.has_instance(dest_color)
-        assert dest_color in self.adjacencies.get(orig_color, ())
+        assert dest_color in self.get_adjacencies(info).get(orig_color, ())
         return dest_color
+
+    def get_adjacencies(self, info: EffectExecInfo):
+        return (self.adjacencies if self.adjacencies is not None
+                else info.ruleset.get_adjacencies())
 # endregion

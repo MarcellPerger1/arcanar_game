@@ -166,6 +166,10 @@ class EffectExecInfo:
     def frontend(self):
         return self.game.frontend
 
+    @property
+    def ruleset(self):
+        return self.game.ruleset
+
 
 class CardEffect(abc.ABC):
     """An interface representing an executable effect of a card. Must be

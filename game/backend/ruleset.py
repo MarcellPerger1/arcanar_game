@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import abc
-from typing import Sequence
+from typing import Sequence, Collection
 
 from .card import CardTemplate, CardCost, CardEffect
 from .card_effects import *
@@ -37,6 +37,10 @@ class IRuleset(abc.ABC):
     def resources_per_point(self, r: AnyResource) -> int:
         ...
 
+    @abc.abstractmethod
+    def get_adjacencies(self) -> dict[PlaceableCardType, Collection[PlaceableCardType]]:
+        ...
+
 
 # noinspection PyMethodMayBeStatic
 class DefaultRuleset(IRuleset):
@@ -68,6 +72,13 @@ class DefaultRuleset(IRuleset):
             AnyResource.PURPLE: 3, AnyResource.GREEN: 3,  AnyResource.RED: -1,
             AnyResource.BLUE: 3,  AnyResource.YELLOW: 1, AnyResource.POINTS: 1
         }[r]
+
+    def get_adjacencies(self) -> dict[PlaceableCardType, Collection[PlaceableCardType]]:
+        return {Color.PURPLE: {Color.GREEN},
+                Color.GREEN: {Color.PURPLE, Color.RED},
+                Color.RED: {Color.GREEN, Color.BLUE},
+                Color.BLUE: {Color.RED, Color.YELLOW},
+                Color.YELLOW: {Color.BLUE}}
 
     @classmethod
     def _get_decks(cls):
