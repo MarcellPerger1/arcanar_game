@@ -10,14 +10,14 @@ from .player import Player
 from .ruleset import IRuleset
 
 
-@dataclass
+@dataclass  # TODO: this is inconsistent: use dataclass or not?!
 class GameBackend:
     frontend: IFrontend
     ruleset: IRuleset  # Defines starting cards, deck, passing order, etc.
     players: list[Player]
-    moon_phases: list[set[MoonPhase]]
-    round_num: int
-    turn_num: int
+    moon_phases: list[set[MoonPhase]] = None
+    round_num: int = 0
+    turn_num: int = 0
     # Only used at end
     players_ranked: list[Player] | None = None
 
