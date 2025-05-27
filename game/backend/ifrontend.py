@@ -57,13 +57,13 @@ class IFrontend(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def get_action_type(self) -> Literal['buy', 'execute']:
+    def get_action_type(self, player: Player) -> Literal['buy', 'execute']:
         ...
 
     @abc.abstractmethod
-    def get_card_buy(self) -> Card:
+    def get_card_buy(self, player: Player) -> Card:
         ...
 
     @abc.abstractmethod
-    def get_discard(self) -> Card:
+    def get_discard(self, player: Player) -> Card:
         ...
