@@ -9,6 +9,7 @@ from .common import ResourceFilter, CardTypeFilter
 from .enums import Color, PlaceableCardType, AnyResource
 from .player import Player
 
+__all__ = ['IFrontend']
 
 _AdjMappingT = Mapping[PlaceableCardType, Collection[PlaceableCardType]]
 
