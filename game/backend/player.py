@@ -92,7 +92,7 @@ class Player:
 
     def do_turn(self):
         cards_before = len(self.hand)
-        action = self.frontend.get_action_type()
+        action = self.frontend.get_action_type(self)
         if action == 'buy':
             self.action_place()
         elif action == 'execute':
@@ -102,15 +102,16 @@ class Player:
         assert len(self.hand) == cards_before - 1
 
     def action_place(self):
-        card = self.frontend.get_card_buy()
+        card = self.frontend.get_card_buy(self)
+        # TODO: actually pay for it!!!!!!!!
         if card.card_type == CardType.EVENT:
-            card.execute()
-            card.discard()
+            card.execute(self)
+            card.discard(self.game, self)
         else:
             self.place_card(card)
 
     def action_execute(self):
-        self.frontend.get_discard().discard()
+        self.frontend.get_discard(self).discard(self.game, self)
         self.run_curr_magics()
 
     def run_curr_magics(self):
