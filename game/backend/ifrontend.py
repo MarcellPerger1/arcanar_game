@@ -3,6 +3,7 @@ from __future__ import annotations
 import abc
 from typing import Collection, Mapping, Literal, Counter
 
+from .backend import GameBackend
 from .card import EffectExecInfo, Card
 from .common import ResourceFilter, CardTypeFilter
 from .enums import Color, PlaceableCardType, AnyResource
@@ -13,6 +14,10 @@ _AdjMappingT = Mapping[PlaceableCardType, Collection[PlaceableCardType]]
 
 
 class IFrontend(abc.ABC):
+    @abc.abstractmethod
+    def register_game(self, game: GameBackend):
+        ...
+
     @abc.abstractmethod
     def get_spend(self, info: EffectExecInfo, filters: ResourceFilter,
                   amount: int) -> Counter[AnyResource]:

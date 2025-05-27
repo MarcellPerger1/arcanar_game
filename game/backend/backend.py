@@ -32,6 +32,7 @@ class GameBackend:
         self.players = [Player.new(i, self) for i in range(n_players)]
         self.round_num = 0
         self.turn_num = 0
+        self.frontend.register_game(self)
 
     def run_game(self):
         for self.round_num in range(3):
