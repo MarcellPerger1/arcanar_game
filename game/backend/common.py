@@ -18,6 +18,9 @@ class Location:
     area: Area
     key: int
 
+    def get(self, game: GameBackend) -> Card:
+        return game.get_areas_for(self.player)[self.area][self.key]
+
     def clear(self, game: GameBackend) -> Card:
         return game.get_areas_for(self.player)[self.area].pop(self.key)
 
