@@ -3,7 +3,7 @@ from __future__ import annotations
 import abc
 from typing import Any, Literal
 
-from ..backend import GameBackend, Player, IFrontend, Card
+from ..backend import (GameBackend, Player, IFrontend, Card, Location, Area)
 
 JsonT = dict[str, Any] | list[Any] | tuple[Any, ...] | float | int | str | bool | None
 
@@ -27,9 +27,11 @@ class JsonAdapter(IFrontend):
 
     def register_game(self, game: GameBackend):
         self.game = game
-        self.send({'request': 'init',
-                   'server_version': '0.0.1',
-                   'api_version': 1}, thread=False)
+        self.send({
+            'request': 'init',
+            'server_version': '0.0.1',
+            'api_version': 0,  # 1 will be when the API is at least semi-stable
+        }, thread=False)
 
     def get_action_type(self, player: Player) -> Literal['buy', 'execute']:
         # TODO: somehow handle multiple people/clients! - LATER,
@@ -43,10 +45,21 @@ class JsonAdapter(IFrontend):
 
     def get_discard(self, player: Player) -> Card:
         th = self.send({'request': 'discard_for_exec', 'player': player.idx})
-        # TODO: how do we interpret result here - it shouldn't be the entire
-        #  card data - too much can go wrong there, should be some sort of id.
+        resp = self.receive(th)
+        # TODO: somehow detect logic error vs invalid response
+        card = self.deserialise_card_loc(resp['discard_for_exec'])
+        assert card in player.cards_of_type(Area.HAND)
+        return card
 
-        ...
+    def deserialise_card_loc(self, card: JsonT) -> Card:
+        # TODO: we should have a general json serde that handles dataclasses
+        #  etc. so we don't have to this for all objects
+        loc = Location(
+            card['player'],
+            Area(card['area']),  # TODO: send int or name?
+            card['key']
+        )
+        return loc.get(self.game)
 
     def serialise_state(self) -> JsonT:
         ...  # TODO
@@ -89,4 +102,3 @@ class JsonAdapter(IFrontend):
     #  - choose_card_move
     #  - choose_move_where
     #  - get_card_buy
-    #  - get_discard
