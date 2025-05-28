@@ -4,7 +4,7 @@ import abc
 from typing import Collection, Mapping, Literal, Counter
 
 from .backend import GameBackend
-from .card import EffectExecInfo, Card
+from .card import EffectExecInfo, Card, CardCost
 from .common import ResourceFilter, CardTypeFilter
 from .enums import Color, PlaceableCardType, AnyResource
 from .player import Player
@@ -66,4 +66,8 @@ class IFrontend(abc.ABC):
 
     @abc.abstractmethod
     def get_discard(self, player: Player) -> Card:
+        ...
+
+    @abc.abstractmethod
+    def get_card_payment(self, player: Player, cost: CardCost):
         ...

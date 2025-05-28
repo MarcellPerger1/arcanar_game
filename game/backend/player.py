@@ -4,7 +4,7 @@ from collections import Counter
 from dataclasses import dataclass, replace as d_replace
 from typing import OrderedDict, Callable, TYPE_CHECKING, Sequence, MutableSequence
 
-from .card import Card, CardTemplate
+from .card import Card, CardTemplate, CardCost
 from .enums import *
 
 if TYPE_CHECKING:
@@ -103,12 +103,17 @@ class Player:
 
     def action_place(self):
         card = self.frontend.get_card_buy(self)
-        # TODO: actually pay for it!!!!!!!!
+        self.pay_for_card(card.cost)
         if card.card_type == CardType.EVENT:
             card.execute(self)
             card.discard(self.game, self)
         else:
             self.place_card(card)
+
+    def pay_for_card(self, cost: CardCost):
+        payment = self.frontend.get_card_payment(self, cost)
+        assert cost.matches_exact(payment)
+        self.resources -= payment
 
     def action_execute(self):
         self.frontend.get_discard(self).discard(self.game, self)

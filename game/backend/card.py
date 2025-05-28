@@ -135,13 +135,12 @@ class CardCost:
 
     def matches_exact(self, resources: Counter[Color]):
         """Returns the first ColorFilter it matched"""
+        resources = +resources  # Remove negative/zero values
         for color_filter, n in self.possibilities.items():
             total_have = sum(resources.values())
             if n != total_have:
                 continue  # Need exact
-            # Fancy way of getting set of colors w/ amount>0 (`+counter` keeps >0 only)
-            colors_have = {*(+resources)}
-            if all(map(color_filter.is_allowed, colors_have)):
+            if all(map(color_filter.is_allowed, resources.keys())):
                 return color_filter
         return None
 
