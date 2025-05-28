@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import abc
-from typing import Any, Literal
+from typing import Any, Literal, Counter
 
-from ..backend import (GameBackend, Player, IFrontend, Card, Location, Area)
+from ..backend import (GameBackend, Player, IFrontend, Card, Location, Area, CardCost,
+                       AnyResource, ResourceFilter)
 
 JsonT = dict[str, Any] | list[Any] | tuple[Any, ...] | float | int | str | bool | None
 
@@ -44,12 +45,29 @@ class JsonAdapter(IFrontend):
         return ac_type
 
     def get_discard(self, player: Player) -> Card:
+        # TODO: allow cancellation back to choosing action_type from here
+        #  /when choosing how to pay.
         th = self.send({'request': 'discard_for_exec', 'player': player.idx})
         resp = self.receive(th)
         # TODO: somehow detect logic error vs invalid response
         card = self.deserialise_card_loc(resp['discard_for_exec'])
         assert card in player.cards_of_type(Area.HAND)
         return card
+
+    def get_card_buy(self, player: Player) -> Card:
+        th = self.send({'request': 'buy_card', 'player': player.idx})
+        resp = self.receive(th)
+        card = self.deserialise_card_loc(resp['buy_card'])
+        assert card in player.cards_of_type(Area.HAND)
+        return card
+
+    def get_card_payment(self, player: Player, cost: CardCost) -> Counter[AnyResource]:
+        th = self.send({'request': 'card_payment', 'player': player,
+                        'cost': self.ser_cost(cost)})
+        resp = self.receive(th)
+        # TODO: how to deser Counter[AnyResource]? - can't have int keys,
+        #  must have string. Put int-in-string or use names?
+        ...
 
     def deserialise_card_loc(self, card: JsonT) -> Card:
         # TODO: we should have a general json serde that handles dataclasses
@@ -60,6 +78,13 @@ class JsonAdapter(IFrontend):
             card['key']
         )
         return loc.get(self.game)
+
+    def ser_cost(self, cost: CardCost) -> JsonT:
+        ...
+
+    def ser_resource_filter(self, rf: ResourceFilter) -> JsonT:
+        # TODO: how to serialise the enums - int id or name?
+        ...
 
     def serialise_state(self) -> JsonT:
         ...  # TODO
@@ -101,4 +126,4 @@ class JsonAdapter(IFrontend):
     #  - choose_excl_color
     #  - choose_card_move
     #  - choose_move_where
-    #  - get_card_buy
+    #  - get_card_payment

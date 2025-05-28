@@ -69,5 +69,5 @@ class IFrontend(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def get_card_payment(self, player: Player, cost: CardCost):
+    def get_card_payment(self, player: Player, cost: CardCost) -> Counter[AnyResource]:
         ...
