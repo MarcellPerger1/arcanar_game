@@ -75,26 +75,15 @@ class JsonAdapter(IFrontend):
         return card
 
     def get_card_payment(self, player: Player, cost: CardCost) -> Counter[AnyResource]:
-        th = self.send({'request': 'card_payment', 'player': player,
-                        'cost': self.ser_cost(cost)})
+        th = self.send({'request': 'card_payment', 'player': player.idx,
+                        'cost': self.ser(cost)})
         resp = self.receive(th)
-        # TODO: how to deser Counter[AnyResource]? - can't have int keys,
-        #  must have string. Put int-in-string or use names?
-        ...
+        return self.deser(resp['card_payment'], Counter[AnyResource])
 
     def deser_card_ref(self, ref_json: JsonT) -> Card:
         # TODO: we should have a general json serde that handles dataclasses
         #  etc. so we don't have to this for all objects
         return self.deser(ref_json, Location).get(self.game)
-
-    def ser_cost(self, cost: CardCost) -> JsonT:
-        ...
-
-    def ser_resource_filter(self, rf: ResourceFilter) -> JsonT:
-        # TODO: how to serialise the enums - int id or name?
-        # TODO: use int id - easier backcompat (can change names in code
-        #  easily) and comparisons based on .value so this makes sense.
-        ...
 
     def ser(self, o: object) -> JsonT:
         return self.serialiser.ser(o)
@@ -105,6 +94,7 @@ class JsonAdapter(IFrontend):
     def serialise_state(self) -> JsonT:
         # TODO: Game dataclass **MUST** be fixed for the serialisation to work
         # TODO: also check the other dataclasses
+        # TODO: this sht is recursive!
         return self.ser(self.game)  # Game contains all the state
 
     def send(self, obj: dict[str, JsonT], thread=True, state=True):
