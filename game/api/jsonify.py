@@ -8,7 +8,7 @@ from typing import Any, Literal, Counter, Callable, Mapping, cast, TYPE_CHECKING
 
 from .. import backend as backend_mod
 from ..backend import (GameBackend, Player, IFrontend, Card, Location, Area,
-                       CardCost, AnyResource, ResourceFilter)
+                       CardCost, AnyResource)
 # noinspection PyProtectedMember
 from ..backend.enums import _ColorEnumTree
 from ..backend.util import FrozenDict
@@ -137,24 +137,38 @@ class JsonAdapter(IFrontend):
     #  - get_card_payment
 
 
+# Need variable outside class so can refer to it during the definition of the
+#  class (i.e. using the decorator on its methods)
+_json_serialiser_dispatch = {}
+_json_deserialiser_dispatch = {}
+JsonSerFuncT = Callable[['JsonSerialiser', Any], JsonT]
+JsonDeserFuncT = Callable[['JsonDeserialiser', JsonT, type], Any]
+
+
 class JsonSerialiser:
-    dispatch: dict[type, Callable[[JsonSerialiser, Any], JsonT]] = {}
+    dispatch: dict[type, JsonSerFuncT] = _json_serialiser_dispatch
     
     def __init__(self):
         # Copy to instance so inst.serialiser_func only affects the instance
         self.dispatch = self.dispatch.copy()
 
     def serialiser_func(self: JsonSerialiser | type, *tps: type):
-        def decor(fn: Callable[[JsonSerialiser, Any], JsonT]):
-            target.dispatch |= dict.fromkeys(tps, fn)  # {*tps : fn}
+        def decor(fn: JsonSerFuncT):
+            target_dict.update(dict.fromkeys(tps, fn))  # {*tps : fn}
             return fn
 
-        if not isinstance(self, JsonSerialiser):
+        try:
+            called_on_class = isinstance(self, JsonSerialiser)
+        except NameError:  # JsonSerialiser is not defined, i.e. in this class's definition
+            target_dict = _json_serialiser_dispatch
+            tps += (self,)
+            return decor
+        if called_on_class:
             # Called on the class, not an instance, so `self` is None
-            target = cast(type[JsonSerialiser], __class__)
-            tps += self
+            target_dict = cast('type[JsonSerialiser]', __class__).dispatch
+            tps += (self,)
         else:
-            target = self
+            target_dict = self.dispatch
         return decor
 
     def ser(self, o: object) -> JsonT:
@@ -207,23 +221,29 @@ class JsonSerialiser:
 
 
 class JsonDeserialiser:
-    dispatch: dict[type, Callable[[JsonDeserialiser, JsonT, type], Any]] = {}
+    dispatch: dict[type, JsonDeserFuncT] = {}
 
     def __init__(self):
         # Copy to instance so inst.serialiser_func only affects the instance
         self.dispatch = self.dispatch.copy()
 
-    def deserialiser_func(self: JsonSerialiser | type, *tps: type):
-        def decor(fn: Callable[[JsonSerialiser, Any], JsonT]):
-            target.dispatch |= dict.fromkeys(tps, fn)  # {*tps : fn}
+    def deserialiser_func(self: JsonDeserialiser | type, *tps: type):
+        def decor(fn: JsonDeserFuncT):
+            target_dict.update(dict.fromkeys(tps, fn))  # {*tps : fn}
             return fn
 
-        if not isinstance(self, JsonSerialiser):
+        try:
+            called_on_class = isinstance(self, JsonDeserialiser)
+        except NameError:  # JsonDeserialiser not defined, i.e. in this class's definition
+            target_dict = _json_deserialiser_dispatch
+            tps += (self,)
+            return decor
+        if called_on_class:
             # Called on the class, not an instance, so `self` is None
-            target = cast(type[JsonSerialiser], __class__)
-            tps += self
+            target_dict = cast('type[JsonDeserialiser]', __class__).dispatch
+            tps += (self,)
         else:
-            target = self
+            target_dict = self.dispatch
         return decor
 
     def deser(self, j: JsonT, tp: type[T]) -> T:
