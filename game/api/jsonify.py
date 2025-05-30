@@ -1,10 +1,16 @@
 from __future__ import annotations
 
 import abc
-from typing import Any, Literal, Counter
+from dataclasses import is_dataclass, fields as d_fields
+from typing import Any, Literal, Counter, Callable, Mapping, cast, TYPE_CHECKING
 
-from ..backend import (GameBackend, Player, IFrontend, Card, Location, Area, CardCost,
-                       AnyResource, ResourceFilter)
+from ..backend import (GameBackend, Player, IFrontend, Card, Location, Area,
+                       CardCost, AnyResource, ResourceFilter)
+from ..backend.enums import _ColorEnumTree
+from ..backend.util import FrozenDict
+
+if TYPE_CHECKING:
+    from _typeshed import DataclassInstance
 
 JsonT = dict[str, Any] | list[Any] | tuple[Any, ...] | float | int | str | bool | None
 
@@ -84,9 +90,13 @@ class JsonAdapter(IFrontend):
 
     def ser_resource_filter(self, rf: ResourceFilter) -> JsonT:
         # TODO: how to serialise the enums - int id or name?
+        # TODO: use int id - easier backcompat (can change names in code
+        #  easily) and comparisons based on .value so this makes sense.
         ...
 
     def serialise_state(self) -> JsonT:
+        # TODO: Game dataclass **MUST** be fixed for the serialisation to work
+        # TODO: also check the other dataclasses
         ...  # TODO
 
     def send(self, obj: dict[str, JsonT], thread=True, state=True):
@@ -127,3 +137,73 @@ class JsonAdapter(IFrontend):
     #  - choose_card_move
     #  - choose_move_where
     #  - get_card_payment
+
+
+# TODO: deserialise
+class JsonSerialiser:
+    dispatch: dict[type, Callable[[JsonSerialiser, Any], JsonT]] = {}
+    
+    def __init__(self):
+        # Copy to instance so inst.serialiser_func only affects the instance
+        self.dispatch = self.dispatch.copy()
+
+    def serialiser_func(self: JsonSerialiser | type, *tps: type):
+        def decor(fn: Callable[[JsonSerialiser, Any], JsonT]):
+            target.dispatch |= dict.fromkeys(tps, fn)  # {*tps : fn}
+            return fn
+
+        if not isinstance(self, JsonSerialiser):
+            # Called on the class, not an instance, so `self` is None
+            target = cast(type[JsonSerialiser], __class__)
+            tps += self
+        else:
+            target = self
+        return decor
+
+    def ser(self, o: object) -> JsonT:
+        for tp in type(o).__mro__:
+            if (fn := self.dispatch.get(tp)) is not None:
+                return fn(self, o)
+        return self.ser_default(o)
+
+    def ser_default(self, o: object):
+        if is_dataclass(o):
+            return self.ser_dataclass(o)
+        raise TypeError(f"Cannot serialise object: {o}")
+
+    @serialiser_func(int, float, str, bool, type(None))
+    def ser_builtin_atom(self, o: int | float | str | bool | None) -> JsonT:
+        return o
+
+    @serialiser_func(list, tuple, set)
+    def ser_collection(self, o: list | tuple) -> JsonT:
+        return [self.ser(inner) for inner in o]  # Convert to list
+
+    @serialiser_func(dict, FrozenDict)
+    def ser_mapping(self, o: Mapping):
+        if (res := self._try_ser_mapping_as_object(o)) is not None:
+            return res
+        return self._ser_mapping_as_array(o)
+
+    def _try_ser_mapping_as_object(self, o: Mapping) -> dict[str, Any] | None:
+        result = {}
+        for k, v in o.items():
+            k_ser = self.ser(k)
+            if isinstance(k_ser, (int, float, str, bool, type(None))):
+                k_str = str(k_ser)
+            else:
+                return None  # Can't easily stringify key, so do array-style
+            result[k_str] = self.ser(v)
+        return result
+
+    def _ser_mapping_as_array(self, o: Mapping) -> list[tuple[JsonT, JsonT]]:
+        return [(self.ser(k), self.ser(v)) for k, v in o.items()]
+
+    @serialiser_func(_ColorEnumTree)
+    def ser_any_color_enum(self, o: _ColorEnumTree):
+        return o.value
+
+    def ser_dataclass(self, o: DataclassInstance) -> JsonT:
+        # noinspection PyDataclass
+        return {f.name: self.ser(getattr(o, f.name)) for f in d_fields(o)
+                if hasattr(o, f.name)}
