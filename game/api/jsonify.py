@@ -273,6 +273,12 @@ class JsonDeserialiser:
         kt, vt = typing.get_args(tp)
         return {self._deser_mapping_key(k, kt): self.deser(v, vt) for k, v in j.items()}
 
+    # Need separate func, Counter only has one type arg so doesn't work with code above.
+    @deserialiser_func(Counter)
+    def deser_counter(self, j: JsonT, tp: type):
+        # noinspection PyTypeHints
+        return Counter(self.deser_mapping(j, dict[typing.get_args(tp)[0], int]))
+
     # noinspection PyMethodMayBeStatic
     def _deser_mapping_key(self, j: str, tp: type):
         if issubclass(tp, str):
