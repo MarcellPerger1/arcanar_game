@@ -95,7 +95,7 @@ class Card(CardTemplate):
     def append_to(self, game: GameBackend, area: Area, player: int | Player = None):
         if player is None:
             player = self.location.player
-        if not isinstance(player, Player):
+        if isinstance(player, int):
             player = game.players[player]
         self.move(game, Location(player.idx, area, player.area_next_key(area)))
 
