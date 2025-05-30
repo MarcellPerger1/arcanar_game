@@ -107,8 +107,8 @@ class ExtendableEnumMeta(type, Generic[T]):
     def _is_special_name(cls, name: str):
         return name.startswith('_') and name.endswith('_')  # sunder/dunder
 
-    def __init__(cls, name: str, bases: tuple[type, ...], ns: dict[str, ...],
-                 **kwargs):
+    def __init__(cls: type[ExtendableEnum[T]], name: str,
+                 bases: tuple[type, ...], ns: dict[str, ...], **kwargs):
         super().__init__(name, bases, ns, **kwargs)
         if ns.get('_eenum_special_'):  # Must be defined on the class itself, not inherited
             return
@@ -118,9 +118,11 @@ class ExtendableEnumMeta(type, Generic[T]):
         eenum_bases = [b for b in bases if (issubclass(b, ExtendableEnum)
                                             and b != ExtendableEnum)]
         if len(eenum_bases) == 0:
-            cls._eenum_top_ = None
-            cls._eenum_members_ = None
+            cls._eenum_top_ = cls
             cls._eenum_data_ = EnumHierarchyData.empty()
+            # Automatically updates. This means that `in` can also be used
+            #  to check if an eenum instance is of a specific tree
+            cls._eenum_members_ = cls._eenum_data_.all_instances
             cls._init_members_from_ns(ns, possible_members=None,
                                       allow_exclude=False, allow_none=True)
             return
@@ -256,7 +258,10 @@ class ExtendableEnumMeta(type, Generic[T]):
     def has_instance(cls, item) -> TypeGuard[Self]:
         return item in cls
 
-    def __getitem__(cls, item):
+    def __getitem__(cls: type[ExtendableEnum[T]], item):
+        if cls is ExtendableEnum:
+            # noinspection PyUnresolvedReferences
+            return cls.__class_getitem__(item)  # plz call Generic's getitem
         inst = cls._eenum_data_[item]
         if inst not in cls._eenum_members_:
             raise KeyError(item)
