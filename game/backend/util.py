@@ -28,7 +28,7 @@ class FrozenDict(collections.abc.Mapping[KT, VT], Generic[KT, VT]):
         return self._dict.values()
 
     def items(self):
-        return self._dict.values()
+        return self._dict.items()
 
     @classmethod
     def fromkeys(cls, *args, **kwargs):
