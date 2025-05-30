@@ -35,11 +35,8 @@ class Player:
     final_score: int | None = None
 
     @classmethod
-    def new(cls, idx: int, game: GameBackend, init_cards=True):
-        self = cls(idx, game, {a: OrderedDict() for a in Area.members()}, Counter())
-        if init_cards:
-            self.init_cards()
-        return self
+    def new(cls, idx: int, game: GameBackend):
+        return cls(idx, game, {a: OrderedDict() for a in Area.members()}, Counter())
 
     def init_cards(self):  # Should only be called straight after, or in, new()
         for c_template in self.ruleset.get_starting_cards():
@@ -49,7 +46,7 @@ class Player:
     def place_card(self, card: Card):
         card_type = card.card_type
         assert PlaceableCardType.has_instance(card_type)
-        return card.append_to(self.game, card_type)
+        return card.append_to(self.game, card_type, self)
 
     @property
     def frontend(self):

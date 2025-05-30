@@ -29,10 +29,18 @@ class GameBackend:
             # TODO: maybe this could be urandom/SystemRandom instead?
             seed = time.time_ns()
         self.seed = str(seed)
-        self.players = [Player.new(i, self) for i in range(n_players)]
         self.round_num = 0
         self.turn_num = 0
-        self.frontend.register_game(self)
+        self.n_players = n_players
+        self._init_player()  # These are last as Player() may use everything above...
+        self.frontend.register_game(self)  # ...and register_game could use game.players
+
+    def _init_player(self):
+        # Must do 2 separate steps, as Player.init_cards refers to game.players
+        #  (when resolving locations to put cards at)
+        self.players = [Player.new(i, self) for i in range(self.n_players)]
+        for p in self.players:
+            p.init_cards()
 
     def run_game(self):
         for self.round_num in range(3):
@@ -99,10 +107,6 @@ class GameBackend:
     @property
     def curr_moons(self):
         return self.moon_phases[self.turn_num]
-
-    @property
-    def n_players(self):
-        return len(self.players)
 
     def get_areas_for(self, player: int | Player):
         if isinstance(player, Player):
