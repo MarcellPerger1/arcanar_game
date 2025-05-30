@@ -21,6 +21,14 @@ class GameBackend:
     # Only used at end
     players_ranked: list[Player] | None = None
 
+    # TODO: I hate having it here but there's not much choice?
+    #  1. Have it here - bad because JsonAdapter's (semi-frontend) internals
+    #     **really** shouldn't leak over to the backend
+    #  2. Having it on JsonAdapter - bad because then the exclusions are very
+    #     far from the actual attributes (so code for each class is very spread
+    #     out) and it requires a lot of ugly special cases.
+    _ser_exclude_ = ('frontend', 'ruleset')  # TODO: maybe include ruleset?
+
     def __init__(self, n_players: int, frontend: IFrontend, ruleset: IRuleset,
                  seed: int | str = None):
         self.frontend = frontend

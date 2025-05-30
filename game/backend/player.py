@@ -34,6 +34,8 @@ class Player:
     # Used only at the final evaluation:
     final_score: int | None = None
 
+    _ser_exclude_ = ('game',)
+
     @classmethod
     def new(cls, idx: int, game: GameBackend):
         return cls(idx, game, {a: OrderedDict() for a in Area.members()}, Counter())

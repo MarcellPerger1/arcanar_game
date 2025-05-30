@@ -134,7 +134,6 @@ class JsonAdapter(IFrontend):
     #  - choose_excl_color
     #  - choose_card_move
     #  - choose_move_where
-    #  - get_card_payment
 
 
 # Need variable outside class so can refer to it during the definition of the
@@ -217,7 +216,8 @@ class JsonSerialiser:
     def ser_dataclass(self, o: DataclassInstance) -> JsonT:
         # noinspection PyDataclass
         return {f.name: self.ser(getattr(o, f.name)) for f in d_fields(o)
-                if hasattr(o, f.name)}
+                if (hasattr(o, f.name)
+                    and f.name not in getattr(o, '_ser_exclude_', ()))}
 
 
 class JsonDeserialiser:
