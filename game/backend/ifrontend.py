@@ -1,13 +1,15 @@
 from __future__ import annotations
 
 import abc
-from typing import Collection, Mapping, Literal, Counter
+from typing import Collection, Mapping, Literal, Counter, TYPE_CHECKING
 
-from .backend import GameBackend
-from .card import EffectExecInfo, Card, CardCost
 from .common import ResourceFilter, CardTypeFilter
 from .enums import Color, PlaceableCardType, AnyResource
-from .player import Player
+
+if TYPE_CHECKING:
+    from .backend import GameBackend
+    from .card import EffectExecInfo, Card, CardCost
+    from .player import Player
 
 __all__ = ['IFrontend']
 
