@@ -252,6 +252,9 @@ class ExtendableEnumMeta(type, Generic[T]):
             members_by_name[inst.name] = inst
         return members_by_name
 
+    def is_top(cls):
+        return cls._eenum_top_ is cls
+
     def __contains__(cls, item) -> TypeGuard[Self]:
         return item in cls._eenum_members_
 
