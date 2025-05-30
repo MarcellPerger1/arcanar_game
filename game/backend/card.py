@@ -6,7 +6,7 @@ from dataclasses import dataclass, fields
 from typing import TYPE_CHECKING, Mapping
 
 from .common import Location, ResourceFilter
-from .enums import CardType, Color, Area, PlaceableCardType, AnyResource
+from .enums import CardType, Area, PlaceableCardType, AnyResource
 from .util import FrozenDict
 
 if TYPE_CHECKING:
@@ -133,7 +133,7 @@ class CardCost:
     def __init__(self, possibilities: Mapping[ResourceFilter, int]):
         object.__setattr__(self, 'possibilities', FrozenDict(possibilities))
 
-    def matches_exact(self, resources: Counter[Color]):
+    def matches_exact(self, resources: Counter[AnyResource]):
         """Returns the first ColorFilter it matched"""
         resources = +resources  # Remove negative/zero values
         for color_filter, n in self.possibilities.items():

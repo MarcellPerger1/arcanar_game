@@ -5,7 +5,7 @@ from .eenum import ExtendableEnum
 __all__ = ['Color', 'PlaceableCardType', 'CardType', 'MoonPhase', 'Area', 'AnyResource']
 
 
-class _ColorEnumTree(ExtendableEnum):
+class _ColorEnumTree(ExtendableEnum[int]):
     # Colors
     PURPLE: Color = 1
     GREEN: Color = 2
