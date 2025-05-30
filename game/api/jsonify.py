@@ -1,11 +1,15 @@
 from __future__ import annotations
 
 import abc
+import sys
+import typing
 from dataclasses import is_dataclass, fields as d_fields
 from typing import Any, Literal, Counter, Callable, Mapping, cast, TYPE_CHECKING
 
+from .. import backend as backend_mod
 from ..backend import (GameBackend, Player, IFrontend, Card, Location, Area,
                        CardCost, AnyResource, ResourceFilter)
+# noinspection PyProtectedMember
 from ..backend.enums import _ColorEnumTree
 from ..backend.util import FrozenDict
 
@@ -139,7 +143,6 @@ class JsonAdapter(IFrontend):
     #  - get_card_payment
 
 
-# TODO: deserialise
 class JsonSerialiser:
     dispatch: dict[type, Callable[[JsonSerialiser, Any], JsonT]] = {}
     
@@ -175,7 +178,7 @@ class JsonSerialiser:
     def ser_builtin_atom(self, o: int | float | str | bool | None) -> JsonT:
         return o
 
-    @serialiser_func(list, tuple, set)
+    @serialiser_func(list, tuple, set, frozenset)
     def ser_collection(self, o: list | tuple) -> JsonT:
         return [self.ser(inner) for inner in o]  # Convert to list
 
@@ -207,3 +210,114 @@ class JsonSerialiser:
         # noinspection PyDataclass
         return {f.name: self.ser(getattr(o, f.name)) for f in d_fields(o)
                 if hasattr(o, f.name)}
+
+
+class JsonDeserialiser:
+    dispatch: dict[type, Callable[[JsonDeserialiser, JsonT, type], Any]] = {}
+
+    def __init__(self):
+        # Copy to instance so inst.serialiser_func only affects the instance
+        self.dispatch = self.dispatch.copy()
+
+    def deserialiser_func(self: JsonSerialiser | type, *tps: type):
+        def decor(fn: Callable[[JsonSerialiser, Any], JsonT]):
+            target.dispatch |= dict.fromkeys(tps, fn)  # {*tps : fn}
+            return fn
+
+        if not isinstance(self, JsonSerialiser):
+            # Called on the class, not an instance, so `self` is None
+            target = cast(type[JsonSerialiser], __class__)
+            tps += self
+        else:
+            target = self
+        return decor
+
+    def deser(self, j: JsonT, tp: type) -> Any:
+        # Interestingly, also works for generic instances, like list[int]
+        for tp in tp.__mro__:
+            if (fn := self.dispatch.get(tp)) is not None:
+                return fn(self, j, type)
+        return self.deser_default(j, tp)
+
+    def deser_default(self, j: JsonT, tp: type):
+        if is_dataclass(tp):
+            return self.deser_dataclass(j, tp)
+        raise TypeError(f"Cannot serialise into type {tp.__qualname__}")
+
+    @deserialiser_func(int, float, str, bool, type(None))
+    def ser_builtin_atom(self, j: JsonT, tp: type) -> Any:
+        assert isinstance(j, tp)
+        return j
+
+    @deserialiser_func(list, tuple, set, frozenset)
+    def deser_collection(self, j: JsonT, tp: type):
+        (inner_tp,) = typing.get_args(tp)
+        return tp([self.deser(v, inner_tp) for v in j])
+
+    @deserialiser_func(dict, FrozenDict, Mapping)
+    def deser_mapping(self, j: JsonT, tp: type):
+        if isinstance(j, list):
+            return self._deser_mapping_array(j, tp)
+        assert isinstance(j, dict)
+        return self._deser_mapping_object(j, tp)
+
+    def _deser_mapping_array(self, j: list, tp: type):
+        kt, vt = typing.get_args(tp)
+        return tp({self.deser(k, kt): self.deser(v, vt) for k, v in j})
+
+    def _deser_mapping_object(self, j: dict[str, Any], tp: type):
+        kt, vt = typing.get_args(tp)
+        return {self._deser_mapping_key(k, kt): self.deser(v, vt) for k, v in j.items()}
+
+    # noinspection PyMethodMayBeStatic
+    def _deser_mapping_key(self, j: str, tp: type):
+        if issubclass(tp, str):
+            return j
+        elif issubclass(tp, bool):
+            return {'False': False, 'True': True}[j]
+        elif tp is type(None):
+            assert j == 'None'
+            return j
+        elif isinstance(tp, int):
+            return int(j)
+        elif isinstance(tp, float):
+            return float(j)
+        raise AssertionError("Bad key type for mapping-from-object")
+
+    @deserialiser_func(_ColorEnumTree)
+    def deser_any_color_enum(self, j: JsonT, tp: type):
+        return tp(j)  # Use that class's ctor
+
+    def deser_dataclass(self, j: JsonT, tp: type | type[DataclassInstance]):
+        assert isinstance(j, dict)
+        # TODO: maybe use constructor instead - although some of them are
+        #  different to the default (e.g. Game) so maybe not?
+        #  In any case, this must be though over a bit more.
+        inst = tp.__new__(tp)
+        for k, v in j.items():  # (k must already be a string as it's a JSON object key)
+            v_new = self.deser(v, self._get_dcls_attr_type(tp, k))
+            object.__setattr__(inst, k, v_new)
+        return inst
+
+    @classmethod
+    def _get_dcls_attr_type(cls, dcls: type, name: str):
+        annot = cls._get_dcls_attr_annot(dcls, name)
+        if not isinstance(annot, str):
+            return annot
+        globalns = getattr(sys.modules.get(dcls.__module__), '__dict__', {})
+        # Not |= so we don't overwrite the actual module's globals
+        globalns = globalns | dict(vars(backend_mod))
+        localns = vars(dcls)
+        return eval(annot, globalns, localns)
+
+    @classmethod
+    def _get_dcls_attr_annot(cls, dcls: type, name: str) -> str | type:
+        # Pycharm most certainly doesn't understand dataclasses...
+        # noinspection PyTypeChecker,PyDataclass
+        field_or_empty = [f for f in d_fields(dcls) if f.name == name]
+        if len(field_or_empty) != 0:
+            return field_or_empty[0].type
+        tp = dcls.__annotations__.get(name)
+        if tp is None:
+            raise TypeError(f"Cannot determine type for field {dcls.__name__}.{name}")
+        return tp
