@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import abc
-from typing import Collection, Mapping, Literal, Counter, TYPE_CHECKING
+from typing import Collection, Literal, Counter, TYPE_CHECKING
 
-from .common import ResourceFilter, CardTypeFilter
+from .common import ResourceFilter, CardTypeFilter, AdjacenciesMappingT
 from .enums import Color, PlaceableCardType, AnyResource
 
 if TYPE_CHECKING:
@@ -12,8 +12,6 @@ if TYPE_CHECKING:
     from .player import Player
 
 __all__ = ['IFrontend']
-
-_AdjMappingT = Mapping[PlaceableCardType, Collection[PlaceableCardType]]
 
 
 class IFrontend(abc.ABC):
@@ -51,7 +49,7 @@ class IFrontend(abc.ABC):
 
     @abc.abstractmethod
     def choose_card_move(self, info: EffectExecInfo,
-                         adjacencies: _AdjMappingT) -> Card | None:
+                         adjacencies: AdjacenciesMappingT) -> Card | None:
         ...
 
     @abc.abstractmethod

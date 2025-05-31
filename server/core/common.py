@@ -1,15 +1,19 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import AbstractSet, TYPE_CHECKING, Iterable
+from typing import AbstractSet, TYPE_CHECKING, Iterable, Mapping, Collection
 
-from .enums import Area, AnyResource, CardType, Color
+from .enums import Area, AnyResource, CardType, Color, PlaceableCardType
 
 if TYPE_CHECKING:
     from .game import Game
     from .card import Card
 
-__all__ = ['Location', 'ResourceFilter', 'CardTypeFilter']
+__all__ = ['Location', 'ResourceFilter', 'CardTypeFilter',
+           'AdjacenciesMappingT', 'AdjacenciesFrozendictT']
+
+AdjacenciesMappingT = Mapping[PlaceableCardType, Collection[PlaceableCardType]]
+AdjacenciesFrozendictT = Mapping[PlaceableCardType, Collection[PlaceableCardType]]
 
 
 @dataclass

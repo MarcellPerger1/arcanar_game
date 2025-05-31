@@ -7,8 +7,8 @@ from .json_deserialise import JsonDeserialiser
 from .json_serialise import JsonSerialiser
 from ..core import (Game, Player, IFrontend, Card, Location, Area,
                     CardCost, AnyResource, EffectExecInfo, Color,
-                    CardTypeFilter, ResourceFilter, PlaceableCardType)
-from ..core.ifrontend import _AdjMappingT
+                    CardTypeFilter, ResourceFilter, PlaceableCardType,
+                    AdjacenciesMappingT)
 from ..util import JsonT
 
 T = TypeVar('T')
@@ -128,7 +128,7 @@ class JsonAdapter(IFrontend):
         return self.deser(result_ser, Counter[AnyResource])
 
     def choose_card_move(self, info: EffectExecInfo,
-                         adjacencies: _AdjMappingT) -> Card | None:
+                         adjacencies: AdjacenciesMappingT) -> Card | None:
         resp = self.request({'request': 'card_move',
                              'paths': self.ser(adjacencies)}, info=info)
         if (card_ser := resp['card_move']) is None:

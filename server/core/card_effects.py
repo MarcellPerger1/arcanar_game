@@ -3,10 +3,10 @@ from __future__ import annotations
 import abc
 import operator
 from dataclasses import dataclass, field
-from typing import Mapping, Collection
 
 from .card import CardEffect, EffectExecInfo, Card, CANT_EXEC
-from .common import ResourceFilter, CardTypeFilter
+from .common import (ResourceFilter, CardTypeFilter, AdjacenciesMappingT,
+                     AdjacenciesFrozendictT)
 from .enums import *
 from ..util import FrozenDict
 
@@ -465,15 +465,11 @@ class ExecChosenNTimesAndDiscard(CardEffect):
         card.discard(info.game)
 
 
-_AdjMappingT = Mapping[PlaceableCardType, Collection[PlaceableCardType]]
-_AdjFrDictT = Mapping[PlaceableCardType, Collection[PlaceableCardType]]
-
-
 @dataclass(frozen=True, init=False)
 class MoveChosenAndExecNewColor(CardEffect):
-    adjacencies: _AdjFrDictT | None
+    adjacencies: AdjacenciesFrozendictT | None
 
-    def __init__(self, adjacencies: _AdjMappingT = None):
+    def __init__(self, adjacencies: AdjacenciesMappingT = None):
         if adjacencies is not None:
             adjacencies = FrozenDict(adjacencies)
         object.__setattr__(self, 'adjacencies', adjacencies)
