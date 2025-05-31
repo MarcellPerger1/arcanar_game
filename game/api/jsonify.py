@@ -13,6 +13,7 @@ from ..backend import (GameBackend, Player, IFrontend, Card, Location, Area,
                        ResourceFilter)
 # noinspection PyProtectedMember
 from ..backend.enums import _ColorEnumTree
+from ..backend.ifrontend import _AdjMappingT
 from ..backend.util import FrozenDict
 
 if TYPE_CHECKING:
@@ -118,12 +119,22 @@ class JsonAdapter(IFrontend):
                   amount: int) -> None | Counter[AnyResource]:
         resp = self.request({'request': 'spend_resources', 'amount': amount,
                              'filters': self.ser(filters)}, info=info)
-        result_ser = resp['spend_resources']
-        if result_ser is None:
+        if (result_ser := resp['spend_resources']) is None:
             return None
         # TODO: could have more checking here - it happens in the GameBackend,
         #  and there should be a way of telling IFrontend that it was invalid
         return self.deser(result_ser, Counter[AnyResource])
+
+    def choose_card_move(self, info: EffectExecInfo,
+                         adjacencies: _AdjMappingT) -> Card | None:
+        resp = self.request({'request': 'card_move',
+                             'paths': self.ser(adjacencies)}, info=info)
+        if (card_ser := resp['card_move']) is None:
+            return None
+        card = self.deser_card_ref(card_ser)
+        assert Color.has_instance(card.location.area)
+        assert card.location.player == info.player
+        return card
     # endregion
 
     # region Custom serialisers
@@ -184,11 +195,9 @@ class JsonAdapter(IFrontend):
         return th
     # endregion
 
-    choose_card_move = ...
     choose_move_where = ...
 
     # TODO: these methods need to be implemented:
-    #  - choose_card_move
     #  - choose_move_where
 
 
