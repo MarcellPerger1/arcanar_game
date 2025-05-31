@@ -45,6 +45,7 @@ class JsonAdapter(IFrontend):
         }, thread=False)
         # Don't send state for shutdown (no state changes after result)
         self.send({'request': 'shutdown'}, thread=False, state=False)
+        self.conn.close()
 
     # region main (non-init/non-end) API
     def get_action_type(self, player: Player) -> Literal['buy', 'execute']:

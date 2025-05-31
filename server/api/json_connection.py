@@ -16,3 +16,6 @@ class JsonConnection(abc.ABC):
     @abc.abstractmethod
     def receive(self) -> JsonT:
         ...
+
+    def close(self):
+        ...
