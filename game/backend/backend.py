@@ -15,7 +15,10 @@ class GameBackend:
     frontend: IFrontend
     ruleset: IRuleset  # Defines starting cards, deck, passing order, etc.
     players: list[Player]
+    n_players: int = None
+    # Defaults don't actually matter here, we override __init__
     moon_phases: list[set[MoonPhase]] = None
+    seed: str = None
     round_num: int = 0
     turn_num: int = 0
     # Only used at end

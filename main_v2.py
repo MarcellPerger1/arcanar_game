@@ -10,6 +10,10 @@ import pprint
 class JC(JsonConnection):
     def send(self, obj: JsonT):
         print('Sent request:')
+        json.dump(obj, sys.stdout)
+        print()
+        json.dump(obj, sys.stdout, separators=(',', ':'))
+        print()
         json.dump(obj, sys.stdout, indent=2)
 
     def receive(self) -> JsonT:

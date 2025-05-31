@@ -81,8 +81,6 @@ class JsonAdapter(IFrontend):
         return self.deser(resp['card_payment'], Counter[AnyResource])
 
     def deser_card_ref(self, ref_json: JsonT) -> Card:
-        # TODO: we should have a general json serde that handles dataclasses
-        #  etc. so we don't have to this for all objects
         return self.deser(ref_json, Location).get(self.game)
 
     def ser(self, o: object) -> JsonT:
@@ -92,9 +90,6 @@ class JsonAdapter(IFrontend):
         return self.deserialiser.deser(j, expect_tp)
 
     def serialise_state(self) -> JsonT:
-        # TODO: Game dataclass **MUST** be fixed for the serialisation to work
-        # TODO: also check the other dataclasses
-        # TODO: this sht is recursive!
         return self.ser(self.game)  # Game contains all the state
 
     def send(self, obj: dict[str, JsonT], thread=True, state=True):
