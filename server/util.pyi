@@ -3,11 +3,12 @@ from _typeshed import SupportsKeysAndGetItem
 from collections.abc import Mapping
 # noinspection PyProtectedMember
 from _collections_abc import dict_keys, dict_items, dict_values  # This is a stub, idc.
-from typing import TypeVar, Generic, Iterable, Self, Any, overload, Iterator
+from typing import TypeVar, Generic, Iterable, Self, Any, overload, Iterator, TypeAlias
 
 __all__ = ['JsonT', 'FrozenDict']
 
-JsonT = dict[str, Any] | list[Any] | tuple[Any, ...] | float | int | str | bool | None
+JsonT: TypeAlias = (dict[str, Any] | list[Any] | tuple[Any, ...]
+                    | float | int | str | bool | None)
 
 _T = TypeVar("_T")
 _S = TypeVar("_S")
