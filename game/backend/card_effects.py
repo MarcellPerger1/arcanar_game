@@ -489,7 +489,7 @@ class MoveChosenAndExecNewColor(CardEffect):
         info.player.exec_color(dest_color)
 
     def _choose_card(self, info: EffectExecInfo):
-        card: Card = info.frontend.choose_card_move(info, self.get_adjacencies(info))
+        card = info.frontend.choose_card_move(info, self.get_adjacencies(info))
         if card is None:
             return None
         assert not card.is_starting_card

@@ -50,7 +50,8 @@ class IFrontend(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def choose_card_move(self, info: EffectExecInfo, adjacencies: _AdjMappingT) -> Card:
+    def choose_card_move(self, info: EffectExecInfo,
+                         adjacencies: _AdjMappingT) -> Card | None:
         ...
 
     @abc.abstractmethod
