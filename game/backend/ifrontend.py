@@ -36,7 +36,8 @@ class IFrontend(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def choose_card_exec(self, info: EffectExecInfo, n_times: int) -> Card:
+    def choose_card_exec(self, info: EffectExecInfo, n_times: int,
+                         discard: bool = False) -> Card:
         ...
 
     @abc.abstractmethod

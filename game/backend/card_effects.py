@@ -401,7 +401,7 @@ class ExecOwnPlacedCard(CardEffect):
     n_times: int = 1
 
     def execute(self, info: EffectExecInfo):
-        card: Card = info.frontend.choose_card_exec(info, self.n_times)
+        card: Card = info.frontend.choose_card_exec(info, self.n_times, False)
         assert PlaceableCardType.has_instance(card.location.area)
         assert card.location.player == info.player.idx
         for i in range(self.n_times):
@@ -457,7 +457,7 @@ class ExecChosenNTimesAndDiscard(CardEffect):
     n: int = 3
 
     def execute(self, info: EffectExecInfo) -> object | None:
-        card = info.frontend.choose_card_exec(info, self.n)
+        card = info.frontend.choose_card_exec(info, self.n, True)
         assert card.is_dyn_executable()
         for _ in range(self.n):
             if not card.is_placed():
