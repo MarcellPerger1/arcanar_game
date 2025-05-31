@@ -9,7 +9,7 @@ from typing import (Any, Literal, Counter, Callable, Mapping, cast,
 
 from .. import backend as backend_mod
 from ..backend import (GameBackend, Player, IFrontend, Card, Location, Area,
-                       CardCost, AnyResource, EffectExecInfo, Color)
+                       CardCost, AnyResource, EffectExecInfo, Color, CardTypeFilter)
 # noinspection PyProtectedMember
 from ..backend.enums import _ColorEnumTree
 from ..backend.util import FrozenDict
@@ -91,6 +91,18 @@ class JsonAdapter(IFrontend):
     def get_foreach_color(self, info: EffectExecInfo) -> Color:
         resp = self.request({'request': 'color_foreach'}, info=info)
         return self.deser(resp['color_foreach'], Color)
+
+    def choose_from_discard(self, info: EffectExecInfo, target: Player,
+                            filters: CardTypeFilter) -> Card:
+        resp = self.request({
+            'request': 'card_from_discard',
+            'target_player': target.idx,
+            'filters': self.ser(filters),  # Will get cards themselves in state
+        }, info=info)
+        card = self.deser_card_ref(resp['card_from_discard'])
+        assert card.location.area == Area.DISCARD and card.location.player == target
+        assert card.card_type in filters
+        return card
     # endregion
 
     # region Custom serialisers
@@ -152,14 +164,12 @@ class JsonAdapter(IFrontend):
     # endregion
 
     get_spend = ...
-    choose_from_discard = ...
     choose_card_exec = ...
     choose_card_move = ...
     choose_move_where = ...
 
     # TODO: these methods need to be implemented:
     #  - get_spend
-    #  - choose_from_discard
     #  - choose_card_exec
     #  - choose_card_move
     #  - choose_move_where
