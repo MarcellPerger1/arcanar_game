@@ -8,7 +8,7 @@ from typing import Any, Literal, Counter, Callable, Mapping, cast, TYPE_CHECKING
 
 from .. import backend as backend_mod
 from ..backend import (GameBackend, Player, IFrontend, Card, Location, Area,
-                       CardCost, AnyResource)
+                       CardCost, AnyResource, EffectExecInfo, Color)
 # noinspection PyProtectedMember
 from ..backend.enums import _ColorEnumTree
 from ..backend.util import FrozenDict
@@ -76,17 +76,29 @@ class JsonAdapter(IFrontend):
                              'cost': self.ser(cost)})
         return self.deser(resp['card_payment'], Counter[AnyResource])
 
+    def choose_color_exec(self, info: EffectExecInfo, n_times: int) -> Color:
+        resp = self.request({'request': 'color_exec', 'n_times': n_times,
+                             'info': self.ser_effect_info_ref(info)})
+        return self.deser(resp['color_exec'], Color)
+
+    # region Custom serialisers
     def deser_card_ref(self, ref_json: JsonT) -> Card:
         return self.deser(ref_json, Location).get(self.game)
+
+    # noinspection PyMethodMayBeStatic
+    def ser_effect_info_ref(self, info: EffectExecInfo):
+        """Serialise EffectExecInfo into an object with **references** to the player/card"""
+        return {'player': info.player.idx, 'card': info.card.location}
+
+    def serialise_state(self) -> JsonT:
+        return self.ser(self.game)  # Game contains all the state
+    # endregion
 
     def ser(self, o: object) -> JsonT:
         return self.serialiser.ser(o)
 
     def deser(self, j: JsonT, expect_tp: type[T]) -> T:
         return self.deserialiser.deser(j, expect_tp)
-
-    def serialise_state(self) -> JsonT:
-        return self.ser(self.game)  # Game contains all the state
 
     def send(self, obj: dict[str, JsonT], thread=True, state=True):
         """If thread is True, it returns an opaque 'thread id' that can be
@@ -124,7 +136,6 @@ class JsonAdapter(IFrontend):
     get_foreach_color = ...
     choose_from_discard = ...
     choose_card_exec = ...
-    choose_color_exec_twice = ...
     choose_excl_color = ...
     choose_card_move = ...
     choose_move_where = ...
@@ -134,7 +145,6 @@ class JsonAdapter(IFrontend):
     #  - get_foreach_color
     #  - choose_from_discard
     #  - choose_card_exec
-    #  - choose_color_exec_twice
     #  - choose_excl_color
     #  - choose_card_move
     #  - choose_move_where
