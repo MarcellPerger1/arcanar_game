@@ -46,8 +46,8 @@ class JsonAdapter(IFrontend):
         self.game = game
         self.send({
             'request': 'init',
-            'server_version': '0.0.1',
-            'api_version': 0,  # 1 will be when the API is at least semi-stable
+            'server_version': '0.1.0',
+            'api_version': 1,
         }, thread=False, state=False)
         self.send({
             'request': 'state',
