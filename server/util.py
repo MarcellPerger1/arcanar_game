@@ -1,10 +1,14 @@
 from __future__ import annotations
 
 import collections
-from typing import TypeVar, Generic
+from typing import TypeVar, Generic, Any
+
+__all__ = ['JsonT', 'FrozenDict']
 
 KT = TypeVar('KT', covariant=True)
 VT = TypeVar('VT', covariant=True)
+
+JsonT = dict[str, Any] | list[Any] | tuple[Any, ...] | float | int | str | bool | None
 
 
 class FrozenDict(collections.abc.Mapping[KT, VT], Generic[KT, VT]):

@@ -14,13 +14,12 @@ from ..core import (Game, Player, IFrontend, Card, Location, Area,
 # noinspection PyProtectedMember
 from ..core.enums import _ColorEnumTree
 from ..core.ifrontend import _AdjMappingT
-from ..util import FrozenDict
+from ..util import FrozenDict, JsonT
 
 if TYPE_CHECKING:
     from _typeshed import DataclassInstance
 
 T = typing.TypeVar('T')
-JsonT = dict[str, Any] | list[Any] | tuple[Any, ...] | float | int | str | bool | None
 
 
 class JsonConnection(abc.ABC):

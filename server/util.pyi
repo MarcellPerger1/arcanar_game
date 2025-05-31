@@ -5,6 +5,10 @@ from collections.abc import Mapping
 from _collections_abc import dict_keys, dict_items, dict_values  # This is a stub, idc.
 from typing import TypeVar, Generic, Iterable, Self, Any, overload, Iterator
 
+__all__ = ['JsonT', 'FrozenDict']
+
+JsonT = dict[str, Any] | list[Any] | tuple[Any, ...] | float | int | str | bool | None
+
 _T = TypeVar("_T")
 _S = TypeVar("_S")
 _T1 = TypeVar("_T1")
