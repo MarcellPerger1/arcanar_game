@@ -10,7 +10,7 @@ from .enums import CardType, Area, PlaceableCardType, AnyResource
 from .util import FrozenDict
 
 if TYPE_CHECKING:
-    from .backend import Player, GameBackend
+    from .game import Player, GameBackend
     from .ifrontend import IFrontend
 
 

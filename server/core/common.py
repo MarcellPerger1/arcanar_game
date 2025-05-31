@@ -6,7 +6,7 @@ from typing import AbstractSet, TYPE_CHECKING, Iterable
 from .enums import Area, AnyResource, CardType, Color
 
 if TYPE_CHECKING:
-    from .backend import GameBackend
+    from .game import GameBackend
     from .card import Card
 
 __all__ = ['Location', 'ResourceFilter', 'CardTypeFilter']

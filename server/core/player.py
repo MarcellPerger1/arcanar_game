@@ -8,7 +8,7 @@ from .card import Card, CardTemplate, CardCost
 from .enums import *
 
 if TYPE_CHECKING:
-    from .backend import GameBackend
+    from .game import GameBackend
 
 
 @dataclass

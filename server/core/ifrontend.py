@@ -7,7 +7,7 @@ from .common import ResourceFilter, CardTypeFilter
 from .enums import Color, PlaceableCardType, AnyResource
 
 if TYPE_CHECKING:
-    from .backend import GameBackend
+    from .game import GameBackend
     from .card import EffectExecInfo, Card, CardCost
     from .player import Player
 
