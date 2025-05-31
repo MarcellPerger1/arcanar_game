@@ -84,9 +84,13 @@ class JsonAdapter(IFrontend):
 
     def choose_excl_color(self, info: EffectExecInfo,
                           top_colors: Collection[Color]) -> Color:
-        resp = self.request({'request': 'excl_color',
+        resp = self.request({'request': 'color_excl',
                              'of_colors': self.ser(top_colors)}, info=info)
-        return self.deser(resp['excl_color'], Color)
+        return self.deser(resp['color_excl'], Color)
+
+    def get_foreach_color(self, info: EffectExecInfo) -> Color:
+        resp = self.request({'request': 'color_foreach'}, info=info)
+        return self.deser(resp['color_foreach'], Color)
     # endregion
 
     # region Custom serialisers
@@ -148,7 +152,6 @@ class JsonAdapter(IFrontend):
     # endregion
 
     get_spend = ...
-    get_foreach_color = ...
     choose_from_discard = ...
     choose_card_exec = ...
     choose_card_move = ...
@@ -156,7 +159,6 @@ class JsonAdapter(IFrontend):
 
     # TODO: these methods need to be implemented:
     #  - get_spend
-    #  - get_foreach_color
     #  - choose_from_discard
     #  - choose_card_exec
     #  - choose_card_move
