@@ -23,7 +23,7 @@ class IFrontend(abc.ABC):
 
     @abc.abstractmethod
     def get_spend(self, info: EffectExecInfo, filters: ResourceFilter,
-                  amount: int) -> Counter[AnyResource]:
+                  amount: int) -> None | Counter[AnyResource]:
         ...
 
     @abc.abstractmethod

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import abc
 import operator
-from collections import Counter
 from dataclasses import dataclass, field
 from typing import Mapping, Collection
 
@@ -59,7 +58,7 @@ class SpendResource(CardEffect):
 
     def execute(self, info: EffectExecInfo):
         # Let frontend handle the unambiguous case itself
-        spent: Counter[AnyResource] = info.frontend.get_spend(info, self.colors, self.amount)
+        spent = info.frontend.get_spend(info, self.colors, self.amount)
         if spent is None:
             return CANT_EXEC
         spent += {}  # Keep only positive values
