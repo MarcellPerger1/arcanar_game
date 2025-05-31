@@ -77,5 +77,5 @@ class IFrontend(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def register_result(self, players_ranked: list[Player]):
+    def register_result(self, winners: list[Player]):
         ...
