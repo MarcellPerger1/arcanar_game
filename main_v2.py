@@ -1,10 +1,9 @@
 import json
 import sys
 
-from server.core import Game, DefaultRuleset
 from server.api.jsonify import *
-
-import pprint
+from server.core import Game, DefaultRuleset
+from server.util import JsonT
 
 
 class JC(JsonConnection):
@@ -20,4 +19,5 @@ class JC(JsonConnection):
         return None
 
 
-Game(4, JsonAdapter(JC()), DefaultRuleset())
+if __name__ == '__main__':
+    Game(4, JsonAdapter(JC()), DefaultRuleset())

@@ -11,6 +11,9 @@ from ..core import (Game, Player, IFrontend, Card, Location, Area,
                     AdjacenciesMappingT)
 from ..util import JsonT
 
+__all__ = ['JsonConnection', 'JsonAdapter']
+
+
 T = TypeVar('T')
 
 
