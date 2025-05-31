@@ -6,7 +6,6 @@ from ..util import JsonT
 
 
 class JsonConnection(abc.ABC):
-    @abc.abstractmethod
     def init(self):
         ...
 
