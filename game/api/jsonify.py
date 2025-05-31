@@ -4,7 +4,7 @@ import abc
 import sys
 import typing
 from dataclasses import is_dataclass, fields as d_fields
-from typing import Any, Literal, Counter, Callable, Mapping, cast, TYPE_CHECKING
+from typing import Any, Literal, Counter, Callable, Mapping, cast, TYPE_CHECKING, Collection
 
 from .. import backend as backend_mod
 from ..backend import (GameBackend, Player, IFrontend, Card, Location, Area,
@@ -80,6 +80,12 @@ class JsonAdapter(IFrontend):
         resp = self.request({'request': 'color_exec', 'n_times': n_times}, info=info)
         return self.deser(resp['color_exec'], Color)
 
+    def choose_excl_color(self, info: EffectExecInfo,
+                          top_colors: Collection[Color]) -> Color:
+        resp = self.request({'request': 'excl_color',
+                             'of_colors': self.ser(top_colors)}, info=info)
+        return self.deser(resp['excl_color'], Color)
+
     # region Custom serialisers
     def deser_card_ref(self, ref_json: JsonT) -> Card:
         return self.deser(ref_json, Location).get(self.game)
@@ -138,7 +144,6 @@ class JsonAdapter(IFrontend):
     get_foreach_color = ...
     choose_from_discard = ...
     choose_card_exec = ...
-    choose_excl_color = ...
     choose_card_move = ...
     choose_move_where = ...
 
@@ -147,7 +152,6 @@ class JsonAdapter(IFrontend):
     #  - get_foreach_color
     #  - choose_from_discard
     #  - choose_card_exec
-    #  - choose_excl_color
     #  - choose_card_move
     #  - choose_move_where
 
