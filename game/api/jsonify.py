@@ -153,8 +153,6 @@ JsonSerFuncT = Callable[['JsonSerialiser', Any], JsonT]
 JsonDeserFuncT = Callable[['JsonDeserialiser', JsonT, type], Any]
 
 
-# TODO: Polymorphism is LOST COMPLETELY here. This is a problem.
-#  This *must* be fixed for CardEffect to arrive in an intelligible format!
 class JsonSerialiser:
     dispatch: dict[type, JsonSerFuncT] = _json_serialiser_dispatch
     
@@ -225,10 +223,18 @@ class JsonSerialiser:
         return o.value
 
     def ser_dataclass(self, o: DataclassInstance) -> JsonT:
+        # Note: the order here is more on an 'aesthetic choice' - I prefer the
+        #  type to be first in my JSON
+        res = {}
+        # By default, include type if it implements an abstract class
+        #  (that means there's likely other implementations).
+        if getattr(res, '_ser_polymorphic_', abc.ABC in type(o).__mro__):
+            res |= {'__class__': type(o).__name__}
         # noinspection PyDataclass
-        return {f.name: self.ser(getattr(o, f.name)) for f in d_fields(o)
+        res |= {f.name: self.ser(getattr(o, f.name)) for f in d_fields(o)
                 if (hasattr(o, f.name)
                     and f.name not in getattr(o, '_ser_exclude_', ()))}
+        return res
 
 
 class JsonDeserialiser:
