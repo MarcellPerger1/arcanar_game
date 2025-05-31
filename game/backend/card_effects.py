@@ -416,7 +416,7 @@ class ExecChosenColorNTimes(CardEffect):
     evergreen_amount: int = 0  # e, Should really be 0-n but we won't check
 
     def execute(self, info: EffectExecInfo) -> object | None:
-        chosen: Color = info.frontend.choose_color_exec_twice(info)
+        chosen: Color = info.frontend.choose_color_exec(info, self.amount)
         # Can't execute artifacts, events aren't placed down, so must be color
         assert Color.has_instance(chosen)
         for i in range(self.amount):

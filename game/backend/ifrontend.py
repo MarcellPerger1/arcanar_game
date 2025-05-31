@@ -40,7 +40,7 @@ class IFrontend(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def choose_color_exec_twice(self, info: EffectExecInfo) -> Color:
+    def choose_color_exec(self, info: EffectExecInfo, n_times: int) -> Color:
         ...
 
     @abc.abstractmethod
