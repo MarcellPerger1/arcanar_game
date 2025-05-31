@@ -4,7 +4,8 @@ import abc
 import sys
 import typing
 from dataclasses import is_dataclass, fields as d_fields
-from typing import Any, Literal, Counter, Callable, Mapping, cast, TYPE_CHECKING, Collection
+from typing import (Any, Literal, Counter, Callable, Mapping, cast,
+                    TYPE_CHECKING, Collection)
 
 from .. import backend as backend_mod
 from ..backend import (GameBackend, Player, IFrontend, Card, Location, Area,
@@ -47,6 +48,7 @@ class JsonAdapter(IFrontend):
             'api_version': 0,  # 1 will be when the API is at least semi-stable
         }, thread=False)
 
+    # region main (non-init) API
     def get_action_type(self, player: Player) -> Literal['buy', 'execute']:
         # TODO: somehow handle multiple people/clients! - LATER,
         #  for now, pass-n-play only
@@ -85,6 +87,7 @@ class JsonAdapter(IFrontend):
         resp = self.request({'request': 'excl_color',
                              'of_colors': self.ser(top_colors)}, info=info)
         return self.deser(resp['excl_color'], Color)
+    # endregion
 
     # region Custom serialisers
     def deser_card_ref(self, ref_json: JsonT) -> Card:
@@ -99,12 +102,15 @@ class JsonAdapter(IFrontend):
         return self.ser(self.game)  # Game contains all the state
     # endregion
 
+    # region ser/deser methods
     def ser(self, o: object) -> JsonT:
         return self.serialiser.ser(o)
 
     def deser(self, j: JsonT, expect_tp: type[T]) -> T:
         return self.deserialiser.deser(j, expect_tp)
+    # endregion
 
+    # region send/receive/request (incl thread logic)
     def send(self, obj: dict[str, JsonT], *, thread=True, state=True,
              info: EffectExecInfo = None):
         """If thread is True, it returns an opaque 'thread id' that can be
@@ -139,6 +145,7 @@ class JsonAdapter(IFrontend):
         th = self._next_thread_id
         self._next_thread_id += 1
         return th
+    # endregion
 
     get_spend = ...
     get_foreach_color = ...
