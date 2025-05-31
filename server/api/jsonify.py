@@ -14,7 +14,7 @@ from ..core import (Game, Player, IFrontend, Card, Location, Area,
 # noinspection PyProtectedMember
 from ..core.enums import _ColorEnumTree
 from ..core.ifrontend import _AdjMappingT
-from ..core.util import FrozenDict
+from ..util import FrozenDict
 
 if TYPE_CHECKING:
     from _typeshed import DataclassInstance

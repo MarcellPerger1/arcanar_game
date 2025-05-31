@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Mapping
 
 from .common import Location, ResourceFilter
 from .enums import CardType, Area, PlaceableCardType, AnyResource
-from .util import FrozenDict
+from ..util import FrozenDict
 
 if TYPE_CHECKING:
     from .game import Player, Game

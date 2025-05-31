@@ -8,7 +8,7 @@ from typing import Mapping, Collection
 from .card import CardEffect, EffectExecInfo, Card, CANT_EXEC
 from .common import ResourceFilter, CardTypeFilter
 from .enums import *
-from .util import FrozenDict
+from ..util import FrozenDict
 
 __all__ = [
     # Basic/atomic effects
