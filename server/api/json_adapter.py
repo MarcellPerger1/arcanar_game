@@ -28,6 +28,7 @@ class JsonAdapter(IFrontend):
 
     def register_game(self, game: Game):
         self.game = game
+        self.conn.init()
         self.send({
             'request': 'init',
             'server_version': '0.1.0',
