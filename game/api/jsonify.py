@@ -103,6 +103,15 @@ class JsonAdapter(IFrontend):
         assert card.location.area == Area.DISCARD and card.location.player == target
         assert card.card_type in filters
         return card
+
+    def choose_card_exec(self, info: EffectExecInfo, n_times: int,
+                         discard: bool = False) -> Card:
+        resp = self.request({'request': 'card_exec', 'n_times': n_times,
+                             'discard': discard}, info=info)
+        card = self.deser_card_ref(resp['card_exec'])
+        assert Color.has_instance(card.location.area)
+        assert card.location.player == info.player
+        return card
     # endregion
 
     # region Custom serialisers
@@ -164,13 +173,11 @@ class JsonAdapter(IFrontend):
     # endregion
 
     get_spend = ...
-    choose_card_exec = ...
     choose_card_move = ...
     choose_move_where = ...
 
     # TODO: these methods need to be implemented:
     #  - get_spend
-    #  - choose_card_exec
     #  - choose_card_move
     #  - choose_move_where
 
