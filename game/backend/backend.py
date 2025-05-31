@@ -23,6 +23,7 @@ class GameBackend:
     turn_num: int = 0
     # Only used at end
     players_ranked: list[Player] | None = None
+    winners: list[Player] | None = None
 
     # TODO: I hate having it here but there's not much choice?
     #  1. Have it here - bad because JsonAdapter's (semi-frontend) internals
@@ -105,7 +106,10 @@ class GameBackend:
     def count_points(self):
         for p in self.players:
             p.count_points()
-        self.players_ranked = sorted(self.players, key=lambda pl: pl.final_score)
+        self.players_ranked = sorted(
+            self.players, key=lambda pl: pl.final_score, reverse=True)
+        self.winners = [p for p in self.players
+                        if p.final_score == self.players_ranked[0].final_score]
 
     # TODO: could there be a cleaner way of doing this?
     def does_color_run(self, color: Color, is_last: bool):
