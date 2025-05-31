@@ -50,7 +50,15 @@ class JsonAdapter(IFrontend):
             'api_version': 0,  # 1 will be when the API is at least semi-stable
         }, thread=False)
 
-    # region main (non-init) API
+    def register_result(self, winners: list[Player]):
+        self.send({
+            'request': 'result',  # Other info will be in `state`
+            'winners': [p.idx for p in winners]
+        }, thread=False)
+        # Don't send state for shutdown (no state changes after result)
+        self.send({'request': 'shutdown'}, thread=False, state=False)
+
+    # region main (non-init/non-end) API
     def get_action_type(self, player: Player) -> Literal['buy', 'execute']:
         # TODO: somehow handle multiple people/clients! - LATER,
         #  for now, pass-n-play only
