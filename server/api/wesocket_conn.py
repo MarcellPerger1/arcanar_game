@@ -44,6 +44,9 @@ class _CloseInstruction(_Instruction):
 
 
 # TODO: need to make the JsonAdapter more robust so it calls close() on error too.
+# TODO: detect if main thread is fked and die nicely (like close()) if so.
+#  This is especially important as we are non-daemonic (for this explicit
+#  purpose of closing the connection if the main thread dies)
 class WebsocketConn(JsonConnection):
     # noinspection PyAttributeOutsideInit
     def init(self):
@@ -52,6 +55,7 @@ class WebsocketConn(JsonConnection):
         self._server_thread = threading.Thread(
             target=self._server_worker,
             name='WebSocket Server (Controller Thread)')
+        self._server_thread.start()
 
     def send(self, obj: JsonT):
         # Separators: no whitespace. Sort keys: so we don't give client any
@@ -67,11 +71,11 @@ class WebsocketConn(JsonConnection):
     def close(self):
         self._instruction_queue.put(_CloseInstruction())
         while self._server_thread.is_alive():
-            time.sleep(0.001)
+            time.sleep(0.001)  # Wait for it to exit
 
     def _server_worker(self):
-        with serve(self._handler, 'localhost', 3141) as server:
-            server.serve_forever()
+        with serve(self._handler, 'localhost', 3141) as self._server:
+            self._server.serve_forever()
 
     def _handler(self, conn: ServerConnection):
         try:
@@ -82,3 +86,6 @@ class WebsocketConn(JsonConnection):
                     self._results_queue.put(result)
         except CloseConn:
             return
+        finally:
+            # Important! This is the only way to close _server_worker
+            self._server.shutdown()
