@@ -4,12 +4,13 @@ import abc
 import sys
 import typing
 from dataclasses import is_dataclass, fields as d_fields
-from typing import (Any, Literal, Counter, Callable, Mapping, cast,
-                    TYPE_CHECKING, Collection)
+from typing import (Any, Literal, Callable, Mapping, cast,
+                    TYPE_CHECKING, Collection, Counter)
 
 from .. import backend as backend_mod
 from ..backend import (GameBackend, Player, IFrontend, Card, Location, Area,
-                       CardCost, AnyResource, EffectExecInfo, Color, CardTypeFilter)
+                       CardCost, AnyResource, EffectExecInfo, Color, CardTypeFilter,
+                       ResourceFilter)
 # noinspection PyProtectedMember
 from ..backend.enums import _ColorEnumTree
 from ..backend.util import FrozenDict
@@ -112,6 +113,17 @@ class JsonAdapter(IFrontend):
         assert Color.has_instance(card.location.area)
         assert card.location.player == info.player
         return card
+
+    def get_spend(self, info: EffectExecInfo, filters: ResourceFilter,
+                  amount: int) -> None | Counter[AnyResource]:
+        resp = self.request({'request': 'spend_resources', 'amount': amount,
+                             'filters': self.ser(filters)}, info=info)
+        result_ser = resp['spend_resources']
+        if result_ser is None:
+            return None
+        # TODO: could have more checking here - it happens in the GameBackend,
+        #  and there should be a way of telling IFrontend that it was invalid
+        return self.deser(result_ser, Counter[AnyResource])
     # endregion
 
     # region Custom serialisers
@@ -172,12 +184,10 @@ class JsonAdapter(IFrontend):
         return th
     # endregion
 
-    get_spend = ...
     choose_card_move = ...
     choose_move_where = ...
 
     # TODO: these methods need to be implemented:
-    #  - get_spend
     #  - choose_card_move
     #  - choose_move_where
 
