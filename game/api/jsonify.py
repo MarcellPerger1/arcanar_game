@@ -77,8 +77,7 @@ class JsonAdapter(IFrontend):
         return self.deser(resp['card_payment'], Counter[AnyResource])
 
     def choose_color_exec(self, info: EffectExecInfo, n_times: int) -> Color:
-        resp = self.request({'request': 'color_exec', 'n_times': n_times,
-                             'info': self.ser_effect_info_ref(info)})
+        resp = self.request({'request': 'color_exec', 'n_times': n_times}, info=info)
         return self.deser(resp['color_exec'], Color)
 
     # region Custom serialisers
@@ -100,10 +99,13 @@ class JsonAdapter(IFrontend):
     def deser(self, j: JsonT, expect_tp: type[T]) -> T:
         return self.deserialiser.deser(j, expect_tp)
 
-    def send(self, obj: dict[str, JsonT], thread=True, state=True):
+    def send(self, obj: dict[str, JsonT], *, thread=True, state=True,
+             info: EffectExecInfo = None):
         """If thread is True, it returns an opaque 'thread id' that can be
         used to query replies to this message."""
         extra = {}
+        if info is not None:
+            extra |= {'info': self.ser_effect_info_ref(info)}
         if state:
             extra |= {'state': self.serialise_state()}
         if (tid := self.alloc_thread() if thread else None) is not None:
@@ -111,8 +113,8 @@ class JsonAdapter(IFrontend):
         self.conn.send(obj | extra)
         return tid
 
-    def request(self, req: dict[str, JsonT], state=True):
-        th = self.send(req, state=state)
+    def request(self, req: dict[str, JsonT], state=True, info: EffectExecInfo = None):
+        th = self.send(req, state=state, info=info)
         return self.receive(th)
 
     def receive(self, th: int | None):  # No default so tid isn't accidentally forgotten
