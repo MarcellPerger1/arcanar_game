@@ -50,8 +50,7 @@ class JsonAdapter(IFrontend):
     def get_action_type(self, player: Player) -> Literal['buy', 'execute']:
         # TODO: somehow handle multiple people/clients! - LATER,
         #  for now, pass-n-play only
-        th = self.send({'request': 'action_type', 'player': player.idx})
-        resp = self.receive(th)
+        resp = self.request({'request': 'action_type', 'player': player.idx})
         # TODO: perhaps repeat if invalid/resend it ?
         ac_type = resp['action_type']
         assert ac_type in ('buy', 'execute')
@@ -60,24 +59,21 @@ class JsonAdapter(IFrontend):
     def get_discard(self, player: Player) -> Card:
         # TODO: allow cancellation back to choosing action_type from here
         #  /when choosing how to pay.
-        th = self.send({'request': 'discard_for_exec', 'player': player.idx})
-        resp = self.receive(th)
+        resp = self.request({'request': 'discard_for_exec', 'player': player.idx})
         # TODO: somehow detect logic error vs invalid response
         card = self.deser_card_ref(resp['discard_for_exec'])
         assert card in player.cards_of_type(Area.HAND)
         return card
 
     def get_card_buy(self, player: Player) -> Card:
-        th = self.send({'request': 'buy_card', 'player': player.idx})
-        resp = self.receive(th)
+        resp = self.request({'request': 'buy_card', 'player': player.idx})
         card = self.deser_card_ref(resp['buy_card'])
         assert card in player.cards_of_type(Area.HAND)
         return card
 
     def get_card_payment(self, player: Player, cost: CardCost) -> Counter[AnyResource]:
-        th = self.send({'request': 'card_payment', 'player': player.idx,
-                        'cost': self.ser(cost)})
-        resp = self.receive(th)
+        resp = self.request({'request': 'card_payment', 'player': player.idx,
+                             'cost': self.ser(cost)})
         return self.deser(resp['card_payment'], Counter[AnyResource])
 
     def deser_card_ref(self, ref_json: JsonT) -> Card:
@@ -102,6 +98,10 @@ class JsonAdapter(IFrontend):
             extra |= {'thread': tid}
         self.conn.send(obj | extra)
         return tid
+
+    def request(self, req: dict[str, JsonT], state=True):
+        th = self.send(req, state=state)
+        return self.receive(th)
 
     def receive(self, th: int | None):  # No default so tid isn't accidentally forgotten
         if th is None:
