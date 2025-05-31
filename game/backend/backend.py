@@ -57,6 +57,7 @@ class GameBackend:
         for self.round_num in range(3):
             self.do_round()
         self.count_points()
+        self.frontend.register_result(self.players_ranked)
 
     def do_round(self):
         self.prepare_round()

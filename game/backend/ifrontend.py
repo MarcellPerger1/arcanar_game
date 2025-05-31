@@ -75,3 +75,7 @@ class IFrontend(abc.ABC):
     @abc.abstractmethod
     def get_card_payment(self, player: Player, cost: CardCost) -> Counter[AnyResource]:
         ...
+
+    @abc.abstractmethod
+    def register_result(self, players_ranked: list[Player]):
+        ...
