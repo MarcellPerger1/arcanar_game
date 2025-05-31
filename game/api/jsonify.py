@@ -121,7 +121,7 @@ class JsonAdapter(IFrontend):
         used to query replies to this message."""
         extra = {}
         if info is not None:
-            extra |= {'info': self.ser_effect_info_ref(info)}
+            extra |= {'exec_info': self.ser_effect_info_ref(info)}
         if state:
             extra |= {'state': self.serialise_state()}
         if (tid := self.alloc_thread() if thread else None) is not None:
