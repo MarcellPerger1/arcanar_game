@@ -7,7 +7,7 @@ from .common import ResourceFilter, CardTypeFilter
 from .enums import Color, PlaceableCardType, AnyResource
 
 if TYPE_CHECKING:
-    from .game import GameBackend
+    from .game import Game
     from .card import EffectExecInfo, Card, CardCost
     from .player import Player
 
@@ -18,7 +18,7 @@ _AdjMappingT = Mapping[PlaceableCardType, Collection[PlaceableCardType]]
 
 class IFrontend(abc.ABC):
     @abc.abstractmethod
-    def register_game(self, game: GameBackend):
+    def register_game(self, game: Game):
         ...
 
     @abc.abstractmethod

@@ -10,8 +10,8 @@ from .player import Player
 from .ruleset import IRuleset
 
 
-@dataclass  # TODO: this is inconsistent: use dataclass or not?!
-class GameBackend:
+@dataclass
+class Game:
     frontend: IFrontend
     ruleset: IRuleset  # Defines starting cards, deck, passing order, etc.
     players: list[Player]

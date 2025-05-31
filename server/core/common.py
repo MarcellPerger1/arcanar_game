@@ -6,7 +6,7 @@ from typing import AbstractSet, TYPE_CHECKING, Iterable
 from .enums import Area, AnyResource, CardType, Color
 
 if TYPE_CHECKING:
-    from .game import GameBackend
+    from .game import Game
     from .card import Card
 
 __all__ = ['Location', 'ResourceFilter', 'CardTypeFilter']
@@ -18,13 +18,13 @@ class Location:
     area: Area
     key: int
 
-    def get(self, game: GameBackend) -> Card:
+    def get(self, game: Game) -> Card:
         return game.get_areas_for(self.player)[self.area][self.key]
 
-    def clear(self, game: GameBackend) -> Card:
+    def clear(self, game: Game) -> Card:
         return game.get_areas_for(self.player)[self.area].pop(self.key)
 
-    def put(self, game: GameBackend, card: Card):
+    def put(self, game: Game, card: Card):
         dest_area = game.get_areas_for(self.player)[self.area]
         # I wish there was a Python function for these 3 lines (insert value
         #  and return previous value)

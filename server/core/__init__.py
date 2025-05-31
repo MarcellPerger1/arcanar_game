@@ -1,5 +1,5 @@
 from . import util  # Not everyone needs FrozenDict imported
-from .game import GameBackend
+from .game import Game
 from .card import *
 from .card_effects import *
 from .common import *

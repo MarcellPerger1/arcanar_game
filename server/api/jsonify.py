@@ -8,7 +8,7 @@ from typing import (Any, Literal, Callable, Mapping, cast,
                     TYPE_CHECKING, Collection, Counter)
 
 from .. import core as core_mod
-from ..core import (GameBackend, Player, IFrontend, Card, Location, Area,
+from ..core import (Game, Player, IFrontend, Card, Location, Area,
                     CardCost, AnyResource, EffectExecInfo, Color, CardTypeFilter,
                     ResourceFilter, PlaceableCardType)
 # noinspection PyProtectedMember
@@ -34,7 +34,7 @@ class JsonConnection(abc.ABC):
 
 
 class JsonAdapter(IFrontend):
-    game: GameBackend
+    game: Game
 
     def __init__(self, conn: JsonConnection):
         self.conn = conn
@@ -42,7 +42,7 @@ class JsonAdapter(IFrontend):
         self.deserialiser = JsonDeserialiser()
         self._next_thread_id = 1
 
-    def register_game(self, game: GameBackend):
+    def register_game(self, game: Game):
         self.game = game
         self.send({
             'request': 'init',
@@ -132,7 +132,7 @@ class JsonAdapter(IFrontend):
                              'filters': self.ser(filters)}, info=info)
         if (result_ser := resp['spend_resources']) is None:
             return None
-        # TODO: could have more checking here - it happens in the GameBackend,
+        # TODO: could have more checking here - it happens in the Game backend,
         #  and there should be a way of telling IFrontend that it was invalid
         return self.deser(result_ser, Counter[AnyResource])
 

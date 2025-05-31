@@ -8,13 +8,13 @@ from .card import Card, CardTemplate, CardCost
 from .enums import *
 
 if TYPE_CHECKING:
-    from .game import GameBackend
+    from .game import Game
 
 
 @dataclass
 class Player:
     idx: int  # Which player we are
-    game: GameBackend
+    game: Game
     # Me when the code gets too generic... - we have 'areas' for each player:
     #  the hand, regular placed cards (1 for each type), placed artifacts, etc.
     # In effect an 'area' is a generalised 1D ordered sequence of cards.
@@ -37,7 +37,7 @@ class Player:
     _ser_exclude_ = ('game',)
 
     @classmethod
-    def new(cls, idx: int, game: GameBackend):
+    def new(cls, idx: int, game: Game):
         return cls(idx, game, {a: OrderedDict() for a in Area.members()}, Counter())
 
     def init_cards(self):  # Should only be called straight after, or in, new()
