@@ -48,7 +48,10 @@ class JsonAdapter(IFrontend):
             'request': 'init',
             'server_version': '0.0.1',
             'api_version': 0,  # 1 will be when the API is at least semi-stable
-        }, thread=False)
+        }, thread=False, state=False)
+        self.send({
+            'request': 'state',
+        }, thread=False, state=True)
 
     def register_result(self, winners: list[Player]):
         self.send({
