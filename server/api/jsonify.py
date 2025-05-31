@@ -7,14 +7,14 @@ from dataclasses import is_dataclass, fields as d_fields
 from typing import (Any, Literal, Callable, Mapping, cast,
                     TYPE_CHECKING, Collection, Counter)
 
-from .. import backend as backend_mod
-from ..backend import (GameBackend, Player, IFrontend, Card, Location, Area,
-                       CardCost, AnyResource, EffectExecInfo, Color, CardTypeFilter,
-                       ResourceFilter, PlaceableCardType)
+from .. import core as core_mod
+from ..core import (GameBackend, Player, IFrontend, Card, Location, Area,
+                    CardCost, AnyResource, EffectExecInfo, Color, CardTypeFilter,
+                    ResourceFilter, PlaceableCardType)
 # noinspection PyProtectedMember
-from ..backend.enums import _ColorEnumTree
-from ..backend.ifrontend import _AdjMappingT
-from ..backend.util import FrozenDict
+from ..core.enums import _ColorEnumTree
+from ..core.ifrontend import _AdjMappingT
+from ..core.util import FrozenDict
 
 if TYPE_CHECKING:
     from _typeshed import DataclassInstance
@@ -418,7 +418,7 @@ class JsonDeserialiser:
             return annot
         globalns = getattr(sys.modules.get(dcls.__module__), '__dict__', {})
         # Not |= so we don't overwrite the actual module's globals
-        globalns = globalns | dict(vars(backend_mod))
+        globalns = globalns | dict(vars(core_mod))
         localns = vars(dcls)
         return eval(annot, globalns, localns)
 

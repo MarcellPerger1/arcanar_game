@@ -1,8 +1,8 @@
 import json
 import sys
 
-from game.backend import GameBackend, DefaultRuleset
-from game.api.jsonify import *
+from server.core import GameBackend, DefaultRuleset
+from server.api.jsonify import *
 
 import pprint
 
