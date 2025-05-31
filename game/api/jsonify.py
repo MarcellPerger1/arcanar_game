@@ -10,7 +10,7 @@ from typing import (Any, Literal, Callable, Mapping, cast,
 from .. import backend as backend_mod
 from ..backend import (GameBackend, Player, IFrontend, Card, Location, Area,
                        CardCost, AnyResource, EffectExecInfo, Color, CardTypeFilter,
-                       ResourceFilter)
+                       ResourceFilter, PlaceableCardType)
 # noinspection PyProtectedMember
 from ..backend.enums import _ColorEnumTree
 from ..backend.ifrontend import _AdjMappingT
@@ -135,6 +135,19 @@ class JsonAdapter(IFrontend):
         assert Color.has_instance(card.location.area)
         assert card.location.player == info.player
         return card
+
+    def choose_move_where(self, info: EffectExecInfo, card_to_move: Card,
+                          possibilities: Collection[PlaceableCardType]
+                          ) -> PlaceableCardType | None:
+        resp = self.request({
+            'request': 'where_move_card',
+            'card': self.ser(card_to_move.location),
+            'possibilities': self.ser(possibilities)}, info=info)
+        if (dest_ser := resp['where_move_card']) is None:
+            return None
+        dest = self.deser(dest_ser, PlaceableCardType)
+        assert dest in possibilities
+        return dest
     # endregion
 
     # region Custom serialisers
@@ -194,11 +207,6 @@ class JsonAdapter(IFrontend):
         self._next_thread_id += 1
         return th
     # endregion
-
-    choose_move_where = ...
-
-    # TODO: these methods need to be implemented:
-    #  - choose_move_where
 
 
 # Need variable outside class so can refer to it during the definition of the
