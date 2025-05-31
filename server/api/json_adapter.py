@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import abc
 from typing import (Literal, Collection, Counter, TypeVar)
 
+from .json_connection import JsonConnection
 from .json_deserialise import JsonDeserialiser
 from .json_serialise import JsonSerialiser
 from ..core import (Game, Player, IFrontend, Card, Location, Area,
@@ -11,20 +11,10 @@ from ..core import (Game, Player, IFrontend, Card, Location, Area,
                     AdjacenciesMappingT)
 from ..util import JsonT
 
-__all__ = ['JsonConnection', 'JsonAdapter']
+__all__ = ['JsonAdapter']
 
 
 T = TypeVar('T')
-
-
-class JsonConnection(abc.ABC):
-    @abc.abstractmethod
-    def send(self, obj: JsonT):
-        ...
-
-    @abc.abstractmethod
-    def receive(self) -> JsonT:
-        ...
 
 
 class JsonAdapter(IFrontend):

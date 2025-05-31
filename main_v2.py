@@ -1,7 +1,8 @@
 import json
 import sys
 
-from server.api.jsonify import *
+from server.api.json_adapter import JsonAdapter
+from server.api.json_connection import JsonConnection
 from server.core import Game, DefaultRuleset
 from server.util import JsonT
 
