@@ -107,8 +107,9 @@ class ExtendableEnumMeta(type, Generic[T]):
     def _is_special_name(cls, name: str):
         return name.startswith('_') and name.endswith('_')  # sunder/dunder
 
-    def __init__(cls: type[ExtendableEnum[T]], name: str,
-                 bases: tuple[type, ...], ns: dict[str, ...], **kwargs):
+    def __init__(cls: type[ExtendableEnum[T]] | ExtendableEnumMeta[T],
+                 name: str, bases: tuple[type, ...], ns: dict[str, ...],
+                 **kwargs):
         super().__init__(name, bases, ns, **kwargs)
         if ns.get('_eenum_special_'):  # Must be defined on the class itself, not inherited
             return
