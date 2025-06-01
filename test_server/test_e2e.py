@@ -45,13 +45,21 @@ class E2ETestCase(unittest.TestCase):
         with connect("ws://localhost:3141") as ws:
             for tp, data in self._load_actions():
                 if tp == 'send':
-                    ws.send(json.dumps(data))
+                    self.send_and_assert_no_recv(ws, data)
                 elif tp == 'recv':
                     self.assert_recv(ws, data)
                 elif tp == 'closed':
                     self.assert_conn_closed(ws)
                 else:
                     assert 0
+
+    def send_and_assert_no_recv(self, ws: ClientConnection, data):
+        # Test that server hasn't sent anything
+        with self.assertRaises(TimeoutError, msg="Server shouldn't have sent anything"):
+            actual = ws.recv(0.01)  # Raises TimeoutError if nothing to receive
+            print(f'While trying to send {json.dumps(data)}:', file=sys.stderr)
+            print(f'Server unexpectedly sent {actual}', file=sys.stderr)
+        ws.send(json.dumps(data))
 
     def assert_recv(self, ws: ClientConnection, expected):
         actual_str = ws.recv()
