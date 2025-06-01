@@ -25,7 +25,7 @@ _json_deserialiser_dispatch = {}
 
 
 class JsonDeserialiser:
-    dispatch: dict[type, JsonDeserFuncT] = {}
+    dispatch: dict[type, JsonDeserFuncT] = _json_deserialiser_dispatch
 
     def __init__(self):
         # Copy to instance so inst.serialiser_func only affects the instance
@@ -51,10 +51,12 @@ class JsonDeserialiser:
         return decor
 
     def deser(self, j: JsonT, tp: type[T]) -> T:
-        # Interestingly, also works for generic instances, like list[int]
-        for tp in tp.__mro__:
-            if (fn := self.dispatch.get(tp)) is not None:
-                return fn(self, j, type)
+        cls: type = typing.get_origin(tp)  # type: ignore  # Pycharm is stupid, once again
+        if cls is None:
+            cls = tp  # Must be a regular class - those have origin as None
+        for supercls in cls.__mro__:
+            if (fn := self.dispatch.get(supercls)) is not None:
+                return fn(self, j, tp)
         return self.deser_default(j, tp)
 
     def deser_default(self, j: JsonT, tp: type):
