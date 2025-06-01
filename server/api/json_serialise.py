@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import abc
 from dataclasses import is_dataclass, fields as d_fields
+from functools import cmp_to_key
 
 from typing import Callable, Any, cast, Mapping, TYPE_CHECKING
 
 # noinspection PyProtectedMember
 from ..core.enums import _ColorEnumTree
-from ..util import JsonT, FrozenDict
+from ..util import JsonT, FrozenDict, cmp
 
 if TYPE_CHECKING:
     from _typeshed import DataclassInstance
@@ -62,9 +63,21 @@ class JsonSerialiser:
     def ser_builtin_atom(self, o: int | float | str | bool | None) -> JsonT:
         return o
 
-    @serialiser_func(list, tuple, set, frozenset)
-    def ser_collection(self, o: list | tuple) -> JsonT:
-        return [self.ser(inner) for inner in o]  # Convert to list
+    @serialiser_func(list, tuple)
+    def ser_ordered_collection(self, o: list | tuple) -> JsonT:
+        return [self.ser(inner) for inner in o]
+
+    @serialiser_func(set, frozenset)
+    def ser_unordered_collection(self, o: set | frozenset) -> JsonT:
+        # We need a consistent ordering so that there's exactly one possible
+        #  JSON this can produce (important for tests)
+        try:
+            ls = sorted(o)
+        except TypeError:
+            # Sort the JSON output for lack of anything better
+            return sorted([self.ser(inner) for inner in o], key=JsonTotalCmp.key)
+        else:
+            return [self.ser(inner) for inner in ls]
 
     @serialiser_func(dict, FrozenDict)
     def ser_mapping(self, o: Mapping):
@@ -84,7 +97,14 @@ class JsonSerialiser:
         return result
 
     def _ser_mapping_as_array(self, o: Mapping) -> list[tuple[JsonT, JsonT]]:
-        return [(self.ser(k), self.ser(v)) for k, v in o.items()]
+        ls = list(o.items())
+        try:
+            ls = sorted(ls, key=lambda p: p[0])
+        except TypeError:
+            return sorted([(self.ser(k), self.ser(v)) for k, v in o.items()],
+                          key=lambda p: JsonTotalCmp.key(p[0]))
+        else:
+            return [(self.ser(k), self.ser(v)) for k, v in ls]
 
     @serialiser_func(_ColorEnumTree)
     def ser_any_color_enum(self, o: _ColorEnumTree):
@@ -103,3 +123,39 @@ class JsonSerialiser:
                 if (hasattr(o, f.name)
                     and f.name not in getattr(o, '_ser_exclude_', ()))}
         return res
+
+
+class JsonTotalCmp:
+    @classmethod
+    def key(cls, v: JsonT):
+        return cmp_to_key(cls.cmp)(v)
+
+    @classmethod
+    def cmp(cls, a: JsonT, b: JsonT):
+        # '<' not supported between instances of 'list' and 'tuple',
+        #  so convert tuples to list (even before `==` as () != [])
+        if isinstance(a, tuple):
+            a = list(a)
+        if isinstance(b, tuple):
+            b = list(b)
+        if a == b:
+            return 0
+        if (cmp_result := cmp(a, b, key=cls._type_key)) != 0:
+            return cmp_result
+        assert type(a) is type(b)  # Otherwise the type keys would be unequal
+        if type(a) is dict:
+            return cls._dict_cmp(a, b)
+        # bool, int, float, str, list support < and >. None can't get here
+        #  as a and b would both have to be None. This can't happen due to
+        #  equality check above. dict is checked above.
+        return cmp(a, b)
+
+    @classmethod
+    def _dict_cmp(cls, a: dict[str, Any], b: dict[str, Any]):
+        return cmp(a, b, key=lambda v: sorted(v.items(), key=lambda p: p[0]))
+
+    @classmethod
+    def _type_key(cls, v: JsonT):
+        # Let's just order them by flexibility for lack of a more systematic scheme
+        return {type(None): 0, bool: 1, int: 2, float: 3, str: 4,
+                list: 5, dict: 6}[type(v)]
