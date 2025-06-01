@@ -1,16 +1,17 @@
 from __future__ import annotations
 
-from typing import Any, TypeAlias, overload, Literal, TypeVar, Callable
+from typing import Any, TypeAlias, overload, Literal, TypeVar, Callable, TYPE_CHECKING
 
 from .frozendict import FrozenDict  # re-export
 
-from _typeshed import SupportsDunderGT, SupportsDunderLT
+if TYPE_CHECKING:
+    from _typeshed import SupportsDunderGT, SupportsDunderLT
 
 __all__ = ['JsonT', 'FrozenDict', 'cmp']
 
 
 T = TypeVar('T')
-T_any_comp = TypeVar('T_any_comp', bound=SupportsDunderLT | SupportsDunderGT)
+T_any_comp = TypeVar('T_any_comp', bound='SupportsDunderLT | SupportsDunderGT')
 
 
 JsonT: TypeAlias = (dict[str, Any] | list[Any] | tuple[Any, ...]
