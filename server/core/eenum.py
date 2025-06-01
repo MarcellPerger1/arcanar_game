@@ -271,7 +271,13 @@ class ExtendableEnumMeta(type, Generic[T]):
         return inst
 
     def __iter__(cls):
-        yield from cls._eenum_members_
+        try:  # Try to sort it by value...
+            ls = sorted(cls._eenum_members_, key=lambda m: m.value)
+        except TypeError:  # .. if we can't sort it by definition order
+            # Ordering information is implicitly stored in the ordering of value_to_inst.
+            ls = [m for m in cls._eenum_data_.value_to_inst.values()
+                  if m in cls._eenum_members_]
+        yield from ls
 
     def __len__(cls):
         return len(cls._eenum_members_)
