@@ -56,10 +56,21 @@ class E2ETestCase(unittest.TestCase):
     def assert_recv(self, ws: ClientConnection, expected):
         actual_str = ws.recv()
         actual = json.loads(actual_str)
-        if expected != actual:
-            print('Raw one-line jsons:', file=sys.stderr)
-            print(f'  Expected: {json.dumps(expected, sort_keys=True)}', file=sys.stderr)
-            print(f'  Actual  : {json.dumps(actual, sort_keys=True)}', file=sys.stderr)
+        if expected == actual:
+            return
+        print(f'Raw one-line jsons:', file=sys.stderr)
+        print(f'  Expected: {json.dumps(expected, sort_keys=True)}', file=sys.stderr)
+        print(f'  Actual  : {json.dumps(actual, sort_keys=True)}', file=sys.stderr)
+        expected_raw = json.dumps(expected, sort_keys=True)
+        actual_raw = json.dumps(actual, sort_keys=True)
+        with self.subTest('Raw one-line jsons:'):
+            self.assertEqual(expected_raw, actual_raw)
+        expected_str = json.dumps(expected, sort_keys=True, indent=2)
+        actual_str = json.dumps(actual, sort_keys=True, indent=2)
+        with self.subTest('Multi-line jsons:'):
+            self.assertEqual(expected_str, actual_str)
+        with self.subTest('Objects:'):
+            self.assertEqual(expected, actual)
         self.assertEqual(expected, actual)
 
     def assert_conn_closed(self, ws: ClientConnection):
