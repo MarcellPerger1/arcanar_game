@@ -137,9 +137,11 @@ class DefaultRuleset(IRuleset):
                 ConditionalEffect(HasMarkers(), DiscardThis(), AddMarker())
             )
 
-        def conv_ef(src_color: ResourceFilter, src_n: int,
+        def conv_ef(src_color: ResourceFilter | Color, src_n: int,
                     dest_color: Color, dest_n: int,
                     effect: CardEffect = NullEffect()) -> CardEffect:
+            if not isinstance(src_color, ResourceFilter):
+                src_color = ResourceFilter({src_color})
             return ConvertEffect(SpendResource(src_color, src_n),
                                  GainResource(dest_color, dest_n), effect)
 
