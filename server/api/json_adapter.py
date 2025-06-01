@@ -18,6 +18,7 @@ __all__ = ['JsonAdapter']
 T = TypeVar('T')
 
 
+# TODO: need to make JsonAdapter more robust so it informs server on error.
 class JsonAdapter(IFrontend):
     game: Game
 
