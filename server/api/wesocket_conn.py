@@ -3,6 +3,7 @@ from __future__ import annotations
 import abc
 import json
 import queue
+import sys
 import threading
 import time
 from dataclasses import dataclass
@@ -81,8 +82,15 @@ class WebsocketConn(JsonConnection):
         try:
             while True:
                 if not threading.main_thread().is_alive():
+                    print('Main thread died unexpectedly without calling '
+                          'WebsocketConn.close()', sys.stderr)
                     raise CloseConn()
-                if (result := self._instruction_queue.get().run(conn)) is not None:
+                try:
+                    # Need timeout so we can check if main thread is dead and exit if so.
+                    instr = self._instruction_queue.get(timeout=0.02)
+                except queue.Empty:
+                    continue
+                if (result := instr.run(conn)) is not None:
                     self._results_queue.put(result)
         except CloseConn:
             return
