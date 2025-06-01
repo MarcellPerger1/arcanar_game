@@ -13,8 +13,11 @@ from server.api.wesocket_conn import WebsocketConn
 from server.core import Game, DefaultRuleset
 
 
+_PORT = 5926
+
+
 def server_main():
-    g = Game(4, JsonAdapter(WebsocketConn()), DefaultRuleset(),
+    g = Game(4, JsonAdapter(WebsocketConn(_PORT)), DefaultRuleset(),
              seed='1748776970931817000')
     g.run_game()
 
@@ -31,7 +34,6 @@ class E2ETestCase(unittest.TestCase):
         self.addCleanup(os.chdir, orig_wd)
 
     def start_server(self):
-        # TODO: take port as args
         self._server_th = threading.Thread(
             target=server_main, name='main_v3 example server', daemon=True)
         self._server_th.start()
@@ -44,7 +46,7 @@ class E2ETestCase(unittest.TestCase):
 
     def test(self):
         self.start_server()
-        with connect("ws://localhost:3141") as ws:
+        with connect(f"ws://localhost:{_PORT}") as ws:
             for self._idx, (tp, data) in enumerate(self._load_actions()):
                 if tp == 'send':
                     self.send_and_assert_no_recv(ws, data)
