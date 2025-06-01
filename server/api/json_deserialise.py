@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import sys
 import typing
+from collections import Counter
 from dataclasses import is_dataclass, fields as d_fields
-from typing import Callable, Any, cast, Mapping, Counter, TYPE_CHECKING, TypeVar
+from typing import Callable, Any, cast, Mapping, TYPE_CHECKING, TypeVar
 
 from .. import core as core_mod
 # noinspection PyProtectedMember

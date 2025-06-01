@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import abc
-from typing import Collection, Literal, Counter, TYPE_CHECKING
+from collections import Counter
+from typing import Collection, Literal, TYPE_CHECKING
 
 from .common import ResourceFilter, CardTypeFilter, AdjacenciesMappingT
 from .enums import Color, PlaceableCardType, AnyResource

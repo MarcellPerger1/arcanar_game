@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import (Literal, Collection, Counter, TypeVar)
+from collections import Counter
+from typing import Literal, Collection, TypeVar
 
 from .json_connection import JsonConnection
 from .json_deserialise import JsonDeserialiser
