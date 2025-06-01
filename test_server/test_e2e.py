@@ -22,6 +22,8 @@ def server_main():
 class E2ETestCase(unittest.TestCase):
     maxDiff = 65535
 
+    _idx: int = -1
+
     def setUp(self):
         orig_wd = os.getcwd()
         dirname = Path(__file__).parent
@@ -43,7 +45,7 @@ class E2ETestCase(unittest.TestCase):
     def test(self):
         self.start_server()
         with connect("ws://localhost:3141") as ws:
-            for tp, data in self._load_actions():
+            for self._idx, (tp, data) in enumerate(self._load_actions()):
                 if tp == 'send':
                     self.send_and_assert_no_recv(ws, data)
                 elif tp == 'recv':
@@ -57,6 +59,7 @@ class E2ETestCase(unittest.TestCase):
         # Test that server hasn't sent anything
         with self.assertRaises(TimeoutError, msg="Server shouldn't have sent anything"):
             actual = ws.recv(0.01)  # Raises TimeoutError if nothing to receive
+            print(f'[LOC] In message number {self._idx}:')
             print(f'While trying to send {json.dumps(data)}:', file=sys.stderr)
             print(f'Server unexpectedly sent {actual}', file=sys.stderr)
         ws.send(json.dumps(data))
@@ -66,6 +69,7 @@ class E2ETestCase(unittest.TestCase):
         actual = json.loads(actual_str)
         if expected == actual:
             return
+        print(f'[LOC] In message number {self._idx}', file=sys.stderr)
         print(f'Raw one-line jsons:', file=sys.stderr)
         print(f'  Expected: {json.dumps(expected, sort_keys=True)}', file=sys.stderr)
         print(f'  Actual  : {json.dumps(actual, sort_keys=True)}', file=sys.stderr)
@@ -82,5 +86,6 @@ class E2ETestCase(unittest.TestCase):
         self.assertEqual(expected, actual)
 
     def assert_conn_closed(self, ws: ClientConnection):
-        with self.assertRaises(ConnectionClosedOK):
+        with self.assertRaises(ConnectionClosedOK, msg="Server should close connection"):
             ws.send('{}')  # Empty, should be ignored if server not closed (no thread=...)
+            print(f'[LOC] In message number {self._idx}', file=sys.stderr)
