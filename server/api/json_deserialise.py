@@ -146,5 +146,6 @@ class JsonDeserialiser:
             return field_or_empty[0].type
         tp = dcls.__annotations__.get(name)
         if tp is None:
-            raise TypeError(f"Cannot determine type for field {dcls.__name__}.{name}")
+            raise TypeError(f"No such field (or is missing annotations): "
+                            f"{dcls.__name__}.{name}")
         return tp
