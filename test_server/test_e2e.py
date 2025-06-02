@@ -81,11 +81,11 @@ class E2ETestCase(unittest.TestCase):
         try:
             actual_str = ws.recv(0.2)
         except TimeoutError:
+            if self._server_failed:  # Could've failed trying to give us the response
+                self.fail("Server encountered error! See above for details.")
             print('Please disregard the "connection handler failed" from the '
                   'server - it is a consequence of this test failing',
                   file=sys.stderr)
-            if self._server_failed:  # Could've failed trying to give us the response
-                self.fail("Server encountered error! See above for details.")
             self.fail("Expected message from server, didn't get any in 200ms."
                       " Perhaps it was expecting a message from us.")
         actual = json.loads(actual_str)
