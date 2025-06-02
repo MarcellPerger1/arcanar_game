@@ -105,11 +105,13 @@ class JsonDeserialiser:
         elif tp is type(None):
             assert j == 'None'
             return j
-        elif isinstance(tp, int):
+        elif issubclass(tp, int):
             return int(j)
-        elif isinstance(tp, float):
+        elif issubclass(tp, float):
             return float(j)
-        raise AssertionError("Bad key type for mapping-from-object")
+        elif issubclass(tp, _ColorEnumTree):
+            return tp(int(j))
+        raise AssertionError(f"Bad key type {tp} for mapping-from-object")
 
     @deserialiser_func(_ColorEnumTree)
     def deser_any_color_enum(self, j: JsonT, tp: type):
