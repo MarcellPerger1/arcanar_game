@@ -2,6 +2,7 @@ import json
 import os
 import sys
 import threading
+import time
 import unittest
 from pathlib import Path
 
@@ -16,16 +17,11 @@ from server.core import Game, DefaultRuleset
 _PORT = 5926
 
 
-def server_main():
-    g = Game(4, JsonAdapter(WebsocketConn(_PORT)), DefaultRuleset(),
-             seed='1748776970931817000')
-    g.run_game()
-
-
 class E2ETestCase(unittest.TestCase):
     maxDiff = 65535
 
     _idx: int = -1
+    _server_failed = False
 
     def setUp(self):
         orig_wd = os.getcwd()
@@ -35,8 +31,17 @@ class E2ETestCase(unittest.TestCase):
 
     def start_server(self):
         self._server_th = threading.Thread(
-            target=server_main, name='main_v3 example server', daemon=True)
+            target=self.server_main, name='main_v3 example server', daemon=True)
         self._server_th.start()
+
+    def server_main(self):
+        try:
+            g = Game(4, JsonAdapter(WebsocketConn(_PORT)),
+                     DefaultRuleset(), seed='1748776970931817000')
+            g.run_game()
+        except Exception as e:
+            self._server_failed = e
+            raise
 
     # noinspection PyMethodMayBeStatic
     def _load_actions(self):
@@ -48,6 +53,8 @@ class E2ETestCase(unittest.TestCase):
         self.start_server()
         with connect(f"ws://localhost:{_PORT}") as ws:
             for self._idx, (tp, data) in enumerate(self._load_actions()):
+                if self._server_failed:
+                    self.fail("Server encountered error! See above for details.")
                 if tp == 'send':
                     self.send_and_assert_no_recv(ws, data)
                 elif tp == 'recv':
@@ -56,6 +63,10 @@ class E2ETestCase(unittest.TestCase):
                     self.assert_conn_closed(ws)
                 else:
                     assert 0
+            # Wait for server to potentially raise any errors from our last response
+            time.sleep(0.1)
+            if self._server_failed:
+                self.fail("Server encountered error! See above for details.")
 
     def send_and_assert_no_recv(self, ws: ClientConnection, data):
         # Test that server hasn't sent anything
@@ -67,7 +78,12 @@ class E2ETestCase(unittest.TestCase):
         ws.send(json.dumps(data))
 
     def assert_recv(self, ws: ClientConnection, expected):
-        actual_str = ws.recv()
+        try:
+            actual_str = ws.recv(0.2)
+        except TimeoutError:
+            if self._server_failed:  # Could've failed trying to give us the response
+                self.fail("Server encountered error! See above for details.")
+            self.fail("Expected message from server, didn't get any in 200ms")
         actual = json.loads(actual_str)
         if expected == actual:
             return
