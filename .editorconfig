@@ -1,0 +1,16 @@
+[*.*]
+indent_style=space
+charset = utf-8
+
+[*.{py,pyi}]
+indent_size = 4
+
+
+[*.[mc]?[jt]s]
+indent_size = 2
+
+[*.html]
+indent_size = 2
+
+[*.css]
+indent_size = 2
