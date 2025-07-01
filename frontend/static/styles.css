@@ -1,0 +1,211 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0px;
+  padding: 0px;
+  height: 100vh;
+  width: 100vw;
+}
+@media(width < 578px) {
+  body {
+    height: calc(100vh - 20px);  /*remove amount for bottom scrollbar*/
+  }
+}
+
+#main, #game-area {
+  width: 100%;
+  height: 100%;
+  min-width: fit-content;
+  min-height: fit-content;
+}
+
+#game-area {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: stretch;
+}
+
+#our-area-bottom-section {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.discard-size {
+  border-radius: 8px;
+  width: 8em;
+  height: 12em;
+  padding-top: 3px;
+  padding-inline-start: 3px;  /* left */
+  padding-inline-end: 3px;  /* right */
+  margin-inline-start: 3px;  /* left */
+  margin-inline-end: 6px;  /* right */
+  text-align: center;
+  flex-basis: 8em;
+  flex-grow: 0;  /* We don't grow beyond our intended size */
+}
+#real-discard-section {
+  background-color: #bbbbbb;
+  flex-shrink: 1;
+}
+#fake-discard-section {
+  visibility: hidden;
+  /*Little hack to make it symmetrical (while ueing margin-start instead of 
+    margin-left) so real one's left margin becomes this one's right margin*/
+  direction: rtl;
+  flex-shrink: 1e9;  /* We shrink the empty space first - if screen too small, symmetrical can go in the bin */
+}
+@media (width < calc(1200px + 8em + 50px)) {
+  /* +50px is leway area for padding, etc. - result is the same anywhere in 
+  the 'fake one is compressed area' so ensure we are definately in there */
+  #fake-discard-section {
+    /* Go all the way to the edge if we're being compressed. */
+    margin: 0;
+    padding: 0;
+  }
+}
+
+#our-area {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-width: fit-content;
+}
+
+#our-hand {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  width: 100%;
+  min-width: fit-content;
+}
+
+.card-in-hand {
+  height: 8em;
+  padding-left: 3px;
+  padding-right: 3px;
+  padding-top: 3px;
+  margin-left: 3px;
+  margin-right: 3px;
+  margin-bottom: 3px;
+  background-color: #bbbbbb;
+  border-radius: 7px;
+}
+
+#our-placed-area {
+  background-color: #dddddd;
+  border-radius: 8px;
+  padding-top: 6px;
+  padding-bottom: 4px;
+  padding-left: 4px;
+  padding-right: 4px;
+
+  width: calc(min(100%, 1200px));
+  flex: 0 1 1200px;
+
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: space-evenly;
+  width: 100%;
+  min-width: fit-content;
+  align-items: stretch;
+}
+
+.our-placed-area-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.area-column-top-text {
+  text-align: center;
+}
+
+.our-placed-card-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding-top: 4px;
+}
+
+.artifact-column {
+  border-left: 1px solid #000000;
+}
+
+.our-placed-card {
+  height: 6em;
+  background-color: #aaaaaa;
+  margin: 3px;
+  padding: 3px;
+  border-radius: 8px;
+  /* Temp: */
+  text-align: center;
+}
+.our-placed-card.starting-card {
+  padding-left: 6px;
+  padding-right: 6px;
+  margin-left: 0px;
+  margin-right: 0px;
+  border-radius: 0px;
+  border-left: 1px solid #777777;
+}
+.our-placed-area-column:nth-child(1 of .color-area-column) .our-placed-card.starting-card {
+  padding-left: 3px;
+  margin-left: 3px;
+  border-bottom-left-radius: 8px;
+  border-top-left-radius: 8px;
+  border-left-style: none;
+}
+.our-placed-area-column:nth-last-child(1 of .color-area-column) .our-placed-card.starting-card {
+  padding-right: 3px;
+  margin-right: 3px;
+  border-bottom-right-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+#moon-phases-area-root {
+  flex-grow: 1;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+#moon-phases-area {
+  display: grid;
+  padding: 3px;
+  border-radius: 7px;
+  background-color: #dddddd;
+}
+
+.moon-phase-top {
+  grid-row: 1;  /* starting at 0 is invalid because css is annoying */
+}
+.moon-phase-bottom {
+  grid-row: 2;
+}
+
+.double-moon-phase {
+  grid-row: 1 / 3;  /* 1 to 2 incl */
+}
+
+.single-moon-phase, .double-moon-phase {
+  margin: 3px;
+  padding: 3px;
+  background-color: #bbbbbb;
+  border-radius: 5px;
+  width: 4em;
+  /* Temp (center text), until images get sorted out */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.single-moon-phase {
+  height: 4em;
+}
