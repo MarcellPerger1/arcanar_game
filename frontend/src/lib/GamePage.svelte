@@ -1,5 +1,6 @@
 <script>
   import MoonPhases from "./MoonPhases.svelte";
+  import Hand from "./Hand.svelte";
   let { state } = $props();
 </script>
 
@@ -7,12 +8,7 @@
   <MoonPhases moon_phases={state.moon_phases}/>
   <div id="our-area-root">
     <div id="our-area">
-      <div id="our-hand">
-        <div class="card-in-hand">-----HC1-----</div>
-        <div class="card-in-hand">-----HC2-----</div>
-        <div class="card-in-hand">-----HC3-----</div>
-        <div class="card-in-hand">-----HC4-----</div>
-      </div>
+      <Hand cards={Object.values(state.players[0].areas[10])}/>
       <div id="our-area-bottom-section">
         <div id="real-discard-section" class="discard-size">Discard pile<br />{"" + state}</div>
         <div id="our-placed-area">

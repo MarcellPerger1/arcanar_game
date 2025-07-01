@@ -93,6 +93,8 @@ body {
   margin-bottom: 3px;
   background-color: #bbbbbb;
   border-radius: 7px;
+  /* Temp, until not just text */
+  text-align: center;
 }
 
 #our-placed-area {
