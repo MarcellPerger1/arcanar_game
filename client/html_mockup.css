@@ -19,12 +19,39 @@ body {
   /* Bottom of screen, limit width */
   position: fixed;
   bottom: 0px;
-  width: calc(min(100%, 1200px));
+  width: 100%;
   /* Center if screen too wide */
   left: 50%;
   transform: translateX(-50%);
   /* HScrollbar if screen too thin */
-  overflow-y: auto;
+  overflow-x: auto;
+}
+
+#our-area-bottom-section {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.discard-size {
+  border-radius: 8px;
+  width: 8em;
+  height: 12em;
+  margin-inline-start: 3px;  /* left */ 
+  margin-inline-end: 6px;  /* right */
+  flex-basis: 8em;
+  flex-grow: 0;  /* We don't grow beyond our intended size */
+}
+#real-discard-section {
+  background-color: #bbbbbb;
+  flex-shrink: 1;
+}
+#fake-discard-section {
+  visibility: hidden;
+  /*Little hack to make it symmetrical (while ueing margin-start instead of 
+    margin-left) so real one's left margin becomes this one's right margin*/
+  direction: rtl;
+  flex-shrink: 1e9;  /* We shrink the empty space first - if screen too small, symmetrical can go in the bin */
 }
 
 #our-area {
@@ -61,6 +88,9 @@ body {
   padding-bottom: 4px;
   padding-left: 4px;
   padding-right: 4px;
+
+  width: calc(min(100%, 1200px));
+  flex: 0 1 1200px;
 
   display: flex;
   flex-direction: row;
