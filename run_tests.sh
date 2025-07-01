@@ -1,1 +1,1 @@
-python -m unittest discover -t . -s ./test_server
+python -m unittest discover -t . -s ./test_backend

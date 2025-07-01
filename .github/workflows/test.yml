@@ -27,7 +27,7 @@ jobs:
         python-version: ${{ inputs.python_version }}
     - name: Install dependencies
       run: |
-        pip install -r server/requirements.txt
+        pip install -r backend/requirements.txt
     - name: Run end-to-end tests
       run: |
         bash ./run_tests.sh
