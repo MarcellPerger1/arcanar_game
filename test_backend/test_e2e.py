@@ -45,7 +45,7 @@ class E2ETestCase(unittest.TestCase):
 
     # noinspection PyMethodMayBeStatic
     def _load_actions(self):
-        with open('./test_server/test_e2e_data.json') as f:
+        with open('./test_backend/test_e2e_data.json') as f:
             raw: list[dict[str, ...]] = json.load(f)
         return [next(iter(o.items())) for o in raw]
 
