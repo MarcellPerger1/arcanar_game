@@ -142,14 +142,15 @@ __pycache__/
 *.so
 
 # Distribution / packaging
+### MODIFIED: lib and build should only apply to the Python bit - svelte uses lib for pure js files
 .Python
-build/
+/backend/build/
 develop-eggs/
 dist/
 downloads/
 eggs/
 .eggs/
-lib/
+/backend/lib/
 lib64/
 parts/
 sdist/
