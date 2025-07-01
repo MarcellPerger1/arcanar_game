@@ -1,24 +1,10 @@
 <script>
-  let { data } = $props();
+  import MoonPhases from "./MoonPhases.svelte";
+  let { state } = $props();
 </script>
 
 <div id="game-area">
-  <div id="moon-phases-area-root">
-    <div id="moon-phases-area">
-      <!-- Oh no, I have to learn grid now... -->
-      <div class="single-moon-phase moon-phase-top">T1M0</div>
-      <div class="single-moon-phase moon-phase-bottom">T1M1</div>
-      <div class="single-moon-phase moon-phase-top">T2M0</div>
-      <div class="single-moon-phase moon-phase-bottom">T2M1</div>
-      <div class="single-moon-phase moon-phase-top">T3M0</div>
-      <div class="single-moon-phase moon-phase-bottom">T3M1</div>
-      <div class="single-moon-phase moon-phase-top">T4M0</div>
-      <div class="single-moon-phase moon-phase-bottom">T4M1</div>
-      <div class="single-moon-phase moon-phase-top">T5M0</div>
-      <div class="single-moon-phase moon-phase-bottom">T5M1</div>
-      <div class="double-moon-phase">T6M</div>
-    </div>
-  </div>
+  <MoonPhases moon_phases={state.moon_phases}/>
   <div id="our-area-root">
     <div id="our-area">
       <div id="our-hand">
@@ -28,7 +14,7 @@
         <div class="card-in-hand">-----HC4-----</div>
       </div>
       <div id="our-area-bottom-section">
-        <div id="real-discard-section" class="discard-size">Discard pile<br />{"" + data}</div>
+        <div id="real-discard-section" class="discard-size">Discard pile<br />{"" + state}</div>
         <div id="our-placed-area">
           <div class="our-placed-area-column color-area-column">
             <div class="area-column-top-text">C1: 4</div>
