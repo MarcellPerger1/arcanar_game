@@ -15,7 +15,7 @@ body {
   min-width: fit-content;
 }
 
-#our-area {
+#our-area-root {
   /* Bottom of screen, limit width */
   position: fixed;
   bottom: 0px;
@@ -25,10 +25,13 @@ body {
   transform: translateX(-50%);
   /* HScrollbar if screen too thin */
   overflow-y: auto;
+}
 
+#our-area {
   display: flex;
   flex-direction: column;
   align-items: stretch;
+  min-width: fit-content;
 }
 
 #our-hand {
