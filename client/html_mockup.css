@@ -57,6 +57,15 @@ body {
   direction: rtl;
   flex-shrink: 1e9;  /* We shrink the empty space first - if screen too small, symmetrical can go in the bin */
 }
+@media (width < calc(1200px + 8em + 50px)) {
+  /* +50px is leway area for padding, etc. - result is the same anywhere in 
+  the 'fake one is compressed area' so ensure we are definately in there */
+  #fake-discard-section {
+    /* Go all the way to the edge if we're being compressed. */
+    margin: 0;
+    padding: 0;
+  }
+}
 
 #our-area {
   display: flex;
