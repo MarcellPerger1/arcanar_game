@@ -37,8 +37,12 @@ body {
   border-radius: 8px;
   width: 8em;
   height: 12em;
-  margin-inline-start: 3px;  /* left */ 
+  padding-top: 3px;
+  padding-inline-start: 3px;  /* left */
+  padding-inline-end: 3px;  /* right */
+  margin-inline-start: 3px;  /* left */
   margin-inline-end: 6px;  /* right */
+  text-align: center;
   flex-basis: 8em;
   flex-grow: 0;  /* We don't grow beyond our intended size */
 }
