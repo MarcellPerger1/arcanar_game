@@ -1,6 +1,6 @@
-from server.api.json_adapter import JsonAdapter
-from server.api.wesocket_conn import WebsocketConn
-from server.core import Game, DefaultRuleset
+from backend.api.json_adapter import JsonAdapter
+from backend.api.wesocket_conn import WebsocketConn
+from backend.core import Game, DefaultRuleset
 
 
 def main():

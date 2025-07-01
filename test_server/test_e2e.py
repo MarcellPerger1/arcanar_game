@@ -9,9 +9,9 @@ from pathlib import Path
 from websockets import ConnectionClosedOK
 from websockets.sync.client import connect, ClientConnection
 
-from server.api.json_adapter import JsonAdapter
-from server.api.wesocket_conn import WebsocketConn
-from server.core import Game, DefaultRuleset
+from backend.api.json_adapter import JsonAdapter
+from backend.api.wesocket_conn import WebsocketConn
+from backend.core import Game, DefaultRuleset
 
 
 _PORT = 5926
