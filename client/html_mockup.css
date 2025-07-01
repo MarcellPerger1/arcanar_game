@@ -8,6 +8,11 @@ body {
   height: 100vh;
   width: 100vw;
 }
+@media(width < 578px) {
+  body {
+    height: calc(100vh - 20px);  /*remove amount for bottom scrollbar*/
+  }
+}
 
 #main, #game-area {
   width: 100%;
@@ -15,16 +20,11 @@ body {
   min-width: fit-content;
 }
 
-#our-area-root {
-  /* Bottom of screen, limit width */
-  position: fixed;
-  bottom: 0px;
-  width: 100%;
-  /* Center if screen too wide */
-  left: 50%;
-  transform: translateX(-50%);
-  /* HScrollbar if screen too thin */
-  overflow-x: auto;
+#game-area {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: stretch;
 }
 
 #our-area-bottom-section {
