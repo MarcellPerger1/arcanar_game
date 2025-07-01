@@ -1,0 +1,123 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0px;
+  padding: 0px;
+  height: 100vh;
+  width: 100vw;
+}
+
+#main, #game-area {
+  width: 100%;
+  height: 100%;
+  min-width: fit-content;
+}
+
+#our-area {
+  /* Bottom of screen, limit width */
+  position: fixed;
+  bottom: 0px;
+  width: calc(min(100%, 1200px));
+  /* Center if screen too wide */
+  left: 50%;
+  transform: translateX(-50%);
+  /* HScrollbar if screen too thin */
+  overflow-y: auto;
+
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+#our-hand {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  width: 100%;
+  min-width: fit-content;
+}
+
+.card-in-hand {
+  height: 8em;
+  padding-left: 3px;
+  padding-right: 3px;
+  padding-top: 3px;
+  margin-left: 3px;
+  margin-right: 3px;
+  margin-bottom: 3px;
+  background-color: #bbbbbb;
+  border-radius: 7px;
+}
+
+#our-placed-area {
+  background-color: #dddddd;
+  border-radius: 8px;
+  padding-top: 6px;
+  padding-bottom: 4px;
+  padding-left: 4px;
+  padding-right: 4px;
+
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: space-evenly;
+  width: 100%;
+  min-width: fit-content;
+  align-items: stretch;
+}
+
+.our-placed-area-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.area-column-top-text {
+  text-align: center;
+}
+
+.our-placed-card-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding-top: 4px;
+}
+
+.artifact-column {
+  border-left: 1px solid #000000;
+}
+
+.our-placed-card {
+  height: 6em;
+  background-color: #aaaaaa;
+  margin: 3px;
+  padding: 3px;
+  border-radius: 8px;
+  /* Temp: */
+  text-align: center;
+}
+.our-placed-card.starting-card {
+  padding-left: 6px;
+  padding-right: 6px;
+  margin-left: 0px;
+  margin-right: 0px;
+  border-radius: 0px;
+  border-left: 1px solid #777777;
+}
+.our-placed-area-column:nth-child(1 of .color-area-column) .our-placed-card.starting-card {
+  padding-left: 3px;
+  margin-left: 3px;
+  border-bottom-left-radius: 8px;
+  border-top-left-radius: 8px;
+  border-left-style: none;
+}
+.our-placed-area-column:nth-last-child(1 of .color-area-column) .our-placed-card.starting-card {
+  padding-right: 3px;
+  margin-right: 3px;
+  border-bottom-right-radius: 8px;
+  border-top-right-radius: 8px;
+}
