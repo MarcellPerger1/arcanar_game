@@ -53,7 +53,8 @@ class DefaultRuleset(IRuleset):
                              GainResource(Color.YELLOW, 1))
 
     def get_starting_cards(self) -> list[CardTemplate]:
-        return [CardTemplate(c, self._starting_card_effect(c), CardCost.free())
+        return [CardTemplate(c, self._starting_card_effect(c), CardCost.free(),
+                             is_starting_card=True)
                 for c in Color.members()]
 
     def get_deck(self, round_idx: int) -> list[CardTemplate]:
