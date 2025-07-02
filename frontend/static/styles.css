@@ -189,6 +189,7 @@ body {
 #moon-phases-area {
   display: grid;
   padding: 3px;
+  margin: 4px;
   border-radius: 7px;
   background-color: #dddddd;
 }
