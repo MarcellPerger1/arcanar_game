@@ -1,5 +1,5 @@
 <script lang="ts">
-  interface Props {cards: any[];}
+  interface Props {cards: CardT[];}
   let { cards }: Props = $props();
 </script>
 
