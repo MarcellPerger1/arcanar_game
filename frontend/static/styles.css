@@ -121,7 +121,6 @@ body {
   flex-wrap: nowrap;
   justify-content: space-evenly;
   width: 100%;
-  min-width: fit-content;
   align-items: stretch;
 }
 
