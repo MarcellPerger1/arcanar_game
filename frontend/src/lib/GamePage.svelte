@@ -17,9 +17,9 @@
         <div id="real-discard-section" class="discard-size">Discard pile<br />{"" + state}</div>
         <div id="our-placed-area">
           {#each Colors as color}
-            <CardsAndResource area={player_data.areas[color]} resource={[color, player_data.resources[color] ?? 0]}/>
+            <CardsAndResource areaType={color} area={player_data.areas[color]} resource={[color, player_data.resources[color] ?? 0]}/>
           {/each}
-          <CardsAndResource area={player_data.areas[ARTIFACT]} resource={[POINTS, player_data.resources[POINTS] ?? 0]}/>
+          <CardsAndResource areaType={ARTIFACT} area={player_data.areas[ARTIFACT]} resource={[POINTS, player_data.resources[POINTS] ?? 0]}/>
         </div>
         <div id="fake-discard-section" class="discard-size"></div>
       </div>
