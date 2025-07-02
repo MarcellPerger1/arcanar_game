@@ -1,8 +1,7 @@
 <script lang="ts">
   import MoonPhases from "./MoonPhases.svelte";
   import Hand from "./Hand.svelte";
-  import CardsAndResource from "./CardsAndResource.svelte";
-  import { ARTIFACT, Colors, POINTS } from "./enums.ts";
+  import OwnPlacedBoard from "./OwnPlacedBoard.svelte";
 
   let { state }: {state: StateT} = $props();
   let player_data = $derived(state.players[state.curr_player_idx]);
@@ -15,12 +14,7 @@
       <Hand cards={Object.values(player_data.areas[10])}/>
       <div id="our-area-bottom-section">
         <div id="real-discard-section" class="discard-size">Discard pile<br />{"" + state}</div>
-        <div id="our-placed-area">
-          {#each Colors as color}
-            <CardsAndResource areaType={color} area={player_data.areas[color]} resource={[color, player_data.resources[color] ?? 0]}/>
-          {/each}
-          <CardsAndResource areaType={ARTIFACT} area={player_data.areas[ARTIFACT]} resource={[POINTS, player_data.resources[POINTS] ?? 0]}/>
-        </div>
+        <OwnPlacedBoard player_data={player_data}/>
         <div id="fake-discard-section" class="discard-size"></div>
       </div>
     </div>
