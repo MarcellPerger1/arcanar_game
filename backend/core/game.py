@@ -21,6 +21,7 @@ class Game:
     seed: str = None
     round_num: int = 0
     turn_num: int = 0
+    curr_player_idx: int = 0
     # Only used at end
     players_ranked: list[Player] | None = None
     winners: list[Player] | None = None
@@ -100,7 +101,7 @@ class Game:
 
     def do_turn(self):
         # TODO: hooks for UI to display state changes
-        for p in self.players:
+        for self.curr_player_idx, p in enumerate(self.players):
             p.do_turn()
 
     def count_points(self):
