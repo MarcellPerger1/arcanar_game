@@ -1,6 +1,7 @@
 <script lang="ts">
   import MoonPhases from "./MoonPhases.svelte";
   import Hand from "./Hand.svelte";
+  import Card from "./Card.svelte";
   let { state }: {state: StateT} = $props();
   let player_data = $derived(state.players[state.curr_player_idx]);
 </script>
@@ -16,9 +17,7 @@
           <div class="our-placed-area-column color-area-column">
             <div class="area-column-top-text">C1: 4</div>
             <div class="our-placed-card-column">
-              <div class="starting-card our-placed-card">
-                DC1
-              </div>
+              <Card data={player_data.areas[1][0]} />
             </div>
           </div>
           <div class="our-placed-area-column color-area-column">
