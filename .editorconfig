@@ -11,6 +11,9 @@ indent_size = 2
 [*.[mc]?[jt]s]
 indent_size = 2
 
+[*.d.ts]
+indent_size = 2
+
 [*.html]
 indent_size = 2
 
