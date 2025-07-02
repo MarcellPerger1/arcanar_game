@@ -2,6 +2,7 @@
   import MoonPhases from "./MoonPhases.svelte";
   import Hand from "./Hand.svelte";
   import Card from "./Card.svelte";
+  import CardsAndResource from "./CardsAndResource.svelte";
   let { state }: {state: StateT} = $props();
   let player_data = $derived(state.players[state.curr_player_idx]);
 </script>
@@ -14,6 +15,7 @@
       <div id="our-area-bottom-section">
         <div id="real-discard-section" class="discard-size">Discard pile<br />{"" + state}</div>
         <div id="our-placed-area">
+          <CardsAndResource area={player_data.areas[1]} resource={[1, player_data.resources[1] ?? 0]}/>
           <div class="our-placed-area-column color-area-column">
             <div class="area-column-top-text">C1: 4</div>
             <div class="our-placed-card-column">
