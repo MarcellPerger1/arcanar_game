@@ -2,6 +2,8 @@
   import MoonPhases from "./MoonPhases.svelte";
   import Hand from "./Hand.svelte";
   import OwnPlacedBoard from "./OwnPlacedBoard.svelte";
+  import WithDiscardOnLeft from "./WithDiscardOnLeft.svelte";
+  import { DISCARD, HAND } from "./enums";
 
   let { state }: {state: StateT} = $props();
   let player_data = $derived(state.players[state.curr_player_idx]);
@@ -11,12 +13,10 @@
   <MoonPhases moon_phases={state.moon_phases}/>
   <div id="our-area-root">
     <div id="our-area">
-      <Hand cards={Object.values(player_data.areas[10])}/>
-      <div id="our-area-bottom-section">
-        <div id="real-discard-section" class="discard-size">Discard pile<br />{"" + state}</div>
+      <Hand cards={Object.values(player_data.areas[HAND])}/>
+      <WithDiscardOnLeft discard_area={player_data.areas[DISCARD]}>
         <OwnPlacedBoard player_data={player_data}/>
-        <div id="fake-discard-section" class="discard-size"></div>
-      </div>
+      </WithDiscardOnLeft>
     </div>
   </div>
 </div>
