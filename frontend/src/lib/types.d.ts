@@ -1,6 +1,6 @@
 declare type StateT = {
   curr_player_idx: number;
-  moon_phases: Array<[number] | [number, number]>;
+  moon_phases: Array<[MoonPhaseT] | [MoonPhaseT, MoonPhaseT]>;
   n_players: number;
   players: Array<PlayerT>;
   players_ranked: Array<PlayerT>?;  // TODO: wasteful to pass entire player object twice, should pass index instead
@@ -10,10 +10,10 @@ declare type StateT = {
   seed: string;
 };
 declare type PlayerT = {
-  areas: {[area_idx: number]: AreaT};
+  areas: {[area_idx in AreaTypeT]: AreaT};
   final_score: number?;
   idx: number;
-  resources: {[resource: number]: number};
+  resources: _Counter<ResourceT>;
 };
 declare type AreaT = {
   [key: number]: CardT;
@@ -32,10 +32,12 @@ declare type CostT = {
 };
 declare type EffectT = {__class__: string} & any;
 declare type LocationT = {
-  area: number;
+  area: AreaTypeT;
   key: number;
   player: number;
 };
 declare type ResourceFilterT = {
-  allowed_resources: Array<number>;
+  allowed_resources: Array<ResourceT>;
 }
+
+type _Counter<K> = {[key in K]?: number};
