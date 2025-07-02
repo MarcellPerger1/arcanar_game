@@ -44,6 +44,7 @@ class Player:
         for c_template in self.ruleset.get_starting_cards():
             c = c_template.instantiate()
             self.place_card(c)
+        self.resources |= self.ruleset.get_starting_resources()
 
     def place_card(self, card: Card):
         card_type = card.card_type

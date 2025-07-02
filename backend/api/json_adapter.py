@@ -33,7 +33,7 @@ class JsonAdapter(IFrontend):
         self.conn.init()
         self.send({
             'request': 'init',
-            'server_version': '0.1.2',
+            'server_version': '0.1.3',
             'api_version': 1,
         }, thread=False, state=False)
         self.send({
