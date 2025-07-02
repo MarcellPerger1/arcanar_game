@@ -4,41 +4,41 @@
 // (and besides, TS in very underpowered in terms of metaclasses)
 
 // Colors
-const PURPLE = 1;
-const GREEN = 2;
-const RED = 3;
-const BLUE = 4;
-const YELLOW = 5;
+export const PURPLE = 1;
+export const GREEN = 2;
+export const RED = 3;
+export const BLUE = 4;
+export const YELLOW = 5;
 // Card types
-const ARTIFACT = 6;
-const EVENT = 7;
+export const ARTIFACT = 6;
+export const EVENT = 7;
 // Moon phases
-const LAST_TURN = 8;
+export const LAST_TURN = 8;
 // Locations
-const DISCARD = 9;
-const HAND = 10;
-const SPARE = 11;  // (unused)
+export const DISCARD = 9;
+export const HAND = 10;
+export const SPARE = 11;  // (unused)
 // Resources
-const POINTS = 12;
+export const POINTS = 12;
 
 
-type ColorT = typeof PURPLE | typeof GREEN | typeof RED | typeof BLUE | typeof YELLOW;
-const Colors: ColorT[] = [PURPLE, GREEN, RED, BLUE, YELLOW];
+export type ColorT = typeof PURPLE | typeof GREEN | typeof RED | typeof BLUE | typeof YELLOW;
+export const Colors: ColorT[] = [PURPLE, GREEN, RED, BLUE, YELLOW];
 
-type MoonPhaseT = ColorT | typeof LAST_TURN;
-const MoonPhases: MoonPhaseT[] = UpCast<MoonPhaseT[]>(Colors).concat([LAST_TURN]);
+export type MoonPhaseT = ColorT | typeof LAST_TURN;
+export const MoonPhases: MoonPhaseT[] = UpCast<MoonPhaseT[]>(Colors).concat([LAST_TURN]);
 
-type ResourceT = ColorT | typeof POINTS;
-const Resources: ResourceT[] = UpCast<ResourceT[]>(Colors).concat(POINTS);
+export type ResourceT = ColorT | typeof POINTS;
+export const Resources: ResourceT[] = UpCast<ResourceT[]>(Colors).concat(POINTS);
 
-type PlaceableCardT = ColorT | typeof ARTIFACT;
-const PlaceableCards: PlaceableCardT[] = UpCast<PlaceableCardT[]>(Colors).concat([ARTIFACT]);
+export type PlaceableCardT = ColorT | typeof ARTIFACT;
+export const PlaceableCards: PlaceableCardT[] = UpCast<PlaceableCardT[]>(Colors).concat([ARTIFACT]);
 
-type CardTypeT = PlaceableCardT | typeof EVENT;
-const CardTypes: CardTypeT[] = UpCast<CardTypeT[]>(PlaceableCards).concat([EVENT]);
+export type CardTypeT = PlaceableCardT | typeof EVENT;
+export const CardTypes: CardTypeT[] = UpCast<CardTypeT[]>(PlaceableCards).concat([EVENT]);
 
-type AreaTypeT = PlaceableCardT | typeof DISCARD | typeof HAND | typeof SPARE;
-const AreaTypes: AreaTypeT[] = UpCast<AreaTypeT[]>(PlaceableCards).concat([DISCARD, HAND, SPARE]);
+export type AreaTypeT = PlaceableCardT | typeof DISCARD | typeof HAND | typeof SPARE;
+export const AreaTypes: AreaTypeT[] = UpCast<AreaTypeT[]>(PlaceableCards).concat([DISCARD, HAND, SPARE]);
 
 
 // Exists purely to help TS avoid hallucinating errors. Random bad idea: vibe-compilation.
