@@ -13,6 +13,8 @@ indent_size = 2
 
 [*.d.ts]
 indent_size = 2
+[*.ts]
+indent_size = 2
 
 [*.html]
 indent_size = 2
