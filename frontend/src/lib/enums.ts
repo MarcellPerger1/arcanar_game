@@ -45,3 +45,13 @@ export const AreaTypes: AreaTypeT[] = UpCast<AreaTypeT[]>(PlaceableCards).concat
 function UpCast<U>(inp: U): U {
   return inp;
 }
+
+export function charifyEnum(val: ColorT | MoonPhaseT | ResourceT | CardTypeT | AreaTypeT) {
+  return ("0" + "PGRBY" + "AE" + "L" + "DH?"+ "V")[val];
+}
+export function stringifyEnumShort(val: ColorT | MoonPhaseT | ResourceT | CardTypeT | AreaTypeT) {
+  return ['??', ...'PGRBY', ..."AE", "Last", "Discard", "Hand", "Spare?", "VP"][val];
+}
+export function stringifyEnumLong(val: ColorT | MoonPhaseT | ResourceT | CardTypeT | AreaTypeT) {
+  return ['Unknown', 'purple', 'greed', 'red', 'blue', 'yellow', 'artifact', 'event', "last turn", "discarded", "hand", "Unused?", "Points"][val];
+}
