@@ -6,7 +6,7 @@
 </script>
 
 <div id="our-area-bottom-section">
-  <div id="real-discard-section" class="discard-size">Discard pile<br />{Object.values(discard_area).length}</div>
+  <div id="real-discard-section" class="discard-size">Discard pile<br />{Object.values(discard_area).length} cards</div>
   {@render children()}
   <div id="fake-discard-section" class="discard-size"></div>
 </div>
