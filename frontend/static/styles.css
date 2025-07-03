@@ -31,7 +31,13 @@ body {
 #our-area-bottom-section {
   display: flex;
   flex-direction: row;
-  justify-content: center;
+  /* Can't use flex centering here as it would overflow the page without scrollbars.
+  `justify-content: safe center` would fix this but that was onyl added in late-2023.
+  Therefore, we do margin: auto on children. Can't do it on this one as that would
+  try to compress the elements/the flexbox bit as much as possible (as margin is greedy)
+  Once again an example of how CSS never does the thing you want the first, or second,
+   or third time and it has very little logic and is mainly trial-and-error-and-error */
+  /* justify-content: center; */
 }
 
 .discard-size {
@@ -50,6 +56,7 @@ body {
 #real-discard-section {
   background-color: #bbbbbb;
   flex-shrink: 1;
+  margin-left: auto;
 }
 #fake-discard-section {
   visibility: hidden;
@@ -57,6 +64,7 @@ body {
     margin-left) so real one's left margin becomes this one's right margin*/
   direction: rtl;
   flex-shrink: 1e9;  /* We shrink the empty space first - if screen too small, symmetrical can go in the bin */
+  margin-right: auto;
 }
 @media (width < calc(1200px + 8em + 50px)) {
   /* +50px is leway area for padding, etc. - result is the same anywhere in 
@@ -93,6 +101,8 @@ body {
   margin-bottom: 3px;
   background-color: #bbbbbb;
   border-radius: 7px;
+  /* Temp, until not just text */
+  text-align: center;
 }
 
 #our-placed-area {
@@ -111,7 +121,6 @@ body {
   flex-wrap: nowrap;
   justify-content: space-evenly;
   width: 100%;
-  min-width: fit-content;
   align-items: stretch;
 }
 
@@ -180,6 +189,7 @@ body {
 #moon-phases-area {
   display: grid;
   padding: 3px;
+  margin: 4px;
   border-radius: 7px;
   background-color: #dddddd;
 }

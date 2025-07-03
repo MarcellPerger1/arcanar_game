@@ -5,11 +5,21 @@ charset = utf-8
 [*.{py,pyi}]
 indent_size = 4
 
+[*json]
+indent_size = 2
 
 [*.[mc]?[jt]s]
 indent_size = 2
 
+[*.d.ts]
+indent_size = 2
+[*.ts]
+indent_size = 2
+
 [*.html]
+indent_size = 2
+
+[*.svelte]
 indent_size = 2
 
 [*.css]

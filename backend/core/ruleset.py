@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import abc
+from collections import Counter
 from typing import Sequence, Collection
 
 from .card import CardTemplate, CardCost, CardEffect
@@ -41,6 +42,10 @@ class IRuleset(abc.ABC):
     def get_adjacencies(self) -> dict[PlaceableCardType, Collection[PlaceableCardType]]:
         ...
 
+    @abc.abstractmethod
+    def get_starting_resources(self) -> Counter[AnyResource]:
+        ...
+
 
 # noinspection PyMethodMayBeStatic
 class DefaultRuleset(IRuleset):
@@ -53,7 +58,8 @@ class DefaultRuleset(IRuleset):
                              GainResource(Color.YELLOW, 1))
 
     def get_starting_cards(self) -> list[CardTemplate]:
-        return [CardTemplate(c, self._starting_card_effect(c), CardCost.free())
+        return [CardTemplate(c, self._starting_card_effect(c), CardCost.free(),
+                             is_starting_card=True)
                 for c in Color.members()]
 
     def get_deck(self, round_idx: int) -> list[CardTemplate]:
@@ -79,6 +85,9 @@ class DefaultRuleset(IRuleset):
                 Color.RED: {Color.GREEN, Color.BLUE},
                 Color.BLUE: {Color.RED, Color.YELLOW},
                 Color.YELLOW: {Color.BLUE}}
+
+    def get_starting_resources(self) -> Counter[AnyResource]:
+        return Counter(Color.members())   # 1 of each regular color
 
     @classmethod
     def _get_decks(cls):
