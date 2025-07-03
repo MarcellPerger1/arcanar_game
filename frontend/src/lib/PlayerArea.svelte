@@ -2,6 +2,7 @@
   import { DISCARD, HAND } from "./enums";
   import Hand from "./Hand.svelte";
   import OwnPlacedBoard from "./OwnPlacedBoard.svelte";
+  import type { PlayerT } from "./types";
   import WithDiscardOnLeft from "./WithDiscardOnLeft.svelte";
 
   let {player_data}: {player_data: PlayerT} = $props();

@@ -1,6 +1,7 @@
 <script lang="ts">
-  interface Props {cards: CardT[];}
-  let { cards }: Props = $props();
+  import type { CardT } from "./types";
+
+  let { cards }: {cards: CardT[]} = $props();
 </script>
 
 <div id="our-hand">

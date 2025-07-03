@@ -1,6 +1,7 @@
 <script lang="ts">
   import Card from "./Card.svelte";
   import { ARTIFACT, type AreaTypeT } from "./enums";
+  import type { AreaT } from "./types";
 
   let {area, areaType, resource}: {area: AreaT, areaType: AreaTypeT, resource: [number, number]} = $props();
 </script>

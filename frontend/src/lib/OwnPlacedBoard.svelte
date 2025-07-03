@@ -1,6 +1,7 @@
 <script lang="ts">
   import CardsAndResource from "./CardsAndResource.svelte";
   import { ARTIFACT, Colors, POINTS } from "./enums";
+  import type { PlayerT } from "./types";
 
   let {player_data}: {player_data: PlayerT} = $props();
 </script>

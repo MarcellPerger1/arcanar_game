@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
+  import type { AreaT } from "./types";
 
   let {children, discard_area}: {children: Snippet, discard_area: AreaT} = $props();
 </script>

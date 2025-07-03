@@ -1,4 +1,6 @@
 <script lang="ts">
+  import type { CardT } from "./types";
+
   let {data}: {data: CardT} = $props();
 </script>
 

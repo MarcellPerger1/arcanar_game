@@ -1,8 +1,9 @@
 import type { CardTypeT, ResourceT } from "./enums";
 
+
 declare type StateT = {
   curr_player_idx: number;
-  moon_phases: Array<[MoonPhaseT] | [MoonPhaseT, MoonPhaseT]>;
+  moon_phases: MoonPhasesT;
   n_players: number;
   players: Array<PlayerT>;
   players_ranked: Array<PlayerT>?;  // TODO: wasteful to pass entire player object twice, should pass index instead
@@ -11,6 +12,7 @@ declare type StateT = {
   round_num: number;
   seed: string;
 };
+declare type MoonPhasesT = Array<[MoonPhaseT] | [MoonPhaseT, MoonPhaseT]>
 declare type PlayerT = {
   areas: {[area_idx in AreaTypeT]: AreaT};
   final_score: number?;

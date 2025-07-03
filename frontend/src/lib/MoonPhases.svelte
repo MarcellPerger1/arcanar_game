@@ -1,5 +1,7 @@
-<script>
-  let { moon_phases } = $props();
+<script lang="ts">
+  import type { MoonPhasesT } from "./types";
+
+  let { moon_phases }: {moon_phases: MoonPhasesT} = $props();
 </script>
 
 <div id="moon-phases-area-root">
