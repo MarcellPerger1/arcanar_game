@@ -10,7 +10,7 @@
   <div class="area-column-top-text">R{resource[0]}: {resource[1]}</div>
   <!-- TODO: extract into CardsColumn?: -->
   <div class="our-placed-card-column">
-    {#each Object.values(area) as card_data}
+    {#each Object.values(area) as card_data (card_data.location.key)}
        <Card data={card_data} />
     {/each}
   </div>
