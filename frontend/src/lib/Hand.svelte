@@ -1,4 +1,5 @@
 <script lang="ts">
+  import CardInHand from "./CardInHand.svelte";
   import type { CardT } from "./types";
 
   let { cards }: {cards: CardT[]} = $props();
@@ -6,6 +7,6 @@
 
 <div id="our-hand">
   {#each cards as card (card.location.key)}
-     <div class="card-in-hand">-----HC{card.location.key}-----<br>Type: {card.card_type}</div>
+     <CardInHand data={card} />
   {/each}
 </div>
