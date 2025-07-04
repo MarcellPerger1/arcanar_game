@@ -4,6 +4,7 @@
 
   import CardEffectText from "./CardEffectText.svelte";
   import { arrayRemove, stringifyToOrdinal } from "./util";
+  import EffectCondtionText from "./EffectCondtionText.svelte";
 
   let {effect}: {effect: EffectT} = $props();
 
@@ -52,6 +53,7 @@
   }
 </script>
 
+<!-- Oh no, this is a massive if, my HTML is going to be full of hydration markers -->
 {#if effect.__class__ == 'NullEffect'}
   Nothing
 {:else if effect.__class__ == 'GainResource'}
@@ -94,8 +96,7 @@
 {:else if effect.__class__ == "SuppressFail"}
   [<CardEffectText effect={effect.effect} />]  <!-- Not actually used in the base ruleset -->
 {:else if effect.__class__ == "ConditionalEffect"}
-  <!-- TODO! Render conditions -->
-  If ?condition?: <CardEffectText effect={effect.if_true} />
+  If <EffectCondtionText condition={effect.cond} />: <CardEffectText effect={effect.if_true} />
   {#if effect.if_false.__class__ != "NullEffect"}
     ; else, <CardEffectText effect={effect.if_false} />
   {/if}
