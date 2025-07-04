@@ -6,7 +6,8 @@
 </script>
 
 <div class={["our-placed-card"].concat(data.is_starting_card ? ["starting-card"] : [])}>
-  {data.is_starting_card ? 'Starting' : 'Placed'}
-  Card: <br>
+  {#if data.is_starting_card}
+    Starting card: <br>
+  {/if}
   <CardEffectText effect={data.effect}/>
 </div>
