@@ -24,7 +24,7 @@ declare type AreaT = {
 };
 declare type CardT = {
   always_triggers: boolean;
-  card_type: number;
+  card_type: CardTypeT;
   cost: CostT;
   effect: EffectT;
   is_starting_card: boolean;

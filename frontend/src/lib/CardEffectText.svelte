@@ -3,6 +3,7 @@
   import type { EffectT, ResourceFilterT } from "./types";
 
   import CardEffectText from "./CardEffectText.svelte";
+  import { arrayRemove } from "./util";
 
   let {effect}: {effect: EffectT} = $props();
 
@@ -10,12 +11,6 @@
   function shorten(s: string) {
     if(s.length <= MAX_JSON_LENGTH) return s;
     return s.slice(0, MAX_JSON_LENGTH - 3) + '...';
-  }
-
-  // This function should be builtin! #ihatejavascript
-  function removeFromArray<T>(arr: T[], item: T) {
-    let idx = arr.indexOf(item);
-    if(idx >= 0) /*del arr[idx:idx+1]*/arr.splice(idx, 1);
   }
 
   function _stringifyFilter_noPoints(allowed: ResourceT[]) {
@@ -35,7 +30,7 @@
     let extra = "";
     if (allowed.includes(POINTS)) {
       extra = ", or points";
-      removeFromArray(allowed, POINTS);
+      arrayRemove(allowed, POINTS);
     }
     return _stringifyFilter_noPoints(allowed) + extra;
   }
