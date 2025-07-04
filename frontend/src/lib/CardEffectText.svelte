@@ -60,6 +60,31 @@
   {#if side_ef.__class__ != "NullEffect"}
     &amp; <CardEffectText effect={side_ef} />
   {/if}
+{:else if effect.__class__ == "AddMarker"}
+  Add {effect.amount} marker{effect.amount == 1 ? '' : 's'}
+{:else if effect.__class__ == "RemoveMarker"}
+  Remove {effect.amount} marker{effect.amount == 1 ? '' : 's'}
+{:else if effect.__class__ == "DiscardThis"}
+  Discard this
+{:else if effect.__class__ == "EffectGroup" || effect.__class__ == "StrictEffectGroup"}
+  {@const sep = effect.__class__ == "EffectGroup" ? " & " : ", "}
+  {@const n = effect.effects.length}
+  {#each effect.effects as subeffect, i (i)} <!-- is this how you use keyed each?? -->
+    <CardEffectText effect={subeffect} />
+    {#if i != n - 1}
+      {sep}
+    {/if}
+  {/each}
+{:else if effect.__class__ == "SuppressFail"}
+  [<CardEffectText effect={effect.effect} />]  <!-- Not actually used in the base ruleset -->
+{:else if effect.__class__ == "ConditionalEffect"}
+  <!-- TODO! Render conditions -->
+  If ?condition?: <CardEffectText effect={effect.if_true} />
+  {#if effect.if_false.__class__ != "NullEffect"}
+    ; else, <CardEffectText effect={effect.if_false} />
+  {/if}
+{:else if effect.__class__ == "ForEachMarker"}
+  For each marker: <CardEffectText effect={effect.effect} />
 {:else}
   <!-- TODO: handle all cases -->
   (Unknown effect: {shorten(JSON.stringify(effect))})

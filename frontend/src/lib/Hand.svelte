@@ -7,6 +7,6 @@
 
 <div id="our-hand">
   {#each cards as card (card.location.key)}
-     <CardInHand data={card} />
+    <CardInHand data={card} />
   {/each}
 </div>
