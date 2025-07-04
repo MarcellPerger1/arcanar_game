@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Card from "./Card.svelte";
+  import PlacedCard from "./PlacedCard.svelte";
   import { ARTIFACT, type AreaTypeT } from "./enums";
   import type { AreaT } from "./types";
 
@@ -11,7 +11,7 @@
   <!-- TODO: extract into CardsColumn?: -->
   <div class="our-placed-card-column">
     {#each Object.values(area) as card_data (card_data.location.key)}
-       <Card data={card_data} />
+       <PlacedCard data={card_data} />
     {/each}
   </div>
 </div>
