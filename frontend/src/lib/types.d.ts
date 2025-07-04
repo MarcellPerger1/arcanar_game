@@ -1,4 +1,4 @@
-import type { CardTypeT, ResourceT } from "./enums";
+import type { CardTypeT, ResourceT, PlaceableCardT, AreaTypeT, MoonPhaseT } from "./enums";
 
 
 declare type StateT = {
@@ -59,7 +59,7 @@ namespace effects {
   // declare type _AnyEffectGroup = {__class__: '_AnyEffectGroup'; effects: EffectT[]};  // abstract
   declare type EffectGroup = {__class__: 'EffectGroup'; effects: EffectT[]};
   declare type StrictEffectGroup = {__class__: 'StrictEffectGroup'; effects: EffectT[]};
-  declare type ConvertEffect = {__class__: 'ConvertEffect'; effects: EffectT[]};
+  declare type ConvertEffect = {__class__: 'ConvertEffect'; effects: [EffectT, EffectT, EffectT]};
   declare type SuppressFail = {__class__: 'SuppressFail'; effect: EffectT};
   declare type ConditionalEffect = {__class__: 'ConditionalEffect'; cond: Condition; if_true: EffectT; if_false: EffectT};
   // Conditions
