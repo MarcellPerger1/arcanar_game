@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { Colors, POINTS, stringifyEnumLong, stringifyEnumShort, type ResourceT } from "./enums";
-  import type { EffectT, ResourceFilterT } from "./types";
+  import { ARTIFACT, Colors, EVENT, POINTS, stringifyEnumLong, stringifyEnumShort, type ResourceT } from "./enums";
+  import type { CardTypeFilterT, EffectT, ResourceFilterT } from "./types";
 
   import CardEffectText from "./CardEffectText.svelte";
-  import { arrayRemove } from "./util";
+  import { arrayRemove, stringifyToOrdinal } from "./util";
 
   let {effect}: {effect: EffectT} = $props();
 
@@ -33,6 +33,22 @@
       arrayRemove(allowed, POINTS);
     }
     return _stringifyFilter_noPoints(allowed) + extra;
+  }
+
+  function strigifyDiscardPileOffset(offset: number) {
+    if(offset == 0) return 'your discard pile';
+    if(offset == -1) return "your left neighbour's discard pile";
+    if(offset == 1) return "your right neighbour's discard pile";
+    if(offset > 0) return `the discard pile of the ${stringifyToOrdinal(offset)} player on your right`;
+    /*offset < 0*/return `the discard pile of the ${stringifyToOrdinal(Math.abs(offset))} player on your left`;
+  }
+
+  function stringifyCardTypeFilter({allowed_types: allowed}: CardTypeFilterT) {
+    if(Colors.every(c => allowed.includes(c)) && !allowed.includes(ARTIFACT) && !allowed.includes(EVENT)) {
+      return 'regular';  // the only case that happens in the base ruleset
+    }
+    // LATER: improve this for non-vanilla rulesets/cardsets
+    return `${allowed.slice(0, -1).map(stringifyEnumLong).join(', ')} or ${allowed.at(-1)}`;
   }
 </script>
 
@@ -85,7 +101,40 @@
   {/if}
 {:else if effect.__class__ == "ForEachMarker"}
   For each marker: <CardEffectText effect={effect.effect} />
+{:else if effect.__class__ == "ForEachCardOfType"}
+  For each {stringifyEnumLong(effect.tp)} card: <CardEffectText effect={effect.effect} />
+{:else if effect.__class__ == "ForEachColorSet"}
+  For each full set: <CardEffectText effect={effect.effect} />
+{:else if effect.__class__ == "ForEachDiscard"}
+  For each discarde card: <CardEffectText effect={effect.effect} />
+{:else if effect.__class__ == "ForEachPlacedMagic"}
+  For each placed non-artifact: <CardEffectText effect={effect.effect} />
+{:else if effect.__class__ == "ForEachEmptyColor"}
+  For each empty color: <CardEffectText effect={effect.effect} />
+{:else if effect.__class__ == "ForEachDynChosenColor"}
+  For each card of chosen color: <CardEffectText effect={effect.effect} />
+{:else if effect.__class__ == "ForEachM"}
+  <!-- TODO! Render measures -->
+  (?Measure?) times: <CardEffectText effect={effect.effect} />
+{:else if effect.__class__ == "ChooseFromDiscardOf"}
+  Place a {stringifyCardTypeFilter(effect.filters)} card from {strigifyDiscardPileOffset(effect.player_offset)}
+{:else if effect.__class__ == "ExecOwnPlacedCard"}
+  Execute any one of your cards {effect.n_times == 1 ? '' : `${effect.n_times} times`}
+{:else if effect.__class__ == "ExecChosenColorNTimes"}
+  Execute any color {effect.amount} times.
+  {#if effect.evergreen_amount != 1}
+    (and other evergreens {effect.evergreen_amount} times)
+  {/if}
+{:else if effect.__class__ == "ExecColorsNotBiggest"}
+  Execute all colors execpt the biggest one
+  {#if effect.do_evergreens}
+    (and all evergreens)
+  {/if}
+{:else if effect.__class__ == "ExecChosenNTimesAndDiscard"}
+  Execute a card {effect.n} time{effect.n == 1 ? '' : 's'}, then discard it
+{:else if effect.__class__ == "MoveChosenAndExecNewColor"}
+  Move a card to an adjacent color and execute the new color
 {:else}
-  <!-- TODO: handle all cases -->
-  (Unknown effect: {shorten(JSON.stringify(effect))})
+  <!-- This should be unreachable -->
+  (Unknown effect type: {(effect as {__class__: string}).__class__})
 {/if}
