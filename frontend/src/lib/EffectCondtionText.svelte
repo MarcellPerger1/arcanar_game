@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { stringifyEnumLong } from "./enums";
+  import EffectMeasureText from "./EffectMeasureText.svelte";
+import { stringifyEnumLong } from "./enums";
   import type { effects } from "./types";
 
   let {condition}: {condition: effects.Condition} = $props();
@@ -25,7 +26,7 @@
     || condition.__class__ == "GreaterEqCond" 
     || condition.__class__ == "EqualsCond" 
     || condition.__class__ == "NotEqualsCond"}
-  (?Measure?) {COND_NAME_TO_STR[condition.__class__]} (?Measure?)
+  <EffectMeasureText measure={condition.left}/> {COND_NAME_TO_STR[condition.__class__]} <EffectMeasureText measure={condition.right}/>
 {:else}
   (Unknown condition type: {(condition as {__class__: string}).__class__})
 {/if}

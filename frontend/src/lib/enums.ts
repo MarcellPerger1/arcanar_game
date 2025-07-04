@@ -53,5 +53,5 @@ export function stringifyEnumShort(val: ColorT | MoonPhaseT | ResourceT | CardTy
   return ['??', ...'PGRBY', ..."AE", "Last", "Discard", "Hand", "Spare?", "VP"][val];
 }
 export function stringifyEnumLong(val: ColorT | MoonPhaseT | ResourceT | CardTypeT | AreaTypeT) {
-  return ['Unknown', 'purple', 'greed', 'red', 'blue', 'yellow', 'artifact', 'event', "last turn", "discarded", "hand", "Unused?", "Points"][val];
+  return ['Unknown', 'purple', 'green', 'red', 'blue', 'yellow', 'artifact', 'event', "last turn", "discarded", "hand", "Unused?", "Points"][val];
 }
