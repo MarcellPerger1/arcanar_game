@@ -148,7 +148,7 @@ body {
 }
 
 .our-placed-card {
-  height: 6em;
+  min-height: 6em;
   background-color: #aaaaaa;
   margin: 3px;
   padding: 3px;
