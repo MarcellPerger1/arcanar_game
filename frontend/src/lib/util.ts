@@ -1,5 +1,5 @@
 export function toCapitalCase(s: string) {
-  return s[0].toUpperCase() + s.slice(1);
+  return s[0].toUpperCase() + s.slice(1).toLowerCase();
 }
 // This function should be builtin! #ihatejavascript
 export function arrayRemove<T>(arr: T[], item: T, strict: boolean = false) {
