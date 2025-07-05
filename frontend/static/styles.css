@@ -157,22 +157,20 @@ body {
   text-align: center;
 }
 .our-placed-card.starting-card {
-  padding-left: 6px;
-  padding-right: 6px;
+  padding-left: 3px;
+  padding-right: 3px;
   margin-left: 0px;
   margin-right: 0px;
   border-radius: 0px;
   border-left: 1px solid #777777;
 }
 .our-placed-area-column:nth-child(1 of .color-area-column) .our-placed-card.starting-card {
-  padding-left: 3px;
   margin-left: 3px;
   border-bottom-left-radius: 8px;
   border-top-left-radius: 8px;
   border-left-style: none;
 }
 .our-placed-area-column:nth-last-child(1 of .color-area-column) .our-placed-card.starting-card {
-  padding-right: 3px;
   margin-right: 3px;
   border-bottom-right-radius: 8px;
   border-top-right-radius: 8px;
