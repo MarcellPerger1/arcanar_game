@@ -1,18 +1,12 @@
 <script lang="ts">
-  import { ARTIFACT, Colors, EVENT, POINTS, stringifyEnumLong, stringifyEnumShort, type ResourceT } from "./enums";
-  import type { CardTypeFilterT, EffectT, ResourceFilterT } from "./types";
+  import { ARTIFACT, Colors, EVENT, POINTS, stringifyEnumLong, stringifyEnumShort, type ResourceT } from "../enums";
+  import type { CardTypeFilterT, EffectT, ResourceFilterT } from "../types";
 
-  import CardEffectText from "./CardEffectText.svelte";
-  import { arrayRemove, stringifyToOrdinal } from "./util";
+  import EffectText from "./EffectText.svelte";
+  import { arrayRemove, stringifyToOrdinal } from "../util";
   import EffectCondtionText from "./EffectCondtionText.svelte";
 
   let {effect}: {effect: EffectT} = $props();
-
-  const MAX_JSON_LENGTH = 80;
-  function shorten(s: string) {
-    if(s.length <= MAX_JSON_LENGTH) return s;
-    return s.slice(0, MAX_JSON_LENGTH - 3) + '...';
-  }
 
   function _stringifyFilter_noPoints(allowed: ResourceT[]) {
     if(allowed.length == 1) return stringifyEnumShort(allowed[0]);
@@ -65,18 +59,18 @@
   {#if spend_ef.__class__ == "SpendResource"}
     {spend_ef.amount}{strigifyResourceFilter(spend_ef.colors)}
   {:else}
-    <CardEffectText effect={effect.effects[0]} />
+    <EffectText effect={effect.effects[0]} />
   {/if}
   &rightarrow;
   {@const gain_ef = effect.effects[1]}
   {#if gain_ef.__class__ == "GainResource"}
     {gain_ef.amount}{stringifyEnumShort(gain_ef.resource)}
   {:else}
-    <CardEffectText effect={effect.effects[1]} />
+    <EffectText effect={effect.effects[1]} />
   {/if}
   {@const side_ef = effect.effects[2]}
   {#if side_ef.__class__ != "NullEffect"}
-    &amp; <CardEffectText effect={side_ef} />
+    &amp; <EffectText effect={side_ef} />
   {/if}
 {:else if effect.__class__ == "AddMarker"}
   Add {effect.amount} marker{effect.amount == 1 ? '' : 's'}
@@ -88,35 +82,35 @@
   {@const sep = effect.__class__ == "EffectGroup" ? " & " : ", "}
   {@const n = effect.effects.length}
   {#each effect.effects as subeffect, i (i)} <!-- is this how you use keyed each?? -->
-    <CardEffectText effect={subeffect} />
+    <EffectText effect={subeffect} />
     {#if i != n - 1}
       {sep}
     {/if}
   {/each}
 {:else if effect.__class__ == "SuppressFail"}
-  [<CardEffectText effect={effect.effect} />]  <!-- Not actually used in the base ruleset -->
+  [<EffectText effect={effect.effect} />]  <!-- Not actually used in the base ruleset -->
 {:else if effect.__class__ == "ConditionalEffect"}
-  If <EffectCondtionText condition={effect.cond} />: <CardEffectText effect={effect.if_true} />
+  If <EffectCondtionText condition={effect.cond} />: <EffectText effect={effect.if_true} />
   {#if effect.if_false.__class__ != "NullEffect"}
-    ; else, <CardEffectText effect={effect.if_false} />
+    ; else, <EffectText effect={effect.if_false} />
   {/if}
 {:else if effect.__class__ == "ForEachMarker"}
-  For each marker: <CardEffectText effect={effect.effect} />
+  For each marker: <EffectText effect={effect.effect} />
 {:else if effect.__class__ == "ForEachCardOfType"}
-  For each {stringifyEnumLong(effect.tp)} card: <CardEffectText effect={effect.effect} />
+  For each {stringifyEnumLong(effect.tp)} card: <EffectText effect={effect.effect} />
 {:else if effect.__class__ == "ForEachColorSet"}
-  For each full set: <CardEffectText effect={effect.effect} />
+  For each full set: <EffectText effect={effect.effect} />
 {:else if effect.__class__ == "ForEachDiscard"}
-  For each discarde card: <CardEffectText effect={effect.effect} />
+  For each discarde card: <EffectText effect={effect.effect} />
 {:else if effect.__class__ == "ForEachPlacedMagic"}
-  For each placed non-artifact: <CardEffectText effect={effect.effect} />
+  For each placed non-artifact: <EffectText effect={effect.effect} />
 {:else if effect.__class__ == "ForEachEmptyColor"}
-  For each empty color: <CardEffectText effect={effect.effect} />
+  For each empty color: <EffectText effect={effect.effect} />
 {:else if effect.__class__ == "ForEachDynChosenColor"}
-  For each card of chosen color: <CardEffectText effect={effect.effect} />
+  For each card of chosen color: <EffectText effect={effect.effect} />
 {:else if effect.__class__ == "ForEachM"}
   <!-- TODO! Render measures -->
-  (?Measure?) times: <CardEffectText effect={effect.effect} />
+  (?Measure?) times: <EffectText effect={effect.effect} />
 {:else if effect.__class__ == "ChooseFromDiscardOf"}
   Place a {stringifyCardTypeFilter(effect.filters)} card from {strigifyDiscardPileOffset(effect.player_offset)}
 {:else if effect.__class__ == "ExecOwnPlacedCard"}

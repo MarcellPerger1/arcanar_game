@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { stringifyEnumLong } from "./enums";
-  import type { effects } from "./types";
+  import { stringifyEnumLong } from "../enums";
+  import type { effects } from "../types";
 
   let {measure}: {measure: effects.Measure} = $props();
 </script>

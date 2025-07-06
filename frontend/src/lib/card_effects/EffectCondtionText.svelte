@@ -1,7 +1,7 @@
 <script lang="ts">
   import EffectMeasureText from "./EffectMeasureText.svelte";
-import { stringifyEnumLong } from "./enums";
-  import type { effects } from "./types";
+import { stringifyEnumLong } from "../enums";
+  import type { effects } from "../types";
 
   let {condition}: {condition: effects.Condition} = $props();
 
