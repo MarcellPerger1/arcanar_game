@@ -14,3 +14,12 @@
     <OwnPlacedBoard player_data={player_data}/>
   </WithDiscardOnLeft>
 </div>
+
+<style>
+#our-area {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-width: fit-content;
+}
+</style>

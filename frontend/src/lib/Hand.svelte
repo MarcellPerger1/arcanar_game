@@ -10,3 +10,13 @@
     <CardInHand data={card} />
   {/each}
 </div>
+
+<style>
+#our-hand {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  width: 100%;
+  min-width: fit-content;
+}
+</style>

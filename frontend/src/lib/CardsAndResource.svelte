@@ -16,3 +16,28 @@
     {/each}
   </div>
 </div>
+
+<style>
+.our-placed-area-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.area-column-top-text {
+  text-align: center;
+}
+
+.our-placed-card-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding-top: 4px;
+}
+
+.artifact-column {
+  border-left: 1px solid #000000;
+}
+</style>

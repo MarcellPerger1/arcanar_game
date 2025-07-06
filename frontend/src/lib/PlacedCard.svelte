@@ -15,3 +15,35 @@
   {/if}
   <CardEffectText effect={data.effect}/>
 </div>
+
+<style>
+.our-placed-card {
+  min-height: 6em;
+  background-color: #aaaaaa;
+  margin: 3px;
+  padding: 3px;
+  border-radius: 8px;
+  /* Temp: */
+  text-align: center;
+}
+.our-placed-card.starting-card {
+  padding-left: 3px;
+  padding-right: 3px;
+  margin-left: 0px;
+  margin-right: 0px;
+  border-radius: 0px;
+  border-left: 1px solid #777777;
+}
+/* svelte is a bit dumb here */
+:global(.our-placed-area-column:nth-child(1 of .color-area-column) .our-placed-card.starting-card) {
+  margin-left: 3px;
+  border-bottom-left-radius: 8px;
+  border-top-left-radius: 8px;
+  border-left-style: none;
+}
+:global(.our-placed-area-column:nth-last-child(1 of .color-area-column) .our-placed-card.starting-card) {
+  margin-right: 3px;
+  border-bottom-right-radius: 8px;
+  border-top-right-radius: 8px;
+}
+</style>

@@ -17,3 +17,47 @@
     <div class="double-moon-phase">LAST</div>
   </div>
 </div>
+
+<style>
+#moon-phases-area-root {
+  flex-grow: 1;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+#moon-phases-area {
+  display: grid;
+  padding: 3px;
+  margin: 4px;
+  border-radius: 7px;
+  background-color: #dddddd;
+}
+
+.moon-phase-top {
+  grid-row: 1;  /* starting at 0 is invalid because css is annoying */
+}
+.moon-phase-bottom {
+  grid-row: 2;
+}
+
+.double-moon-phase {
+  grid-row: 1 / 3;  /* 1 to 2 incl */
+}
+
+.single-moon-phase, .double-moon-phase {
+  margin: 3px;
+  padding: 3px;
+  background-color: #bbbbbb;
+  border-radius: 5px;
+  width: 4em;
+  /* Temp (center text), until images get sorted out */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.single-moon-phase {
+  height: 4em;
+}
+</style>
