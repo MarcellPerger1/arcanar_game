@@ -1,10 +1,13 @@
 import json
 import sys
 
-from backend.api.json_adapter import JsonAdapter
-from backend.api.json_connection import JsonConnection
-from backend.core import Game, DefaultRuleset
-from backend.util import JsonT
+import setpath
+
+if setpath.setpath():
+    from backend.api.json_adapter import JsonAdapter
+    from backend.api.json_connection import JsonConnection
+    from backend.core import Game, DefaultRuleset
+    from backend.util import JsonT
 
 
 class JC(JsonConnection):

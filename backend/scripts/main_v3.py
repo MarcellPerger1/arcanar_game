@@ -1,7 +1,10 @@
 import threading
 
-from main_v3_client import main as client_main
-from main_v3_server import main as server_main
+import setpath
+
+if setpath.setpath():
+    from main_v3_client import main as client_main
+    from main_v3_server import main as server_main
 
 
 def main():

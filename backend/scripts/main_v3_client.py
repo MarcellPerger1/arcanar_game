@@ -1,5 +1,8 @@
-from websockets import ConnectionClosedOK
-from websockets.sync.client import connect
+import setpath
+
+if setpath.setpath():
+    from websockets import ConnectionClosedOK
+    from websockets.sync.client import connect
 
 
 def main():
