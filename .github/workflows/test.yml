@@ -38,6 +38,12 @@ jobs:
   lint-frontend:
     name: Lint frontend code
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        # Temporary solution until npm/cli#8415 is fixed (I would prefer to
+        #  use an envvar like npm_config_prefix but it's broken).
+        # (The cwd should really always be the root dir of this project)
+        working-directory: ./frontend
     steps:
       - uses: actions/checkout@v4
       - name: Setup Node.js 22
