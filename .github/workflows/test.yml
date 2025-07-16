@@ -11,13 +11,16 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  test-backend:
     strategy:
+      # Should help with debugging (do all versions fail or just old ones)
+      fail-fast: false
       matrix:
         python_version:
         - "3.11"
         - "3.12"
         - "3.13"
+    name: "Test backend code (Python ${{ matrix.python_version }})"
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
