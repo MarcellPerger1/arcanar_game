@@ -20,6 +20,7 @@ interface IConnection {
   connect(url: string): Promise<this>;
   send(s: string): Promise<void>;
   recv(): Promise<string>;
+  addOnmessageListener(fn: (msg: string) => void): void;
 }
 
 export class WebsocketConn implements IConnection {  
@@ -27,6 +28,7 @@ export class WebsocketConn implements IConnection {
   error?: CloseEvent;
   /* Promise has any as rejection type */ // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _message_waiters: {resolve(value: string): void; reject(reason?: any): void;}[] = [];
+  _message_listeners: ((msg: string) => void)[] = [];
 
   connect(url: string) {
     return new Promise<this>((resolve, reject) => {
@@ -56,6 +58,7 @@ export class WebsocketConn implements IConnection {
         //    case as actions are all sequential.
         // We chose option 2 as we can actually control (to some extent) 
         // our execution order. We cannot control the server/network timings.
+        this._message_listeners.forEach((fn) => fn(ev.data));
         this._message_waiters.shift()?.resolve?.(ev.data);
       })
     });
@@ -70,6 +73,10 @@ export class WebsocketConn implements IConnection {
     /*average js keyword spam*/return await new Promise<string>((resolve, reject) => {
       this._message_waiters.push({resolve, reject});
     });
+  }
+
+  addOnmessageListener(fn: (msg: string) => void): void {
+    this._message_listeners.push(fn);
   }
 
   get ws() {
