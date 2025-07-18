@@ -17,23 +17,28 @@ const Code = {
 };
 
 interface IConnection {
-  connect(url: string): Promise<this>;
+  connect(): Promise<this>;
   send(s: string): Promise<void>;
   recv(): Promise<string>;
   addOnmessageListener(fn: (msg: string) => void): void;
 }
 
 export class WebsocketConn implements IConnection {  
+  url: string;
   _ws?: WebSocket;
   error?: CloseEvent;
   /* Promise has any as rejection type */ // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _message_waiters: {resolve(value: string): void; reject(reason?: any): void;}[] = [];
   _message_listeners: ((msg: string) => void)[] = [];
 
-  connect(url: string) {
+  constructor(url: string) {
+    this.url = url;
+  }
+
+  connect() {
     return new Promise<this>((resolve, reject) => {
       let hasOpened = false;
-      this._ws = new WebSocket(url);
+      this._ws = new WebSocket(this.url);
       this._ws.addEventListener("open", () => {
         hasOpened = true;
         resolve(this);
