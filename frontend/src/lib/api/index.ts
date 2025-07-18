@@ -27,7 +27,6 @@ export class WebsocketConn implements IConnection {
   url: string;
   _ws?: WebSocket;
   error?: CloseEvent;
-  /* Promise has any as rejection type */ // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _message_waiters: {resolve(value: string): void; reject(reason?: any): void;}[] = [];
   _message_listeners: ((msg: string) => void)[] = [];
 
@@ -100,7 +99,6 @@ export class WebsocketConn implements IConnection {
     return this._ws;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private rejectWaiters(reason: any) {
     this._message_waiters.forEach(({reject}) => {reject(reason)});
   }

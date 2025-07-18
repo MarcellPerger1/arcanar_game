@@ -27,6 +27,8 @@ export default ts.config(
       "@typescript-eslint/no-unused-vars": ["warn", {
         "varsIgnorePattern": "^_"
       }],
+      // Too annoying for a lot of generic stuff (e.g. Promise error type is any)
+      "@typescript-eslint/no-explicit-any": "off"
     }
   },
   {
