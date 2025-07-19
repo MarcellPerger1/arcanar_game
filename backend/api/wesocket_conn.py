@@ -14,6 +14,10 @@ from .json_connection import JsonConnection
 from ..util import JsonT
 
 
+class ServerThreadDied(Exception):
+    pass
+
+
 class CloseConn(BaseException):
     pass
 
@@ -66,7 +70,12 @@ class WebsocketConn(JsonConnection):
 
     def receive(self) -> JsonT:
         self._instruction_queue.put(_ReceiveInstruction())
-        return json.loads(self._results_queue.get())
+        while self._server_thread.is_alive():
+            try:  # Loop+timeout needed so we can error if _server_thread dies
+                return json.loads(self._results_queue.get(timeout=0.02))
+            except queue.Empty:
+                pass
+        raise ServerThreadDied("Server thread died, see above for more details")
 
     def close(self):
         self._instruction_queue.put(_CloseInstruction())
@@ -84,6 +93,7 @@ class WebsocketConn(JsonConnection):
                     print('Main thread died unexpectedly without calling '
                           'WebsocketConn.close()', sys.stderr)
                     raise CloseConn()
+                instr: _Instruction = ...  # Otherwise, Pycharm thinks it may be undefined
                 try:
                     # Need timeout so we can check if main thread is dead and exit if so.
                     instr = self._instruction_queue.get(timeout=0.02)
