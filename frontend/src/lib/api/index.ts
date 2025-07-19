@@ -1,3 +1,5 @@
+import type { ServerRequestT, StateT } from "$lib/types";
+
 const Code = {
   OK: 1000,
   GOING_AWAY: 1001,
@@ -14,13 +16,38 @@ const Code = {
   TRY_AGAIN_LATER: 1013,
   BAD_GATEWAY: 1014,
   HANDSHAKE_FAILED: 1015,
+} as const;
+
+// Abstracted away from WS codes or HTTP codes
+export const CloseReason = {
+  NORMAL: 0,
+  LEAVING: 1,
+  CLIENT_ERROR: 2,
+  SERVER_ERROR: 3,
+} as const;
+type CloseReasonTp = (typeof CloseReason)[keyof (typeof CloseReason)];
+
+const GenCodeToWsCode = {
+  [CloseReason.NORMAL]: Code.OK,
+  [CloseReason.LEAVING]: Code.GOING_AWAY,
+  [CloseReason.CLIENT_ERROR]: Code.INTERNAL_ERROR,
+  [CloseReason.SERVER_ERROR]: Code.UNSUPPORTED_DATA
 };
+const GenCodeToDefaultReason = {
+  [CloseReason.NORMAL]: "Normal closue",
+  [CloseReason.LEAVING]: "Client is leaving",
+  [CloseReason.CLIENT_ERROR]: "Client error",
+  [CloseReason.SERVER_ERROR]: "Server error"
+}
 
 interface IConnection {
   connect(): Promise<this>;
+
   send(s: string): Promise<void>;
   recv(): Promise<string>;
   addOnmessageListener(fn: (msg: string) => void): void;
+
+  close(code: CloseReasonTp, detail?: string): Promise<void>;
 }
 
 export class WebsocketConn implements IConnection {  
@@ -74,9 +101,13 @@ export class WebsocketConn implements IConnection {
 
   async recv() {
     this.ensureConnected();
-    /*average js keyword spam*/return await new Promise<string>((resolve, reject) => {
+    return await new Promise<string>((resolve, reject) => {
       this._message_waiters.push({resolve, reject});
     });
+  }
+
+  async close(code: CloseReasonTp, detail?: string): Promise<void> {
+    this.ws.close(GenCodeToWsCode[code], detail ?? GenCodeToDefaultReason[code]);
   }
 
   addOnmessageListener(fn: (msg: string) => void): void {
@@ -101,5 +132,69 @@ export class WebsocketConn implements IConnection {
 
   private rejectWaiters(reason: any) {
     this._message_waiters.forEach(({reject}) => {reject(reason)});
+  }
+}
+
+
+const API_VERSION = 1;
+
+export class ApiController {
+  conn: IConnection;
+  // Framework-agnostic forward API: an object on which we set the state.
+  // Vue/Svelte use proxy so it can be used as-is. I don't know about other
+  // frameworks, but code can always write its own setters/getters
+  dest: {state?: StateT};
+
+  server_version: string = '?';
+  
+  constructor(conn: IConnection, dest: {state?: StateT}) {
+    this.conn = conn;
+    this.dest = dest;
+  }
+  
+  private _did_init: boolean = false;
+  async init() {
+    if(this._did_init) return;
+    // Even if called multiple times while request is sending, still only do it once
+    this._did_init = true;
+    await this.conn.connect();
+    await this.handleInitMsg();
+  }
+
+  private async handleInitMsg() {
+    const msg: ServerRequestT = JSON.parse(await this.conn.recv());
+    if (msg.request != 'init') {
+      throw new Error("First message server sends must always be request:init");
+    }
+    const {server_version, api_version: server_api_ver} = msg;
+    if(server_api_ver != API_VERSION) {
+      throw new Error(`Server and client api versions don't match (server: ${server_api_ver}, client: ${API_VERSION})`)
+    }
+    this.server_version = server_version;
+  }
+
+  async run() {
+    await this.init();
+    while(true) {
+      const msg = await this.recv();
+      if(msg.request == "init") {
+        throw new Error("Receaived request:init multiple times.");
+      } else if(msg.request == "state") {
+        this.setState(msg.state);
+        // For now: close it after we get the state message
+        this.conn.close(CloseReason.LEAVING);
+        break;
+      }
+    }
+  }
+
+  setState(state: StateT) {
+    this.dest.state = state;
+  }
+  async recv(): Promise<ServerRequestT> {
+    return JSON.parse(await this.conn.recv());
+  }
+  async send(data: any) {
+    await this.conn.send(JSON.stringify(data));
   }
 }

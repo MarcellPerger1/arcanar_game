@@ -100,4 +100,13 @@ namespace effects {
   declare type AllEffects = NullEffect | GainResource | SpendResource | AddMarker | RemoveMarker | DiscardThis |  EffectGroup | StrictEffectGroup | ConvertEffect | SuppressFail | ConditionalEffect | ForEachMarker | ForEachCardOfType | ForEachColorSet | ForEachDiscard | ForEachPlacedMagic | ForEachEmptyColor | ForEachDynChosenColor | ForEachM | ChooseFromDiscardOf | ExecOwnPlacedCard | ExecChosenColorNTimes | ExecColorsNotBiggest | ExecChosenNTimesAndDiscard | MoveChosenAndExecNewColor;
 };
 
+declare type ServerRequestT = request_types.AnyReq | {"request": "etc..."};  /* TODO: finish types here */
+
+namespace request_types {
+  declare type Init = {request: "init", server_version: string, api_version: number};
+  declare type StateReq = {request: "state", state: StateT};
+
+  declare type AnyReq = Init | StateReq;
+}
+
 type _Counter<K> = {[key in K]?: number};
