@@ -1,4 +1,4 @@
-import type { CardTypeT, ResourceT, PlaceableCardT, AreaTypeT, MoonPhaseT } from "./enums";
+import type { CardTypeT, ResourceT, PlaceableCardT, AreaTypeT, MoonPhaseT, ColorT } from "./enums";
 
 
 declare type StateT = {
@@ -46,6 +46,7 @@ declare type ResourceFilterT = {
 declare type CardTypeFilterT = {
   allowed_types: Array<CardTypeT>;
 };
+declare type AdjanceniesT = {[t in PlaceableCardT]: PlaceableCardT[]};
 
 namespace effects {
   // Atomics
@@ -93,26 +94,47 @@ namespace effects {
   declare type ExecChosenColorNTimes = {__class__: 'ExecChosenColorNTimes'; amount: number; evergreen_amount: number};
   declare type ExecColorsNotBiggest = {__class__: 'ExecColorsNotBiggest'; do_evergreens: boolean};
   declare type ExecChosenNTimesAndDiscard = {__class__: 'ExecChosenNTimesAndDiscard'; n: number};
-  declare type MoveChosenAndExecNewColor = {__class__: 'MoveChosenAndExecNewColor'; adjacencies: {[t in PlaceableCardT]: PlaceableCardT[]} | null};
+  declare type MoveChosenAndExecNewColor = {__class__: 'MoveChosenAndExecNewColor'; adjacencies: AdjanceniesT | null};
 
   declare type Measure = ConstMeasure | CardsOfType | DiscardedCards | NumMarkers | ResourceCount;
   declare type Condition = LessThanCond | LessEqCond | GreaterThanCond | GreaterEqCond | EqualsCond | NotEqualsCond | MostCardsOfType;
   declare type AllEffects = NullEffect | GainResource | SpendResource | AddMarker | RemoveMarker | DiscardThis |  EffectGroup | StrictEffectGroup | ConvertEffect | SuppressFail | ConditionalEffect | ForEachMarker | ForEachCardOfType | ForEachColorSet | ForEachDiscard | ForEachPlacedMagic | ForEachEmptyColor | ForEachDynChosenColor | ForEachM | ChooseFromDiscardOf | ExecOwnPlacedCard | ExecChosenColorNTimes | ExecColorsNotBiggest | ExecChosenNTimesAndDiscard | MoveChosenAndExecNewColor;
 };
 
-declare type ServerRequestT = request_types.AnyReq | {"request": "etc..."};  /* TODO: finish types here */
+declare type ServerMsgT = request_types.AnyMsg;
+declare type ServerReqT = request_types.AnyReq;
 
 namespace request_types {
   declare type _AddState = {state: StateT};
   declare type _AddThread = {thread: number};
   declare type _AddStateAndThread = _AddState & _AddThread;
+  declare type _AddExecInfo = {exec_info: {player: number, card: LocationT}};
 
+  // Messages (no response so no `thread`)
   declare type Init = {request: "init", server_version: string, api_version: number};
-  declare type StateReq = {request: "state"} & _AddState;
-  declare type ActionTypeReq = {request: "action_type", player: number} & _AddStateAndThread;
-  // TODO: types for all of these
+  declare type Shutdown = {request: "shutdown"};
+  declare type StateReq = {request: "state"}   & _AddState;
+  declare type ResultReq = {request: "result"} & _AddState;
+  // 'Strict' requests (i.e. actually requres a response)
+  declare type ActionTypeReq = {request: "action_type", player: number}                                                         & _AddStateAndThread;
+  declare type DiscardForExec = {request: "discard_for_exec", player: number}                                                   & _AddStateAndThread;
+  declare type BuyCard = {request: "buy_card", player: number}                                                                  & _AddStateAndThread;
+  declare type CardPayment = {request: "card_payment", player: number, cost: CostT}                                             & _AddStateAndThread;
+  declare type ColorExec = {request: "color_exec", n_times: number}                                                             & _AddStateAndThread;
+  declare type ColorExcl = {request: "color_excl", of_colors: ColorT[]}                                                         & _AddStateAndThread;
+  declare type ColorForeach = {request: "color_foreach"}                                                         & _AddExecInfo & _AddStateAndThread;
+  declare type CardFromDiscard = {request: "card_from_discard", target_player: number, filters: CardTypeFilterT} & _AddExecInfo & _AddStateAndThread;
+  declare type CardExec = {request: "card_exec", n_times: number, discard: boolean}                              & _AddExecInfo & _AddStateAndThread;
+  declare type SpendResources = {request: "spend_resources", amount: number, filters: ResourceFilterT}           & _AddExecInfo & _AddStateAndThread;
+  declare type CardMove = {request: "card_move", paths: AdjanceniesT}                                            & _AddExecInfo & _AddStateAndThread;
+  declare type WhereMoveCard = {request: "where_move_card", card: LocationT, possibilities: PlaceableCardT[]}    & _AddExecInfo & _AddStateAndThread;
+  // This alignment thing is a little stupid but it looks cool... if your screen is wide enough
 
-  declare type AnyReq = Init | StateReq | ActionTypeReq;
+  // TODO: response types (?)
+  declare type ActionTypeResp = {action_type: "execute" | "buy"} & _AddThread;
+
+  declare type AnyReq = ActionTypeReq | DiscardForExec | BuyCard | CardPayment | ColorExec | ColorExcl | ColorForeach | CardFromDiscard | CardExec | SpendResources | CardMove | WhereMoveCard;
+  declare type AnyMsg = Init | StateReq | ResultReq | Shutdown | AnyReq;
 }
 
 type _Counter<K> = {[key in K]?: number};
