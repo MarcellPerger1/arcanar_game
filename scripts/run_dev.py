@@ -33,14 +33,27 @@ def run_frontend():
         p.terminate()
 
 
-def main():
+def start_backend_th():
     # Websocket thread is non-daemonic and will realise that it needs to die
     backend_th = threading.Thread(
         target=run_backend, name='Arcanar Backend: Main Thread', daemon=True)
-    frontend_th = threading.Thread(target=run_frontend, name='Arcanar Frontend Runner')
     backend_th.start()
+    return backend_th
+
+
+def start_frontend_th():
+    frontend_th = threading.Thread(target=run_frontend, name='Arcanar Frontend Runner')
     frontend_th.start()
-    while backend_th.is_alive() and frontend_th.is_alive():
+    return frontend_th
+
+
+def main():
+    backend_th = start_backend_th()
+    frontend_th = start_frontend_th()
+    while frontend_th.is_alive():
+        if not backend_th.is_alive():  # Restart it (webpage reload needs same data again)
+            time.sleep(0.02)  # Give websocket thread time to die
+            backend_th = start_backend_th()
         time.sleep(0.01)
 
 
