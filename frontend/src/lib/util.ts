@@ -33,3 +33,7 @@ export function ordinalSuffix(num: number) {
 export function stringifyToOrdinal(n: number) {
   return `${n}${ordinalSuffix(n)}`;
 }
+
+export function infinitePromise() : Promise<never> {
+  return new Promise(() => {});
+}
