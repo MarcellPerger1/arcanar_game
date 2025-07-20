@@ -134,6 +134,7 @@ declare type _CurrRequestT<Name extends string = string> = {
   msg: ServerReqT & {request: Name};
 };
 export declare type MainStoreT = {state?: StateT; currRequest?: _CurrRequestT};
+export declare type LoadedMainStoreT = {state: StateT; currRequest?: _CurrRequestT};
 
 export class ApiController {
   conn: IConnection;

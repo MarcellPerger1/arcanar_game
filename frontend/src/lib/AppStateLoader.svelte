@@ -1,10 +1,10 @@
 <script lang="ts">
   import { browser } from "$app/environment";
-  import { ApiController, WebsocketConn, type MainStoreT } from "$lib/api";
+  import { ApiController, WebsocketConn, type LoadedMainStoreT, type MainStoreT } from "$lib/api";
   import { infinitePromise } from "$lib/util";
   import type { Snippet } from "svelte";
   
-  let {main}: {main: Snippet<[MainStoreT]>} = $props();
+  let {main, loading}: {main: Snippet<[LoadedMainStoreT]>, loading: Snippet<[number]>} = $props();
 
   let dest: MainStoreT = $state({state: void 0});
 
@@ -19,18 +19,18 @@
 </script>
 
 {#await initPromise}
-  Loading... (10%)
+  {@render loading(10)}
 {:then}
   {#if dest.state}
-    <!-- check that the round has been initialised - we 
-     cannot display uninitialised stuff for now -->
+    <!-- check that the round has been initialised - we cannot display uninitialised stuff for now -->
     {#if dest.state.moon_phases}
-      {@render main(dest)}
+      <!-- TS doesn't realise we just checked `if dest.state` up there so we need the cast -->
+      {@render main(dest as LoadedMainStoreT)}
     {:else}
-      Loading... (75%)
+      {@render loading(75)}
     {/if}
   {:else}
-    Loading... (40%)
+    {@render loading(45)}
   {/if}
 {:catch error}
   Error occurred: {error}
