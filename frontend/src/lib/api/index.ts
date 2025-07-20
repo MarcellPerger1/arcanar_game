@@ -170,6 +170,8 @@ export class ApiController {
         throw new Error("Receaived request:init multiple times.");
       } else if(msg.request == "state") {
         this.setState(msg.state);
+      } else if (msg.request == "action_type") {
+        this.setState(msg.state);
         // For now: close it after we get the state message
         this.conn.close(CloseReason.LEAVING);
         break;

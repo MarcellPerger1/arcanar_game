@@ -103,10 +103,16 @@ namespace effects {
 declare type ServerRequestT = request_types.AnyReq | {"request": "etc..."};  /* TODO: finish types here */
 
 namespace request_types {
-  declare type Init = {request: "init", server_version: string, api_version: number};
-  declare type StateReq = {request: "state", state: StateT};
+  declare type _AddState = {state: StateT};
+  declare type _AddThread = {thread: number};
+  declare type _AddStateAndThread = _AddState & _AddThread;
 
-  declare type AnyReq = Init | StateReq;
+  declare type Init = {request: "init", server_version: string, api_version: number};
+  declare type StateReq = {request: "state"} & _AddState;
+  declare type ActionTypeReq = {request: "action_type", player: number} & _AddStateAndThread;
+  // TODO: types for all of these
+
+  declare type AnyReq = Init | StateReq | ActionTypeReq;
 }
 
 type _Counter<K> = {[key in K]?: number};
