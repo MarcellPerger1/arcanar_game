@@ -114,7 +114,7 @@ namespace request_types {
   declare type Init = {request: "init", server_version: string, api_version: number};
   declare type Shutdown = {request: "shutdown"};
   declare type StateReq = {request: "state"}   & _AddState;
-  declare type ResultReq = {request: "result"} & _AddState;
+  declare type ResultReq = {request: "result", winners: number[]} & _AddState;
   // 'Strict' requests (i.e. actually requres a response)
   declare type ActionTypeReq = {request: "action_type", player: number}                                                         & _AddStateAndThread;
   declare type DiscardForExec = {request: "discard_for_exec", player: number}                                                   & _AddStateAndThread;
