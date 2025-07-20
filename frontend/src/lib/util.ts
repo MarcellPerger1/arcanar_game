@@ -37,3 +37,14 @@ export function stringifyToOrdinal(n: number) {
 export function infinitePromise() : Promise<never> {
   return new Promise(() => {});
 }
+
+export function promiseWithResolvers<V>(): {resolve(value: V | PromiseLike<V>): void; reject(reason?: any): void; promise: Promise<V>} {
+  // Polyfill for Promise.withResolvers()
+  let resolve: (value: V) => void, reject: (reason?: any) => void;
+  const promise = new Promise<V>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  // @ts-expect-error Promise constructor calls the function immediately (sync) so there will be set
+  return {promise, resolve, reject};
+}
