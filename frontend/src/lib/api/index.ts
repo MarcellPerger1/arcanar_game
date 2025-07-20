@@ -1,4 +1,5 @@
-import type { ServerRequestT, StateT } from "$lib/types";
+import type { ServerMsgT, ServerReqT, StateT } from "$lib/types";
+import { promiseWithResolvers } from "$lib/util";
 
 const OurWsCodes = {
   OK: 1000,
@@ -90,9 +91,9 @@ export class WebsocketConn implements IConnection {
 
   async recv() {
     this.ensureConnected();
-    return await new Promise<string>((resolve, reject) => {
-      this._message_waiters.push({resolve, reject});
-    });
+    const info = promiseWithResolvers<string>();
+    this._message_waiters.push(info);
+    return info.promise;
   }
 
   async close(code: CloseReasonTp, detail?: string): Promise<void> {
@@ -127,16 +128,23 @@ export class WebsocketConn implements IConnection {
 
 const API_VERSION = 1;
 
+declare type _CurrRequestT<Name extends string = string> = {
+  resolve(value: any): void;  /* TODO: could be more sophisticated here i.e. map resolve type to request type */
+  reject(reason?: any): void;
+  msg: ServerReqT & {request: Name};
+};
+export declare type MainStoreT = {state?: StateT; currRequest?: _CurrRequestT};
+
 export class ApiController {
   conn: IConnection;
   // Framework-agnostic forward API: an object on which we set the state.
   // Vue/Svelte use proxy so it can be used as-is. I don't know about other
   // frameworks, but code can always write its own setters/getters
-  dest: {state?: StateT};
+  dest: MainStoreT;
 
   server_version: string = '?';
   
-  constructor(conn: IConnection, dest: {state?: StateT}) {
+  constructor(conn: IConnection, dest: MainStoreT) {
     this.conn = conn;
     this.dest = dest;
   }
@@ -151,7 +159,7 @@ export class ApiController {
   }
 
   private async handleInitMsg() {
-    const msg: ServerRequestT = JSON.parse(await this.conn.recv());
+    const msg = await this.recv();
     if (msg.request != 'init') {
       throw new Error("First message server sends must always be request:init");
     }
@@ -168,21 +176,34 @@ export class ApiController {
       const msg = await this.recv();
       if(msg.request == "init") {
         throw new Error("Receaived request:init multiple times.");
+      } else if (msg.request == "shutdown") {
+        this.conn.close(CloseReason.NORMAL);
+        break;
       } else if(msg.request == "state") {
         this.setState(msg.state);
-      } else if (msg.request == "action_type") {
-        this.setState(msg.state);
-        // For now: close it after we get the state message
-        this.conn.close(CloseReason.LEAVING);
-        break;
+      } else if (msg.request == "result") {
+        this.setState(msg.state);  // winners is included in state, so nothing extra to do
+      } else {  // only the true requests (the ones where we have to reply, ie. with `thread`)
+        await this.handleTrueRequest(msg);
       }
     }
+  }
+
+  async handleTrueRequest(msg: ServerReqT) {
+    this.setState(msg.state);
+    const {promise: getRespFromUser, resolve, reject} = promiseWithResolvers<any>();
+    this.setCurrRequest({resolve, reject, msg});
+    // Wait for the UI will handle it, then send result. "Ionos [the UI] will sort this."
+    await this.send({...await getRespFromUser, thread: msg.thread});  // TODO: make the UI actualy handle this
   }
 
   setState(state: StateT) {
     this.dest.state = state;
   }
-  async recv(): Promise<ServerRequestT> {
+  setCurrRequest(currRequest: _CurrRequestT) {
+    this.dest.currRequest = currRequest;
+  }
+  async recv(): Promise<ServerMsgT> {
     return JSON.parse(await this.conn.recv());
   }
   async send(data: any) {
