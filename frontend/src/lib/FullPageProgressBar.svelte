@@ -3,7 +3,7 @@
 </script>
 
 <div class="full-page-always center-content-flex">
-  <label for="fullscreen-pbar" id="fullscreen-pbar-label">Loading...</label>
+  <label for="fullscreen-pbar" id="fullscreen-pbar-label">Loading... ({percent.toFixed(0)}%)</label>
   <progress max=100 value={percent} id="fullscreen-pbar"></progress>
 </div>
 
