@@ -1,22 +1,11 @@
 import type { ServerRequestT, StateT } from "$lib/types";
 
-const Code = {
+const OurWsCodes = {
   OK: 1000,
-  GOING_AWAY: 1001,
-  PROTOCOL_ERROR: 1002,
-  UNSUPPORTED_DATA: 1003,
-  NO_STATUS_RECEIVED: 1005,
-  ABNORMAL_CLOSURE: 1006,
-  INVALID_DATA: 1007,
-  POLICY_VIOLATION: 1008,
-  MESSAGE_TOO_BIG: 1009,
-  MANDATORY_EXTENSION: 1010,
-  INTERNAL_ERROR: 1011,
-  SERVICE_RESTART: 1012,
-  TRY_AGAIN_LATER: 1013,
-  BAD_GATEWAY: 1014,
-  HANDSHAKE_FAILED: 1015,
-} as const;
+  LEAVING: 4101,
+  CLIENT_ERROR: 4200,
+  SERVER_ERROR: 4300
+}
 
 // Abstracted away from WS codes or HTTP codes
 export const CloseReason = {
@@ -28,10 +17,10 @@ export const CloseReason = {
 type CloseReasonTp = (typeof CloseReason)[keyof (typeof CloseReason)];
 
 const GenCodeToWsCode = {
-  [CloseReason.NORMAL]: Code.OK,
-  [CloseReason.LEAVING]: Code.GOING_AWAY,
-  [CloseReason.CLIENT_ERROR]: Code.INTERNAL_ERROR,
-  [CloseReason.SERVER_ERROR]: Code.UNSUPPORTED_DATA
+  [CloseReason.NORMAL]: OurWsCodes.OK,
+  [CloseReason.LEAVING]: OurWsCodes.LEAVING,
+  [CloseReason.CLIENT_ERROR]: OurWsCodes.CLIENT_ERROR,
+  [CloseReason.SERVER_ERROR]: OurWsCodes.SERVER_ERROR
 };
 const GenCodeToDefaultReason = {
   [CloseReason.NORMAL]: "Normal closue",
@@ -71,7 +60,7 @@ export class WebsocketConn implements IConnection {
       });
       // This also handles the errors (those cause it to be closed)
       this._ws.addEventListener("close", (ev) => {
-        if(ev.code == Code.OK) return;
+        if(ev.code == OurWsCodes.OK) return;
         this.error = ev;
         if(!hasOpened) {  // if get error while trying to open
           return reject(new Error(`Couldn't open connection: code ${ev.code}: ${ev.reason}`));
