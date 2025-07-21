@@ -6,7 +6,7 @@
 
 <AppStateLoader>
   {#snippet main(data)}
-    <GamePage state={data.state!} />
+    <GamePage data={data} />
   {/snippet}
   {#snippet loading(percent)}
     <FullPageProgressBar {percent} />

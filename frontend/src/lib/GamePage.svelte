@@ -1,9 +1,10 @@
 <script lang="ts">
+  import type { LoadedMainStoreT } from "./api";
   import MoonPhases from "./MoonPhases.svelte";
   import PlayerArea from "./PlayerArea.svelte";
-  import type { StateT } from "./types";
 
-  let { state }: {state: StateT} = $props();
+  let { data }: {data: LoadedMainStoreT} = $props();
+  let state = $derived(data.state);
   let player_data = $derived(state.players[state.curr_player_idx]);
 </script>
 
