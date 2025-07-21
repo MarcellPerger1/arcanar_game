@@ -13,7 +13,3 @@ body {
     height: calc(100vh - 20px);  /*remove amount for bottom scrollbar*/
   }
 }
-#app-root {
-  width: 100%;
-  height: 100%;
-}
