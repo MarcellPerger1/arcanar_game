@@ -13,6 +13,8 @@
 
 @media(prefers-color-scheme: dark) {
   * {
+    /* TODO: this dark theme could use use improvement, 
+    bg should be dark grey not black */
     --color-main-0: #0c0c0c;
     --color-main-1: #2e2e2e;
     --color-main-2: #464646;
@@ -29,6 +31,9 @@ body {
   width: 100vw;
   background-color: var(--color-main-0);
   color: var(--color-main-9);
+
+  /* I cannot stand Times New Roman any longer. */
+  font-family: Arial, Helvetica, sans-serif;
 }
 @media(width < 578px) {
   body {
