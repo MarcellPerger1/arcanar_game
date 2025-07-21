@@ -1,12 +1,12 @@
 <script lang="ts">
   import { browser } from "$app/environment";
-  import { ApiController, WebsocketConn, type LoadedMainStoreT, type MainStoreT } from "$lib/api";
-  import { infinitePromise } from "$lib/util";
+  import { ApiController, WebsocketConn, type LoadedMainStoreT, type MainStoreT } from "./api";
+  import { infinitePromise } from "./util";
   import type { Snippet } from "svelte";
   
   let {main, loading}: {main: Snippet<[LoadedMainStoreT]>, loading: Snippet<[number]>} = $props();
 
-  let dest: MainStoreT = $state({state: void 0});
+  let dest: MainStoreT = $state({});
 
   async function initApp() {
     let api = new ApiController(new WebsocketConn("ws://localhost:3141"), dest);
