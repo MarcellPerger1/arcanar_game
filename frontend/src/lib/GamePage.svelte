@@ -2,6 +2,7 @@
   import type { LoadedMainStoreT } from "./api";
   import MoonPhases from "./MoonPhases.svelte";
   import PlayerArea from "./PlayerArea.svelte";
+  import TopQueryBar from "./TopQueryBar.svelte";
 
   let { data }: {data: LoadedMainStoreT} = $props();
   let state = $derived(data.state);
@@ -9,6 +10,7 @@
 </script>
 
 <div id="game-area" class="full-page-size">
+  <TopQueryBar currRequest={data.currRequest} />
   <MoonPhases moon_phases={state.moon_phases}/>
   <PlayerArea player_data={player_data}/>
 </div>
