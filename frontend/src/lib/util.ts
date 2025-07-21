@@ -48,3 +48,8 @@ export function promiseWithResolvers<V>(): {resolve(value: V | PromiseLike<V>): 
   // @ts-expect-error Promise constructor calls the function immediately (sync) so there will be set
   return {promise, resolve, reject};
 }
+
+export function requireNonNullish<T>(v: T | null | undefined): T {
+  if(v == null) throw new Error("requireNonNullish got null or undefined");
+  return v;
+}

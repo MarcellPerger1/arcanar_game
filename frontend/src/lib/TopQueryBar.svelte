@@ -1,14 +1,19 @@
 <script lang="ts">
   import type { CurrRequestT } from "./api";
+  import { requireNonNullish } from "./util";
 
-  let {currRequest = undefined}: {currRequest?: CurrRequestT} = $props()
+  let {currRequest = undefined}: {currRequest?: CurrRequestT} = $props();
+
+  function sendActionType(action_type: "buy" | "execute") {
+    requireNonNullish(currRequest).resolve({action_type});
+  }
 </script>
 
 <div id="top-bar">
   {#if currRequest?.msg.request == "action_type"}
     <div class="top-bar-text top-bar-item">Choose an action:</div>
-    <button class="top-bar-item top-bar-button">Buy card</button>
-    <button class="top-bar-item top-bar-button">Cast spells</button>
+    <button class="top-bar-item top-bar-button" onclick={() => sendActionType('buy')}>Buy card</button>
+    <button class="top-bar-item top-bar-button" onclick={() => sendActionType('execute'/*order 66*/)}>Cast spells</button>
   {/if}
 </div>
 
