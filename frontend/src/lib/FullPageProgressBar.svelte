@@ -21,13 +21,16 @@
   /* The number of atoms in the universe pales in comparison with Firefox's stupidity here.
     The person writing the code somehow thought it would be a great idea to make increasing 
     the height of the <progress> increase the empty space around the bar.
-    This forces us to set `appearance: none` to rid the world for FF's stupidity
-    and then reimplement the appearance */
+    This forces us to set `appearance: none` to rid the world for FF's stupidity and then
+    reimplement the appearance. This looks super-weerd on Chrome though so only do it on FF. */
+  @-moz-document url-prefix() {
+    #fullscreen-pbar {
+      appearance: none;
+      border-radius: 50cqh;  /* 50% of height */
+      border: 1px solid #8f8f9d;
+    }
+  }
   #fullscreen-pbar {
-    appearance: none;
-    border-radius: 50cqh;  /* 50% of height */
-    border: 1px solid #8f8f9d;
-
     height: 2em;
     width: 60vw;
     margin: 4px;
