@@ -6,13 +6,13 @@ export * from "./connection";
 
 const API_VERSION = 1;
 
-declare type _CurrRequestT<Name extends string = string> = {
+export declare type CurrRequestT<Name extends string = string> = {
   resolve(value: any): void;  /* TODO: could be more sophisticated here i.e. map resolve type to request type */
   reject(reason?: any): void;
   msg: ServerReqT & {request: Name};
 };
-export declare type MainStoreT = {state?: StateT; currRequest?: _CurrRequestT};
-export declare type LoadedMainStoreT = {state: StateT; currRequest?: _CurrRequestT};
+export declare type MainStoreT = {state?: StateT; currRequest?: CurrRequestT};
+export declare type LoadedMainStoreT = {state: StateT; currRequest?: CurrRequestT};
 
 export class ApiController {
   conn: IConnection;
@@ -79,7 +79,7 @@ export class ApiController {
   setState(state: StateT) {
     this.dest.state = state;
   }
-  setCurrRequest(currRequest: _CurrRequestT) {
+  setCurrRequest(currRequest: CurrRequestT) {
     this.dest.currRequest = currRequest;
   }
   async recv(): Promise<ServerMsgT> {
