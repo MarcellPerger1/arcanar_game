@@ -2,11 +2,33 @@
   box-sizing: border-box;
 }
 
+* {
+  --color-main-0: #ffffff;
+  --color-main-1: #dddddd;
+  --color-main-2: #bbbbbb;
+  --color-main-3: #aaaaaa;
+  --color-main-4: #777777;
+  --color-main-9: #000000;
+}
+
+@media(prefers-color-scheme: dark) {
+  * {
+    --color-main-0: #0c0c0c;
+    --color-main-1: #2e2e2e;
+    --color-main-2: #464646;
+    --color-main-3: #464646;
+    --color-main-4: #727272;
+    --color-main-9: #f3f3f3;
+  }
+}
+
 body {
   margin: 0px;
   padding: 0px;
   height: 100vh;
   width: 100vw;
+  background-color: var(--color-main-0);
+  color: var(--color-main-9);
 }
 @media(width < 578px) {
   body {

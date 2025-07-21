@@ -38,7 +38,7 @@
   flex-grow: 0;  /* We don't grow beyond our intended size */
 }
 #real-discard-section {
-  background-color: #bbbbbb;
+  background-color: var(--color-main-2);
   flex-shrink: 1;
   margin-left: auto;
 }

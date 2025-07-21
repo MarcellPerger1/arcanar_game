@@ -19,7 +19,7 @@
 <style>
 .our-placed-card {
   min-height: 6em;
-  background-color: #aaaaaa;
+  background-color: var(--color-main-3);
   margin: 3px;
   padding: 3px;
   border-radius: 8px;

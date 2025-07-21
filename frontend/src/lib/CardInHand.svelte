@@ -21,7 +21,7 @@
   margin-left: 3px;
   margin-right: 3px;
   margin-bottom: 3px;
-  background-color: #bbbbbb;
+  background-color: var(--color-main-2);
   border-radius: 7px;
   /* Temp, until not just text */
   text-align: center;

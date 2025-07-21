@@ -38,6 +38,6 @@
 }
 
 .artifact-column {
-  border-left: 1px solid #000000;
+  border-left: 1px solid var(--color-main-9);
 }
 </style>

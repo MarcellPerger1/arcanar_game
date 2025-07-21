@@ -15,7 +15,7 @@
 
 <style>
 #our-placed-area {
-  background-color: #dddddd;
+  background-color: var(--color-main-1);
   border-radius: 8px;
   padding-top: 6px;
   padding-bottom: 4px;

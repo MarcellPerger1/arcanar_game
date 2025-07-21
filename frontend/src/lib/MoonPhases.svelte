@@ -32,7 +32,7 @@
   padding: 3px;
   margin: 4px;
   border-radius: 7px;
-  background-color: #dddddd;
+  background-color: var(--color-main-1);
 }
 
 .moon-phase-top {
@@ -49,7 +49,7 @@
 .single-moon-phase, .double-moon-phase {
   margin: 3px;
   padding: 3px;
-  background-color: #bbbbbb;
+  background-color: var(--color-main-2);
   border-radius: 5px;
   width: 4em;
   /* Temp (center text), until images get sorted out */
