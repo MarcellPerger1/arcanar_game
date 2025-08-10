@@ -27,6 +27,10 @@
   padding: 4px;
   background-color: var(--color-main-1);
 }
+#top-bar:empty {
+  display: none;
+}
+
 .top-bar-item {
   margin: 4px;
   font-size: 1.4em;
