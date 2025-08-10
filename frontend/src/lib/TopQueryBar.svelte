@@ -1,8 +1,8 @@
 <script lang="ts">
-  import type { CurrRequestT } from "./api";
+  import { getCurrRequest } from "./main_data.svelte";
   import { requireNonNullish } from "./util";
 
-  let {currRequest = undefined}: {currRequest?: CurrRequestT} = $props();
+  let currRequest = $derived(getCurrRequest());
 
   function sendActionType(action_type: "buy" | "execute") {
     requireNonNullish(currRequest).resolve({action_type});
