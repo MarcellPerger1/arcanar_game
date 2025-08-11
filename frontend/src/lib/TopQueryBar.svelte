@@ -60,5 +60,6 @@
   background-color: #227722;
   border: 1px solid var(--color-main-4);
   border-radius: 4px;
+  cursor: pointer;
 }
 </style>

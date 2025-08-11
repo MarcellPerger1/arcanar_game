@@ -3,5 +3,7 @@
     "skipFiles": [
       "!**"
     ]
-  }
+  },
+  "javascript.preferences.importModuleSpecifierEnding": "js",
+  "typescript.preferences.importModuleSpecifierEnding": "js"
 }
