@@ -104,6 +104,11 @@ namespace effects {
 declare type ServerMsgT = request_types.AnyMsg;
 declare type ServerReqT = request_types.AnyReq;
 
+type _ExtractRequestType<T> = T extends {request: infer U} ? U : unknown;
+
+declare type ServerReqStrings = _ExtractRequestType<ServerReqT>;
+declare type ServerMsgStrings = _ExtractRequestType<ServerMsgT>;
+
 namespace request_types {
   declare type _AddState = {state: StateT};
   declare type _AddThread = {thread: number};

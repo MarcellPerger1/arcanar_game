@@ -4,14 +4,33 @@
 
   let currRequest = $derived(getCurrRequest());
 
+  function getTopbarMsg(): string {
+    if (!currRequest) return 'Waiting...';
+    let msg = currRequest.msg;
+    return (
+      msg.request == 'action_type' ? 'Choose an action:'
+      : msg.request == 'discard_for_exec' ? 'Choose card to discard'
+      : msg.request == 'buy_card' ? 'Choose card to buy'
+        // TODO: show cost somehow
+      : msg.request == 'card_payment' ? 'Choose resources to use as payment'
+      : msg.request == 'color_exec' ?
+        msg.n_times == 1 ?
+          'Choose color to run'
+        : `Choose color to run ${msg.n_times} times`
+      : msg.request == "color_excl" ? "Choose color not to execute"
+      // TODO: handle msg.request: "color_foreach" | "card_from_discard" | "card_exec" | "spend_resources" | "card_move" | "where_move_card"
+      : `Unknown request: ${msg.request}`
+    );
+  }
+
   function sendActionType(action_type: "buy" | "execute") {
     requireNonNullish(currRequest).resolve({action_type});
   }
 </script>
 
 <div id="top-bar">
+  <div class="top-bar-text top-bar-item">{getTopbarMsg()}</div>
   {#if currRequest?.msg.request == "action_type"}
-    <div class="top-bar-text top-bar-item">Choose an action:</div>
     <button class="top-bar-item top-bar-button" onclick={() => sendActionType('buy')}>Buy card</button>
     <button class="top-bar-item top-bar-button" onclick={() => sendActionType('execute'/*order 66*/)}>Cast spells</button>
   {/if}
