@@ -156,7 +156,8 @@ class JsonAdapter(IFrontend):
     # noinspection PyMethodMayBeStatic
     def ser_effect_info_ref(self, info: EffectExecInfo):
         """Serialise EffectExecInfo into an object with **references** to the player/card"""
-        return {'player': info.player.idx, 'card': info.card.location}
+        # TODO: tests for this `.ser()` as it caused a bug (while sending spend_resource)
+        return {'player': info.player.idx, 'card': self.ser(info.card.location)}
 
     def serialise_state(self) -> JsonT:
         return self.ser(self.game)  # Game contains all the state
