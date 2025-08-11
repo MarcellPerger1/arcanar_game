@@ -1,4 +1,4 @@
-import type { ServerMsgT, ServerReqT, StateT } from "$lib/types";
+import type { ClientRespRawT, ClientRespT, ServerMsgT, ServerReqT, StateT } from "$lib/types";
 import { promiseWithResolvers } from "$lib/util";
 import { CloseCode, type IConnection } from "./connection";
 
@@ -7,7 +7,7 @@ export * from "./connection";
 const API_VERSION = 1;
 
 export declare type CurrRequestT<Name extends string = string> = {
-  resolve(value: any): void;  /* TODO: could be more sophisticated here i.e. map resolve type to request type */
+  resolve(value: ClientRespT): void;  /* TODO: could be more sophisticated here i.e. map resolve type to request type */
   reject(reason?: any): void;
   msg: ServerReqT & {request: Name};
 };
@@ -70,7 +70,7 @@ export class ApiController {
 
   async handleTrueRequest(msg: ServerReqT) {
     this.setState(msg.state);
-    const {promise: getRespFromUser, resolve, reject} = promiseWithResolvers<any>();
+    const {promise: getRespFromUser, resolve, reject} = promiseWithResolvers<ClientRespT>();
     this.setCurrRequest({resolve, reject, msg});
     // Wait for the UI will handle it, then send result. "Ionos [the UI] will sort this."
     await this.send({...await getRespFromUser, thread: msg.thread});  // TODO: make the UI actualy handle this
@@ -85,7 +85,7 @@ export class ApiController {
   async recv(): Promise<ServerMsgT> {
     return JSON.parse(await this.conn.recv());
   }
-  async send(data: any) {
+  async send(data: ClientRespRawT) {
     await this.conn.send(JSON.stringify(data));
   }
 }

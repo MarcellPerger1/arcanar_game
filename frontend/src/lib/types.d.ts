@@ -47,6 +47,7 @@ declare type CardTypeFilterT = {
   allowed_types: Array<CardTypeT>;
 };
 declare type AdjanceniesT = {[t in PlaceableCardT]: PlaceableCardT[]};
+declare type CardRefT = LocationT;
 
 namespace effects {
   // Atomics
@@ -103,6 +104,8 @@ namespace effects {
 
 declare type ServerMsgT = request_types.AnyMsg;
 declare type ServerReqT = request_types.AnyReq;
+declare type ClientRespRawT = response_types.AnyRespRaw;
+declare type ClientRespT = response_types.AnyResp;
 
 type _ExtractRequestType<T> = T extends {request: infer U} ? U : unknown;
 
@@ -135,11 +138,28 @@ namespace request_types {
   declare type WhereMoveCard = {request: "where_move_card", card: LocationT, possibilities: PlaceableCardT[]}    & _AddExecInfo & _AddStateAndThread;
   // This alignment thing is a little stupid but it looks cool... if your screen is wide enough
 
-  // TODO: response types (?)
-  declare type ActionTypeResp = {action_type: "execute" | "buy"} & _AddThread;
-
   declare type AnyReq = ActionTypeReq | DiscardForExec | BuyCard | CardPayment | ColorExec | ColorExcl | ColorForeach | CardFromDiscard | CardExec | SpendResources | CardMove | WhereMoveCard;
   declare type AnyMsg = Init | StateReq | ResultReq | Shutdown | AnyReq;
+}
+
+namespace response_types {
+  declare type _AddThread = {thread: number};
+
+  // TODO: response types (?)
+  declare type ActionTypeResp = {action_type: "execute" | "buy"};
+  declare type DiscardForExecResp = {discard_for_exec: CardRefT};
+  declare type BuyCardResp = {buy_card: CardRefT};
+  declare type CardPaymentResp = {card_payment: _Counter<ResourceT>};
+  declare type ColorExecResp = {color_exec: ColorT};
+  declare type ColorExclResp = {color_excl: ColorT};
+  declare type ColorForeachResp = {color_foreach: ColorT};
+  declare type CardFromDiscardResp = {card_from_discard: CardRefT};
+  declare type SpendResourcesResp = {spend_resources: _Counter<ResourceT>};
+  declare type CardMoveResp = {card_move: CardRefT};
+  declare type WhereMoveCard = {where_move_card: PlaceableCardT};
+
+  declare type AnyResp = ActionTypeResp | DiscardForExecResp | BuyCardResp | CardPaymentResp | ColorExecResp | ColorExclResp | ColorForeachResp | CardFromDiscardResp | SpendResourcesResp | CardMoveResp | WhereMoveCard;
+  declare type AnyRespRaw = AnyResp & _AddThread;
 }
 
 type _Counter<K> = {[key in K]?: number};
