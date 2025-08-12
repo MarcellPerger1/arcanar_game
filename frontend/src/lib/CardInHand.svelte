@@ -7,6 +7,7 @@ import { stringifyEnumLong } from './enums';
 import { getCurrRequest } from './main_data.svelte.ts';
 import type { CardT } from './types';
 import { toCapitalCase } from './util';
+import { stringifyCost } from './stringify/common.ts';
 
 let { data }: { data: CardT } = $props();
 let currRequest = $derived(getCurrRequest());
@@ -42,7 +43,8 @@ function getCardRequestInfo(currRequest: CurrRequestT | undefined): { currSelect
   onclick={cardReq?.onselect}
   disabled={cardReq?.onselect == null}
 >
-  {toCapitalCase(stringifyEnumLong(data.card_type))} card:<br />
+  {toCapitalCase(stringifyEnumLong(data.card_type))} card:<br>
+  Cost: {stringifyCost(data.cost)}<br>
   <CardEffectText effect={data.effect} />
 </button>
 

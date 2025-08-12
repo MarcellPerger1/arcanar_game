@@ -53,3 +53,12 @@ export function requireNonNullish<T>(v: T | null | undefined): T {
   if(v == null) throw new Error("requireNonNullish got null or undefined");
   return v;
 }
+
+// These assume that no duplicates are present
+export function isArraySubset<T>(a: T[], b: T[]): boolean {
+  const bSet = new Set(b);
+  return a.every(bSet.has, /*thisArg*/bSet);
+}
+export function isArrayStrictSubset<T>(a: T[], b: T[]): boolean {
+  return a.length < b.length && isArraySubset(a, b);
+}

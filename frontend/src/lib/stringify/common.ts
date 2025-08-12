@@ -1,7 +1,7 @@
 import { ARTIFACT, Colors, EVENT, POINTS, stringifyEnumLong, stringifyEnumShort, type ResourceT } from "../enums";
-import type { CardTypeFilterT, ResourceFilterT } from "../types";
+import type { CardTypeFilterT, CostT, ResourceFilterT } from "../types";
 
-import { arrayRemove, stringifyToOrdinal } from "../util";
+import { arrayRemove, isArraySubset, stringifyToOrdinal } from "../util";
 
 function _stringifyFilter_noPoints(allowed: ResourceT[]) {
   if(allowed.length == 1) return stringifyEnumShort(allowed[0]);
@@ -23,6 +23,31 @@ export function strigifyResourceFilter({allowed_resources: allowed}: ResourceFil
     arrayRemove(allowed, POINTS);
   }
   return _stringifyFilter_noPoints(allowed) + extra;
+}
+
+export function stringifyCost(cost: CostT) {
+  const dedupPossibilities: [ResourceFilterT, number][] = cost.possibilities.filter(
+    ([filt, n], i) => {
+      // See if there's a less strict option that is equal to this.  We don't check for options
+      // that have fewer resources - user may want to get rid of resources (e.g. red)
+      // O(n^3) algorithm here - I'm lazy and currently n=2
+      const hasLessStrictEquivalent = cost.possibilities.some(
+        ([otherFilt, otherN], otherI) =>
+          i != otherI  // Not the current one (otherwise all of them are removed by themselves)
+          && otherN == n
+          && isArraySubset(filt.allowed_resources, otherFilt.allowed_resources)
+      );
+      return !hasLessStrictEquivalent;
+    }
+  );
+  // If there's a non-free option, still display that (might want to get rid of resources)
+  if (dedupPossibilities.every(([_filt, n]) => n == 0)) return 'Free';
+  const strings = dedupPossibilities.map(([filt, n]) => `${n} ${strigifyResourceFilter(filt)}`);
+  return (
+    strings.length == 1 ? strings[0]
+    : strings.length == 2 ? strings.join(' or ')
+    : strings.slice(0, -1).join(', ') + ', or ' + strings.at(-1)
+  );
 }
 
 export function strigifyDiscardPileOffset(offset: number) {
