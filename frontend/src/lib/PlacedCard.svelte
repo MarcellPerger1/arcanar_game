@@ -1,5 +1,5 @@
 <script lang="ts">
-  import CardEffectText from "./card_effects/EffectText.svelte";
+  import CardEffectText from "./stringify/EffectText.svelte";
   import { stringifyEnumLong } from "./enums";
   import type { CardT } from "./types";
   import { toCapitalCase } from "./util";

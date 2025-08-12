@@ -2,7 +2,7 @@
 import type { CurrRequestT } from './api/index.ts';
 
 // TODO: unify this with PlacedCard.ts
-import CardEffectText from './card_effects/EffectText.svelte';
+import CardEffectText from './stringify/EffectText.svelte';
 import { stringifyEnumLong } from './enums';
 import { getCurrRequest } from './main_data.svelte.ts';
 import type { CardT } from './types';
