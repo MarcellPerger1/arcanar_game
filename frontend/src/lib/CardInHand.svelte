@@ -33,33 +33,25 @@ function getCardRequestInfo(currRequest: CurrRequestT | undefined): { currSelect
     : null
   );
 }
-
-// Maybe not the best name. Returns null if a card doesn't need to be selected.
-// If a card needs to be selected, return true/false based on whethr the current card is a valid choice
-function isSelectable(): boolean | null {
-  if (!currRequest) return null;
-  let msg = currRequest.msg;
-  return (
-    msg.request == 'discard_for_exec' ? true
-    : msg.request == 'buy_card' ? true
-    : null
-  );
-}
 </script>
 
-<!-- TODO: A11y warnings here -->
-<div
+<button
   class="card-in-hand"
-  class:clickable={isSelectable() === true}
-  class:disaled={isSelectable() === false}
+  class:clickable={cardReq?.currSelectable === true}
+  class:disaled={cardReq?.currSelectable === false}
   onclick={cardReq?.onselect}
+  disabled={cardReq?.onselect == null}
 >
   {toCapitalCase(stringifyEnumLong(data.card_type))} card:<br />
   <CardEffectText effect={data.effect} />
-</div>
+</button>
 
 <style>
 .card-in-hand {
+  /* Remove the button appearance (button is only for a11y to make it clickable) */
+  appearance: none;
+  all: unset;
+
   height: 8em;
   padding-left: 3px;
   padding-right: 3px;
@@ -69,8 +61,12 @@ function isSelectable(): boolean | null {
   margin-bottom: 3px;
   background-color: var(--color-main-2);
   border-radius: 7px;
+
   /* Temp, until not just text */
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;  /* Align to top */
+  text-align: center;  /* Center horizontally */
 }
 .clickable {
   cursor: pointer;
