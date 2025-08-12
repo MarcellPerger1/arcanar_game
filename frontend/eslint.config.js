@@ -25,7 +25,12 @@ export default ts.config(
       // see: https://typescript-eslint.io/troubleshooting/faqs/eslint/#i-get-errors-from-the-no-undef-rule-about-global-variables-not-being-defined-even-though-there-are-no-typescript-errors
       'no-undef': 'off',
       "@typescript-eslint/no-unused-vars": ["warn", {
-        "varsIgnorePattern": "^_"
+        "args": "all",
+        "argsIgnorePattern": "^_",
+        "caughtErrors": "all",
+        "caughtErrorsIgnorePattern": "^_",
+        "destructuredArrayIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
       }],
       // Too annoying for a lot of generic stuff (e.g. Promise error type is any)
       "@typescript-eslint/no-explicit-any": "off"
