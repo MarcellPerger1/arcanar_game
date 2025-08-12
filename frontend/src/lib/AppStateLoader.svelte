@@ -1,12 +1,12 @@
 <script lang="ts">
   import { browser } from "$app/environment";
-  import { ApiController, WebsocketConn, type LoadedMainStoreT, type MainStoreT } from "./api";
+  import { ApiController, WebsocketConn, type MainStoreT, type EarlyMainStoreT } from "./api";
   import { infinitePromise } from "./util";
   import type { Snippet } from "svelte";
   
-  let {main, loading}: {main: Snippet<[LoadedMainStoreT]>, loading: Snippet<[number]>} = $props();
+  let {main, loading}: {main: Snippet<[MainStoreT]>, loading: Snippet<[number]>} = $props();
 
-  let dest: MainStoreT = $state({});
+  let dest: EarlyMainStoreT = $state({});
 
   async function initApp() {
     let api = new ApiController(new WebsocketConn("ws://localhost:3141"), dest);
@@ -25,7 +25,7 @@
     <!-- check that the round has been initialised - we cannot display uninitialised stuff for now -->
     {#if dest.state.moon_phases}
       <!-- TS doesn't realise we just checked `if dest.state` up there so we need the cast -->
-      {@render main(dest as LoadedMainStoreT)}
+      {@render main(dest as MainStoreT)}
     {:else}
       {@render loading(75)}
     {/if}

@@ -1,11 +1,11 @@
 <script lang="ts">
-  import type { LoadedMainStoreT } from "./api";
+  import type { MainStoreT } from "./api";
   import { setDataContext } from "./main_data.svelte";
   import MoonPhases from "./MoonPhases.svelte";
   import PlayerArea from "./PlayerArea.svelte";
   import TopQueryBar from "./TopQueryBar.svelte";
 
-  let { data }: {data: LoadedMainStoreT} = $props();
+  let { data }: {data: MainStoreT} = $props();
   let state = $derived(data.state);
   let player_data = $derived(state.players[state.curr_player_idx]);
   setDataContext(data);

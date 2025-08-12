@@ -11,19 +11,19 @@ export declare type CurrRequestT<Name extends string = string> = {
   reject(reason?: any): void;
   msg: ServerReqT & {request: Name};
 };
-export declare type MainStoreT = {state?: StateT; currRequest?: CurrRequestT};
-export declare type LoadedMainStoreT = {state: StateT; currRequest?: CurrRequestT};
+export declare type EarlyMainStoreT = {state?: StateT; currRequest?: CurrRequestT};
+export declare type MainStoreT = {state: StateT; currRequest?: CurrRequestT};
 
 export class ApiController {
   conn: IConnection;
   // Framework-agnostic forward API: an object on which we set the state.
   // Vue/Svelte use proxy so it can be used as-is. I don't know about other
   // frameworks, but code can always write its own setters/getters
-  dest: MainStoreT;
+  dest: EarlyMainStoreT;
 
   server_version: string = '?';
   
-  constructor(conn: IConnection, dest: MainStoreT) {
+  constructor(conn: IConnection, dest: EarlyMainStoreT) {
     this.conn = conn;
     this.dest = dest;
   }
