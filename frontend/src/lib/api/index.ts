@@ -9,7 +9,7 @@ const API_VERSION = 1;
 export declare type CurrRequestT<Name extends string = string> = {
   resolve(value: ClientRespT): void;  /* TODO: could be more sophisticated here i.e. map resolve type to request type */
   reject(reason?: any): void;
-  msg: ServerReqT & {request: Name};
+  msg: ServerReqT & {request: Name};  // OMG, this actually does what I want it to, CurrRequestT<"card_payment"> works
 };
 export declare type EarlyMainStoreT = {state?: StateT; currRequest?: CurrRequestT};
 export declare type MainStoreT = {state: StateT; currRequest?: CurrRequestT};
