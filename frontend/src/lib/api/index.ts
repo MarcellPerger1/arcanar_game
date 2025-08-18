@@ -1,5 +1,5 @@
 import type { ClientRespRawT, ClientRespT, ServerMsgT, ServerReqStrings, ServerReqT, StateT } from "$lib/types";
-import type { UIStateT } from "$lib/ui_state_types.ts";
+import { initUiState, type UIStateT } from "$lib/ui_state.ts";
 import { promiseWithResolvers } from "$lib/util";
 import { CloseCode, type IConnection } from "./connection";
 
@@ -11,7 +11,7 @@ export declare type CurrRequestT<Name extends string = string> = {
   resolve(value: ClientRespT): void;  /* TODO: could be more sophisticated here i.e. map resolve type to request type */
   reject(reason?: any): void;
   msg: ServerReqT & {request: Name};  // OMG, this actually does what I want it to, CurrRequestT<"card_payment"> works
-  uiState?: UIStateT<Name>;
+  uiState: UIStateT<Name>;
 };
 export declare type EarlyMainStoreT = {state?: StateT; currRequest?: CurrRequestT};
 export declare type MainStoreT = {state: StateT; currRequest?: CurrRequestT};
@@ -77,7 +77,7 @@ export class ApiController {
   async handleTrueRequest(msg: ServerReqT) {
     this.setState(msg.state);
     const {promise: getRespFromUser, resolve, reject} = promiseWithResolvers<ClientRespT>();
-    this.setCurrRequest({resolve, reject, msg});
+    this.setCurrRequest({resolve, reject, msg, uiState: initUiState(msg.request)});
     // Wait for the UI will handle it, then send result. "Ionos [the UI] will sort this."
     await this.send({...await getRespFromUser, thread: msg.thread});
   }
