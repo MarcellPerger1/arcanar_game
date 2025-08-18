@@ -1,4 +1,5 @@
-import type { ClientRespRawT, ClientRespT, ServerMsgT, ServerReqT, StateT } from "$lib/types";
+import type { ClientRespRawT, ClientRespT, ServerMsgT, ServerReqStrings, ServerReqT, StateT } from "$lib/types";
+import type { UIStateT } from "$lib/ui_state_types.ts";
 import { promiseWithResolvers } from "$lib/util";
 import { CloseCode, type IConnection } from "./connection";
 
@@ -10,9 +11,14 @@ export declare type CurrRequestT<Name extends string = string> = {
   resolve(value: ClientRespT): void;  /* TODO: could be more sophisticated here i.e. map resolve type to request type */
   reject(reason?: any): void;
   msg: ServerReqT & {request: Name};  // OMG, this actually does what I want it to, CurrRequestT<"card_payment"> works
+  uiState?: UIStateT<Name>;
 };
 export declare type EarlyMainStoreT = {state?: StateT; currRequest?: CurrRequestT};
 export declare type MainStoreT = {state: StateT; currRequest?: CurrRequestT};
+
+export function checkRequestType<R extends ServerReqStrings>(req: CurrRequestT | undefined, tp: R): req is CurrRequestT<R> {
+  return req != null && req.msg.request === tp;
+} 
 
 export class ApiController {
   conn: IConnection;
@@ -73,7 +79,7 @@ export class ApiController {
     const {promise: getRespFromUser, resolve, reject} = promiseWithResolvers<ClientRespT>();
     this.setCurrRequest({resolve, reject, msg});
     // Wait for the UI will handle it, then send result. "Ionos [the UI] will sort this."
-    await this.send({...await getRespFromUser, thread: msg.thread});  // TODO: make the UI actualy handle this
+    await this.send({...await getRespFromUser, thread: msg.thread});
   }
 
   setState(state: StateT) {

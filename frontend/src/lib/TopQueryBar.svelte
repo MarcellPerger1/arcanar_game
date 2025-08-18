@@ -1,4 +1,6 @@
 <script lang="ts">
+import { checkRequestType } from "./api/index.ts";
+import { matchesCostExact } from "./common.ts";
 import { getCurrRequest } from "./main_data.svelte";
 import { stringifyCost } from "./stringify/common.ts";
 import { requireNonNullish } from "./util";
@@ -33,6 +35,10 @@ function sendActionType(action_type: "buy" | "execute") {
   {#if currRequest?.msg.request == "action_type"}
     <button class="top-bar-item top-bar-button" onclick={() => sendActionType('buy')}>Buy card</button>
     <button class="top-bar-item top-bar-button" onclick={() => sendActionType('execute'/*order 66*/)}>Cast spells</button>
+  {:else if checkRequestType(currRequest, "card_payment")}
+  <!-- TODO set uiState! -->
+    {@const isEnabled = currRequest.uiState && matchesCostExact(currRequest.msg.cost, currRequest.uiState)}
+    <button class="top-bar-item top-bar-button" disabled={!isEnabled}>Confirm</button>
   {/if}
 </div>
 
