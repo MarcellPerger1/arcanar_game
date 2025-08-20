@@ -2,7 +2,6 @@
 import PlacedCardColumn from './PlacedCardColumn.svelte';
 import ResourceSpendChooser from './ResourceSpendChooser.svelte';
 import { checkRequestType } from './api/index.ts';
-import { couldBeAcceptableForCost } from './common.ts';
 import { ARTIFACT, stringifyEnumLong, type AreaTypeT, type ResourceT } from "./enums";
 import { getCurrRequest } from './main_data.svelte.ts';
 import type { AreaT } from "./types";
