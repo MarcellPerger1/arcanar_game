@@ -40,6 +40,7 @@ function getCardRequestInfo(currRequest: CurrRequestT | undefined): { currSelect
   class="card-in-hand"
   class:clickable={cardReq?.currSelectable === true}
   class:disaled={cardReq?.currSelectable === false}
+  class:norequest={cardReq?.currSelectable == null}
   onclick={cardReq?.onselect}
   disabled={cardReq?.onselect == null}
 >
@@ -75,5 +76,8 @@ function getCardRequestInfo(currRequest: CurrRequestT | undefined): { currSelect
 }
 .disaled {
   cursor: not-allowed;
+}
+.norequest {
+  user-select: text;
 }
 </style>
