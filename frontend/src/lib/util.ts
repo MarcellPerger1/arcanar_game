@@ -55,3 +55,11 @@ export function isArraySubset<T>(a: T[], b: T[]): boolean {
 export function isArrayStrictSubset<T>(a: T[], b: T[]): boolean {
   return a.length < b.length && isArraySubset(a, b);
 }
+
+export function clamp(x: number, lo: number | null, hi: number | null) {
+  return (
+    lo != null && x < lo ? lo
+    : hi != null && x > hi ? hi
+    : x
+  );
+}
