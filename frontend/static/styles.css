@@ -40,3 +40,8 @@ body {
     height: calc(100vh - 20px);  /*remove amount for bottom scrollbar*/
   }
 }
+
+:where(.reset-builtin-appearance) {
+  appearance: none;
+  all: unset;
+}
