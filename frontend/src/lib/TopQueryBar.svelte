@@ -37,8 +37,10 @@ function sendActionType(action_type: "buy" | "execute") {
     <button class="top-bar-item top-bar-button" onclick={() => sendActionType('execute'/*order 66*/)}>Cast spells</button>
   {:else if checkRequestType(currRequest, "card_payment")}
   <!-- TODO set uiState! -->
-    {@const isEnabled = currRequest.uiState && matchesCostExact(currRequest.msg.cost, currRequest.uiState)}
-    <button class="top-bar-item top-bar-button" disabled={!isEnabled}>Confirm</button>
+    {@const isEnabled = matchesCostExact(currRequest.msg.cost, currRequest.uiState)}
+    <button class="top-bar-item top-bar-button" disabled={!isEnabled} onclick={() => {
+      if(isEnabled) currRequest.resolve({card_payment: currRequest.uiState});
+    }}>Confirm</button>
   {/if}
 </div>
 
