@@ -6,6 +6,9 @@ export function matchesCostExact(cost: CostT, resources: _Counter<ResourceT>) {
   const keys = counterNonzeroKeys(resources);  // What the functional programming
   return cost.possibilities.some(([filt, n]) => n == numProvided && keys.every(v => filt.allowed_resources.includes(v)));
 }
+export function couldBeAcceptableForCost(cost: CostT, resource: ResourceT) {
+  return cost.possibilities.some(([filt, n]) => n != 0 && filt.allowed_resources.includes(resource));
+}
 
 export function counterTotal(c: _Counter<any>): number {
   return Object.values(c).filter(v => v != null).reduce((a, b) => a + b, 0);
