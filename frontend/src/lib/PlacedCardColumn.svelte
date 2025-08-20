@@ -7,7 +7,7 @@
 
 <div class="our-placed-card-column">
   {#each Object.values(area) as card_data (card_data.location.key)}
-      <PlacedCard data={card_data} />
+    <PlacedCard data={card_data} />
   {/each}
 </div>
 
@@ -18,6 +18,7 @@
   flex-direction: column;
   align-items: stretch;
   padding-top: 4px;
+  min-height: 12em;
 }
 </style>
 
