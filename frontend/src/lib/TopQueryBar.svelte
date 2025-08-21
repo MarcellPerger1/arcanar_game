@@ -45,6 +45,9 @@ function sendActionType(action_type: "buy" | "execute") {
         : {spend_resources: currRequest.uiState}
       );
     }}>Confirm</button>
+    {#if checkRequestType(currRequest, "spend_resources")}
+      <button class="top-bar-item top-bar-button" onclick={() => currRequest.resolve({spend_resources: null})}>Cancel</button>
+    {/if}
   {/if}
 </div>
 

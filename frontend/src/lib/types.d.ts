@@ -154,7 +154,7 @@ namespace response_types {
   declare type ColorExclResp = {color_excl: ColorT};
   declare type ColorForeachResp = {color_foreach: ColorT};
   declare type CardFromDiscardResp = {card_from_discard: CardRefT};
-  declare type SpendResourcesResp = {spend_resources: _Counter<ResourceT>};
+  declare type SpendResourcesResp = {spend_resources: _Counter<ResourceT> | null};
   declare type CardMoveResp = {card_move: CardRefT};
   declare type WhereMoveCard = {where_move_card: PlaceableCardT};
 
