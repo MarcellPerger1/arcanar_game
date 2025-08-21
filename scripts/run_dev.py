@@ -4,13 +4,33 @@ import subprocess
 import sys
 import threading
 import time
+from collections.abc import Mapping, Callable, Iterable
+from typing import Any
 
 import setpath
 
 if setpath.setpath():
     from backend.api.json_adapter import JsonAdapter
-    from backend.api.wesocket_conn import WebsocketConn
+    from backend.api.wesocket_conn import WebsocketConn, ServerThreadDied
     from backend.core import Game, DefaultRuleset
+
+
+class BackendThread(threading.Thread):
+    def __init__(self, group: None = None,
+                 target: Callable[..., object] | None = None, name: str = None,
+                 args: Iterable[Any] = (),
+                 kwargs: Mapping[str, Any] | None = None,
+                 *, daemon: bool | None = None):
+        super().__init__(group, target, name, args, kwargs, daemon=daemon)
+        self.should_restart = False
+
+    def run(self):
+        try:
+            super().run()
+        except ServerThreadDied:
+            self.should_restart = True
+            raise  # Still display message, could have bug in server thread
+        self.should_restart = True  # Reached end of game, restart for further testing
 
 
 def run_backend():
@@ -35,7 +55,7 @@ def run_frontend():
 
 def start_backend_th():
     # Websocket thread is non-daemonic and will realise that it needs to die
-    backend_th = threading.Thread(
+    backend_th = BackendThread(
         target=run_backend, name='Arcanar Backend: Main Thread', daemon=True)
     backend_th.start()
     return backend_th
@@ -53,6 +73,8 @@ def main():
     while frontend_th.is_alive():
         if not backend_th.is_alive():  # Restart it (webpage reload needs same data again)
             time.sleep(0.02)  # Give websocket thread time to die
+            if not backend_th.should_restart:
+                return  # Exit, frontend will see that we're dead and will exit
             backend_th = start_backend_th()
         time.sleep(0.01)
 
