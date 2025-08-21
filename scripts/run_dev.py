@@ -21,7 +21,7 @@ def run_backend():
 
 def run_frontend():
     p = subprocess.Popen(
-        [shutil.which('npm'), 'run', 'dev', '--prefix', 'frontend'],
+        [shutil.which('npm'), 'run', 'dev', '--prefix', 'frontend', '--', *sys.argv[1:]],
         stdin=sys.stdin.fileno(), stdout=sys.stdout.fileno(), stderr=sys.stderr.fileno(),
         text=True
     )
