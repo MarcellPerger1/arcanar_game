@@ -1,6 +1,7 @@
 import { checkRequestType, type CurrRequestT } from "./api/index.ts";
 import type { ResourceT } from "./enums.ts";
 import type { _Counter, CostT, ResourceFilterT } from "./types";
+import { clamp } from "./util.ts";
 
 export function matchesCostExact(cost: CostT, resources: _Counter<ResourceT>) {
   const numProvided = counterTotal(resources);
@@ -24,4 +25,13 @@ export function counterTotal(c: _Counter<any>): number {
 }
 export function counterNonzeroKeys<T extends string | number | boolean>(c: _Counter<T>, conv: (a: `${T}`) => T): T[] {
   return (Object.entries(c) as [`${T}`, number][]).filter(([_k, v]) => v).map(([k, _v]) => conv(k));
+}
+export function counterInc<T>(c: _Counter<T>, k: T, n?: number) {
+  c[k] = (c[k] ?? 0) + (n ?? 1);
+}
+export function counterDec<T>(c: _Counter<T>, k: T, n?: number) {
+  c[k] = clamp((c[k] ?? 0) - (n ?? 1), 0, null);
+}
+export function counterGet<T>(c: _Counter<T>, k: T): number {
+  return c[k] ?? 0;
 }

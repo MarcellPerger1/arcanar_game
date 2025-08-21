@@ -11,16 +11,12 @@ let {area, areaType, resource: resourcePair}: {area: AreaT, areaType: AreaTypeT,
 let [resource, resourceAmount] = $derived(resourcePair);
 let req = $derived(getCurrRequest());
 
-let spendAmount = $state(0);
-$effect(() => {
-  req?.msg.thread;  // so is triggered every time thread changes (i.e. new request/player)
-  spendAmount = 0;
-})
+let spendAmount = $derived(req?.uiState?.[resource] ?? 0);
 </script>
 
 <div class={["our-placed-area-column", areaType == ARTIFACT ? "artifact-column" : "color-area-column"]}>
   {#if checkRequestType(req, "card_payment") || checkRequestType(req, "spend_resources")}
-    <ResourceSpendChooser {resource} currentAmount={resourceAmount} bind:spendAmount={spendAmount} />
+    <ResourceSpendChooser {resource} currentAmount={resourceAmount} />
   {/if}
   <div class="board-column-top-text center-text">{toCapitalCase(stringifyEnumLong(resource))}: {resourceAmount - spendAmount}</div>
   <PlacedCardColumn {area}/>
