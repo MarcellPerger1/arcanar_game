@@ -19,6 +19,10 @@ export declare type MainStoreT = {state: StateT; currRequest?: CurrRequestT};
 export function checkRequestType<R extends ServerReqStrings>(req: CurrRequestT | undefined, tp: R): req is CurrRequestT<R> {
   return req != null && req.msg.request === tp;
 } 
+export function expectRequestType<R extends ServerReqStrings>(req: CurrRequestT | undefined, tp: R): CurrRequestT<R> | never {
+  if(!checkRequestType(req, tp)) throw new Error(`Unexpected request type (wanted ${tp}, got ${req?.msg.request})`);
+  return req;
+}
 
 export class ApiController {
   conn: IConnection;

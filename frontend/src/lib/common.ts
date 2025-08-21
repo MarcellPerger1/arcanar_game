@@ -1,5 +1,6 @@
+import { checkRequestType, type CurrRequestT } from "./api/index.ts";
 import type { ResourceT } from "./enums.ts";
-import type { _Counter, CostT } from "./types";
+import type { _Counter, CostT, ResourceFilterT } from "./types";
 
 export function matchesCostExact(cost: CostT, resources: _Counter<ResourceT>) {
   const numProvided = counterTotal(resources);
@@ -8,6 +9,14 @@ export function matchesCostExact(cost: CostT, resources: _Counter<ResourceT>) {
 }
 export function couldBeAcceptableForCost(cost: CostT, resource: ResourceT) {
   return cost.possibilities.some(([filt, n]) => n != 0 && filt.allowed_resources.includes(resource));
+}
+
+export function costFromSingleOption(filt: ResourceFilterT, n: number): CostT {
+  return {possibilities: [[filt, n]]};
+}
+
+export function costFromRequest(req: CurrRequestT<"card_payment"> | CurrRequestT<"spend_resources">): CostT {
+  return checkRequestType(req, "card_payment") ? req.msg.cost : costFromSingleOption(req.msg.filters, req.msg.amount);
 }
 
 export function counterTotal(c: _Counter<any>): number {
