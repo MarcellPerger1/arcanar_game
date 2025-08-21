@@ -16,10 +16,12 @@ export function getCurrRequest() {
   return getData().currRequest;
 }
 /** NOTE: must be wrapped in `$derived(...)` */
-export function expectCurrRequest<T extends ServerReqStrings>(expect: T): CurrRequestT<T> | never {
+export function expectCurrRequest<T extends ServerReqStrings>(...expect: T[]): CurrRequestT<T> | never {
   const result = getCurrRequest();
-  if(!checkRequestType(result, expect)) throw new Error(`Unexpected request type (wanted ${expect}, got ${result?.msg.request})`);
-  return result;
+  if(result && expect.some(tp => checkRequestType(result, tp))) {
+    return result as CurrRequestT<T>;
+  }
+  throw new Error(`Unexpected request type (wanted ${expect}, got ${result?.msg.request})`);
 }
 /** NOTE: must be wrapped in `$derived(...)` */
 export function expectCurrRequestOr<T extends ServerReqStrings>(expect: T): CurrRequestT<T> | undefined;
