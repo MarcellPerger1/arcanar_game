@@ -1,6 +1,6 @@
 <script lang="ts">
 import { checkRequestType } from "./api/index.ts";
-import { matchesCostExact } from "./common.ts";
+import { costFromRequest, matchesCostExact } from "./common.ts";
 import { getCurrRequest } from "./main_data.svelte";
 import { stringifyCost } from "./stringify/common.ts";
 import { requireNonNullish } from "./util";
@@ -35,11 +35,15 @@ function sendActionType(action_type: "buy" | "execute") {
   {#if currRequest?.msg.request == "action_type"}
     <button class="top-bar-item top-bar-button" onclick={() => sendActionType('buy')}>Buy card</button>
     <button class="top-bar-item top-bar-button" onclick={() => sendActionType('execute'/*order 66*/)}>Cast spells</button>
-  {:else if checkRequestType(currRequest, "card_payment")}
-  <!-- TODO set uiState! -->
-    {@const isEnabled = matchesCostExact(currRequest.msg.cost, currRequest.uiState)}
+  {:else if checkRequestType(currRequest, "card_payment") || checkRequestType(currRequest, "spend_resources")}
+    {@const isEnabled = matchesCostExact(costFromRequest(currRequest), currRequest.uiState)}
     <button class="top-bar-item top-bar-button" disabled={!isEnabled} onclick={() => {
-      if(isEnabled) currRequest.resolve({card_payment: currRequest.uiState});
+      if(!isEnabled) return;
+      currRequest.resolve(
+        checkRequestType(currRequest, "card_payment") ? 
+          {card_payment: currRequest.uiState}
+        : {spend_resources: currRequest.uiState}
+      );
     }}>Confirm</button>
   {/if}
 </div>
