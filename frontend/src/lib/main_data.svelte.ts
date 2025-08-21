@@ -16,10 +16,10 @@ export function getCurrRequest() {
   return getData().currRequest;
 }
 /** NOTE: must be wrapped in `$derived(...)` */
-export function expectCurrRequest<T extends ServerReqStrings>(...expect: T[]): CurrRequestT<T> | never {
+export function expectCurrRequest<T extends ServerReqStrings[]>(...expect: T): CurrRequestUnion<ArrToUnion<T>> | never {
   const result = getCurrRequest();
   if(result && expect.some(tp => checkRequestType(result, tp))) {
-    return result as CurrRequestT<T>;
+    return result as CurrRequestUnion<ArrToUnion<T>>;
   }
   throw new Error(`Unexpected request type (wanted ${expect}, got ${result?.msg.request})`);
 }
@@ -31,3 +31,6 @@ export function expectCurrRequestOr<T extends ServerReqStrings, U>(expect: T, ot
   if(!checkRequestType(result, expect)) return other;
   return result;
 }
+
+type ArrToUnion<T extends unknown[]> = T[number];
+type CurrRequestUnion<ReqUnion extends string> = {[s in ReqUnion]: CurrRequestT<s>}[ReqUnion];

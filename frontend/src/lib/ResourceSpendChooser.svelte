@@ -1,11 +1,12 @@
 <script lang="ts">
-import { couldBeAcceptableForCost } from "./common.ts";
+import { costFromRequest, couldBeAcceptableForCost } from "./common.ts";
 import type { ResourceT } from "./enums.ts";
 import { expectCurrRequest } from "./main_data.svelte.ts";
 import { clamp } from "./util.ts";
 
 let {resource, currentAmount, spendAmount = $bindable(0)}: {resource: ResourceT, currentAmount: number, spendAmount?: number} = $props();
-let req = $derived(expectCurrRequest("card_payment"));
+let req = $derived(expectCurrRequest("card_payment", "spend_resources"));
+let isVisible = $derived(couldBeAcceptableForCost(costFromRequest(req), resource));
 
 // I am told this is not the best practise or whatever. At least this doesn't wrap it in a
 // new object (implementation details). I wish $state had getter/setter method support.
@@ -15,7 +16,7 @@ $effect(() => {
 });
 </script>
 
-<div class="center-text board-column-top-text spend-indicator" class:for-spacing-only={!couldBeAcceptableForCost(req.msg.cost, resource)}>
+<div class="center-text board-column-top-text spend-indicator" class:for-spacing-only={!isVisible}>
   <button class="spend-button reset-builtin-appearance" onclick={() => spendAmount--}>-</button>
   <div class="spend-amount-text">Spend: {spendAmount}</div>
   <button class="spend-button reset-builtin-appearance" onclick={() => spendAmount++}>+</button>

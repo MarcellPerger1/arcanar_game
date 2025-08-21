@@ -15,7 +15,7 @@ let spendAmount = $state(0);
 </script>
 
 <div class={["our-placed-area-column", areaType == ARTIFACT ? "artifact-column" : "color-area-column"]}>
-  {#if checkRequestType(req, "card_payment")}
+  {#if checkRequestType(req, "card_payment") || checkRequestType(req, "spend_resources")}
     <ResourceSpendChooser {resource} currentAmount={resourceAmount} bind:spendAmount={spendAmount} />
   {/if}
   <div class="board-column-top-text center-text">{toCapitalCase(stringifyEnumLong(resource))}: {resourceAmount - spendAmount}</div>
