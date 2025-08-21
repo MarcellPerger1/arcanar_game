@@ -12,6 +12,10 @@ let [resource, resourceAmount] = $derived(resourcePair);
 let req = $derived(getCurrRequest());
 
 let spendAmount = $state(0);
+$effect(() => {
+  req?.msg.thread;  // so is triggered every time thread changes (i.e. new request/player)
+  spendAmount = 0;
+})
 </script>
 
 <div class={["our-placed-area-column", areaType == ARTIFACT ? "artifact-column" : "color-area-column"]}>
