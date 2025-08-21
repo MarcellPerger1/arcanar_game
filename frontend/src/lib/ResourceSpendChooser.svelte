@@ -14,15 +14,21 @@ function normalise() {
 </script>
 
 <div class="center-text board-column-top-text spend-indicator" class:for-spacing-only={!isVisible}>
-  <button class="spend-button reset-builtin-appearance" onclick={() => {counterDec(req.uiState, resource); normalise()}}>-</button>
+  <button class="spend-button reset-builtin-appearance" 
+    onclick={() => {counterDec(req.uiState, resource); normalise()}}
+    disabled={counterGet(req.uiState, resource) == 0}
+  >-</button>
   <div class="spend-amount-text">Spend: {counterGet(req.uiState, resource)}</div>
-  <button class="spend-button reset-builtin-appearance" onclick={() => {counterInc(req.uiState, resource); normalise()}}>+</button>
+  <button class="spend-button reset-builtin-appearance"
+    onclick={() => {counterInc(req.uiState, resource); normalise()}}
+    disabled={counterGet(req.uiState, resource) == currentAmount}
+  >+</button>
 </div>
 
 <style>
 .spend-indicator {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-around;
   align-items: baseline;
 }
 .spend-button {
@@ -32,6 +38,9 @@ function normalise() {
   width: 1.2em;
   height: 1.2em;
   font-family: Consolas, 'Courier New', monospace;
+}
+.spend-button:disabled {
+  opacity: 0.34;
 }
 .for-spacing-only {
   visibility: hidden;
