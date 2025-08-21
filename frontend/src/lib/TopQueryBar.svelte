@@ -70,4 +70,8 @@ function sendActionType(action_type: "buy" | "execute") {
   border-radius: 4px;
   cursor: pointer;
 }
+.top-bar-button:disabled {
+  opacity: 0.34;
+  cursor: not-allowed;
+}
 </style>
