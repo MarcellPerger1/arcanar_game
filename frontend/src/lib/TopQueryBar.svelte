@@ -1,6 +1,6 @@
 <script lang="ts">
 import { checkRequestType } from "./api/index.ts";
-import { costFromRequest, matchesCostExact } from "./common.ts";
+import { costFromRequest, costFromSingleOption, matchesCostExact } from "./common.ts";
 import { getCurrRequest } from "./main_data.svelte";
 import { stringifyCost } from "./stringify/common.ts";
 import { requireNonNullish } from "./util";
@@ -20,7 +20,10 @@ function getTopbarMsg(): string {
         'Choose color to run'
       : `Choose color to run ${msg.n_times} times`
     : msg.request == "color_excl" ? "Choose color not to execute"
-    // TODO: handle msg.request: "color_foreach" | "card_from_discard" | "card_exec" | "spend_resources" | "card_move" | "where_move_card"
+    // TODO: handle msg.request: "color_foreach" | "card_from_discard" | "card_exec"
+    : msg.request == "spend_resources" ? 
+      `Choose resources to spend (required: ${stringifyCost(costFromSingleOption(msg.filters, msg.amount))}}`
+    // TODO: handle msg.request: "card_move" | "where_move_card"
     : `Unknown request: ${msg.request}`
   );
 }
