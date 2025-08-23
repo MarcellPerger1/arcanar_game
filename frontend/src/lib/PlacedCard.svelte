@@ -11,7 +11,7 @@
   {#if data.is_starting_card}
     Starting card ({stringifyEnumLong(data.card_type)}): <br>
   {:else}
-    {toCapitalCase(stringifyEnumLong(data.card_type))} card:
+    {toCapitalCase(stringifyEnumLong(data.card_type))} card: <br>
   {/if}
   <CardEffectText effect={data.effect}/>
 </div>
