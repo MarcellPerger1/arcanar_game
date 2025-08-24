@@ -1,12 +1,18 @@
 <script lang="ts">
 import type { Snippet } from "svelte";
+import type { HTMLAttributes } from "svelte/elements";
 
 export type UIConfigT = { isClickable: boolean; onclick(): void } | null;
-let {children, uiConfig, class: className = []}: {children: Snippet, uiConfig: UIConfigT, class: string[] | string} = $props();
+let {children, uiConfig, class: className = []}: {
+  children: Snippet, 
+  uiConfig: UIConfigT, 
+  class: HTMLAttributes<HTMLButtonElement>['class']
+} = $props();
 </script>
 
 <button
-  class={(typeof className == "string" ? [className] : className).concat("reset-builtin-appearance")}
+  class={className}
+  class:reset-button-appearance={true}
   class:norequest={uiConfig == null}
   class:clickable={uiConfig?.isClickable === true}
   class:disabled={uiConfig?.isClickable === false}
