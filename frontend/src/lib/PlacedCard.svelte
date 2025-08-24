@@ -1,13 +1,28 @@
 <script lang="ts">
 import CardEffectText from "./stringify/EffectText.svelte";
-import { stringifyEnumLong } from "./enums";
+import { checkEnumType, PlaceableCards, stringifyEnumLong } from "./enums";
 import type { CardT } from "./types";
 import { toCapitalCase } from "./util";
-import ButtonDiv from "./ButtonDiv.svelte";
+import ButtonDiv, { type UIConfigT } from "./ButtonDiv.svelte";
+import { getCurrRequest } from "./main_data.svelte.ts";
+import { checkRequestType } from "./api/index.ts";
 
 let {data}: {data: CardT} = $props();
+let req = $derived(getCurrRequest());
+let uiConfig = $derived(getUIConfig());
 
-let uiConfig = $derived(null);
+function getUIConfig(): UIConfigT {
+  return checkRequestType(req, 'card_move') ?
+      {
+        isClickable:
+          checkEnumType(data.card_type, PlaceableCards)
+          && (req.msg.paths[data.card_type]?.length ?? 0) > 0,  // (has path out)
+        onclick() {
+          req.resolve({ card_move: data.location });
+        }
+      }
+    : null;
+}
 </script>
 
 <ButtonDiv class={["our-placed-card", data.is_starting_card && 'starting-card']} {uiConfig}>
