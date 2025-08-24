@@ -2,12 +2,12 @@
 import PlacedCardColumn from './PlacedCardColumn.svelte';
 import ResourceSpendChooser from './ResourceSpendChooser.svelte';
 import { checkRequestType } from './api/index.ts';
-import { ARTIFACT, stringifyEnumLong, type AreaTypeT, type ResourceT } from "./enums";
+import { ARTIFACT, stringifyEnumLong, type PlaceableCardT, type ResourceT } from "./enums";
 import { getCurrRequest } from './main_data.svelte.ts';
 import type { AreaT } from "./types";
 import { toCapitalCase } from "./util";
 
-let {area, areaType, resource: resourcePair}: {area: AreaT, areaType: AreaTypeT, resource: [ResourceT, number]} = $props();
+let {area, areaType, resource: resourcePair}: {area: AreaT, areaType: PlaceableCardT, resource: [ResourceT, number]} = $props();
 let [resource, resourceAmount] = $derived(resourcePair);
 let req = $derived(getCurrRequest());
 
@@ -19,7 +19,7 @@ let spendAmount = $derived(req?.uiState?.[resource] ?? 0);
     <ResourceSpendChooser {resource} currentAmount={resourceAmount} />
   {/if}
   <div class="board-column-top-text center-text">{toCapitalCase(stringifyEnumLong(resource))}: {resourceAmount - spendAmount}</div>
-  <PlacedCardColumn {area}/>
+  <PlacedCardColumn {area} {areaType}/>
 </div>
 
 <style>
