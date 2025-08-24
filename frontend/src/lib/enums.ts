@@ -56,6 +56,6 @@ export function stringifyEnumLong(val: ColorT | MoonPhaseT | ResourceT | CardTyp
   return ['Unknown', 'purple', 'green', 'red', 'blue', 'yellow', 'artifact', 'event', "last turn", "discarded", "hand", "Unused?", "Points"][val];
 }
 
-export function checkEnumType<T>(v: any, /* Must be one of the export consts above*/values: T[]): v is T {
-  return values.includes(v);
+export function checkEnumType<T extends number>(v: number, /* Must be one of the export consts above*/values: T[]): v is T {
+  return values.includes(v as any);
 }

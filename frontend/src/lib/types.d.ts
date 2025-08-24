@@ -145,7 +145,6 @@ namespace request_types {
 namespace response_types {
   declare type _AddThread = {thread: number};
 
-  // TODO: response types (?)
   declare type ActionTypeResp = {action_type: "execute" | "buy"};
   declare type DiscardForExecResp = {discard_for_exec: CardRefT};
   declare type BuyCardResp = {buy_card: CardRefT};
