@@ -1,34 +1,32 @@
 <script lang="ts">
-import type { CurrRequestT } from './api/index.ts';
-
-// TODO: unify this with PlacedCard.ts
-import CardEffectText from './stringify/EffectText.svelte';
+import ButtonDiv, { type UIConfigT } from './ButtonDiv.svelte';
+import { checkRequestType } from './api/index.ts';
 import { stringifyEnumLong } from './enums';
 import { getCurrRequest } from './main_data.svelte.ts';
+import CardEffectText from './stringify/EffectText.svelte';
+import { stringifyCost } from './stringify/common.ts';
 import type { CardT } from './types';
 import { toCapitalCase } from './util';
-import { stringifyCost } from './stringify/common.ts';
+// TODO: unify this with PlacedCard.ts
 
 let { data }: { data: CardT } = $props();
-let currRequest = $derived(getCurrRequest());
-let cardReq = $derived(getCardRequestInfo(currRequest));
+let req = $derived(getCurrRequest());
+let uiConfig = $derived(getUIConfig());
 
-function getCardRequestInfo(currRequest: CurrRequestT | undefined): { currSelectable: boolean; onselect(): void } | null {
-  if (!currRequest) return null;
-  let msg = currRequest.msg;
+function getUIConfig(): UIConfigT {
   return (
-    msg.request == 'discard_for_exec' ?
+    checkRequestType(req, 'discard_for_exec') ?
       {
-        currSelectable: true,
-        onselect() {
-          currRequest.resolve({ discard_for_exec: data.location });
+        isClickable: true,
+        onclick() {
+          req.resolve({ discard_for_exec: data.location });
         }
       }
-    : msg.request == 'buy_card' ?
+    : checkRequestType(req, 'buy_card') ?
       {
-        currSelectable: true,
-        onselect() {
-          currRequest.resolve({ buy_card: data.location });
+        isClickable: true,
+        onclick() {
+          req.resolve({ buy_card: data.location });
         }
       }
     : null
@@ -36,25 +34,14 @@ function getCardRequestInfo(currRequest: CurrRequestT | undefined): { currSelect
 }
 </script>
 
-<button
-  class="card-in-hand"
-  class:clickable={cardReq?.currSelectable === true}
-  class:disaled={cardReq?.currSelectable === false}
-  class:norequest={cardReq?.currSelectable == null}
-  onclick={cardReq?.onselect}
-  disabled={cardReq?.onselect == null}
->
+<ButtonDiv class="card-in-hand" {uiConfig}>
   {toCapitalCase(stringifyEnumLong(data.card_type))} card:<br>
   Cost: {stringifyCost(data.cost)}<br>
   <CardEffectText effect={data.effect} />
-</button>
+</ButtonDiv>
 
 <style>
-.card-in-hand {
-  /* Remove the button appearance (button is only for a11y to make it clickable) */
-  appearance: none;
-  all: unset;
-
+:global(.card-in-hand) {
   height: 8em;
   padding-left: 3px;
   padding-right: 3px;
@@ -70,14 +57,5 @@ function getCardRequestInfo(currRequest: CurrRequestT | undefined): { currSelect
   flex-direction: column;
   justify-content: flex-start;  /* Align to top */
   text-align: center;  /* Center horizontally */
-}
-.clickable {
-  cursor: pointer;
-}
-.disaled {
-  cursor: not-allowed;
-}
-.norequest {
-  user-select: text;
 }
 </style>
