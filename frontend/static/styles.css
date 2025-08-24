@@ -48,5 +48,5 @@ body {
 :where(.reset-button-appearance) {
   appearance: none;
   all: unset;
-  display: inline-flex;  /* No vertical centering in the button */
+  display: flex;  /* Remove vertical centering in the button */
 }

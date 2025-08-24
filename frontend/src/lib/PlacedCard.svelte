@@ -41,7 +41,10 @@ function getUIConfig(): UIConfigT {
   margin: 3px;
   padding: 3px;
   border-radius: 8px;
-  /* Temp: */
+  /* Temp: center horizontally only */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
   text-align: center;
 }
 :global(.our-placed-card.starting-card) {
