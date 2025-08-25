@@ -33,7 +33,7 @@ class JsonAdapter(IFrontend):
         self.conn.init()
         self.send({
             'request': 'init',
-            'server_version': '0.1.3',
+            'server_version': '0.1.4',
             'api_version': 1,
         }, thread=False, state=False)
         self.send({
@@ -101,7 +101,7 @@ class JsonAdapter(IFrontend):
             'filters': self.ser(filters),  # Will get cards themselves in state
         }, info=info)
         card = self.deser_card_ref(resp['card_from_discard'])
-        assert card.location.area == Area.DISCARD and card.location.player == target
+        assert card.location.area == Area.DISCARD and card.location.player == target.idx
         assert card.card_type in filters
         return card
 
