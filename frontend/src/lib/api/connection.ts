@@ -49,6 +49,7 @@ export class WebsocketConn implements IConnection {
 
   constructor(url: string) {
     this.url = url;
+    this.addOnmessageListener(msg => console.debug('Received: ', msg));
   }
 
   connect() {
@@ -86,6 +87,7 @@ export class WebsocketConn implements IConnection {
   }
 
   async send(s: string) {
+    console.debug('Sending: ', s);
     this.ws.send(s);
   }
 
