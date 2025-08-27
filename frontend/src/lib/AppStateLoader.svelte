@@ -1,6 +1,7 @@
 <script lang="ts">
   import { browser } from "$app/environment";
   import { ApiController, WebsocketConn, type MainStoreT, type EarlyMainStoreT } from "./api";
+  import { DebugConnWrapper } from "./api/debug.ts";
   import { infinitePromise } from "./util";
   import type { Snippet } from "svelte";
   
@@ -9,7 +10,7 @@
   let dest: EarlyMainStoreT = $state({});
 
   async function initApp() {
-    let api = new ApiController(new WebsocketConn("ws://localhost:3141"), dest);
+    let api = new ApiController(new DebugConnWrapper(new WebsocketConn("ws://localhost:3141")), dest);
     await api.init();
     return api;
   }
