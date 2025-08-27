@@ -33,7 +33,7 @@ class JsonAdapter(IFrontend):
         self.conn.init()
         self.send({
             'request': 'init',
-            'server_version': '0.1.4',
+            'server_version': '0.1.5',
             'api_version': 1,
         }, thread=False, state=False)
         self.send({
@@ -101,8 +101,8 @@ class JsonAdapter(IFrontend):
             'filters': self.ser(filters),  # Will get cards themselves in state
         }, info=info)
         card = self.deser_card_ref(resp['card_from_discard'])
-        assert card.location.area == Area.DISCARD and card.location.player == target.idx
-        assert card.card_type in filters
+        assert card in target.cards_of_type(Area.DISCARD)
+        assert card.card_type in filters.allowed_types
         return card
 
     def choose_card_exec(self, info: EffectExecInfo, n_times: int,
@@ -111,7 +111,7 @@ class JsonAdapter(IFrontend):
                              'discard': discard}, info=info)
         card = self.deser_card_ref(resp['card_exec'])
         assert Color.has_instance(card.location.area)
-        assert card.location.player == info.player
+        assert card.location.player == info.player.idx
         return card
 
     def get_spend(self, info: EffectExecInfo, filters: ResourceFilter,
@@ -132,7 +132,7 @@ class JsonAdapter(IFrontend):
             return None
         card = self.deser_card_ref(card_ser)
         assert Color.has_instance(card.location.area)
-        assert card.location.player == info.player
+        assert card.location.player == info.player.idx
         return card
 
     def choose_move_where(self, info: EffectExecInfo, card_to_move: Card,
