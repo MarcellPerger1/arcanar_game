@@ -31,7 +31,7 @@ let cardsInfo = $derived.by(() => {
     <div class="discard-list-top">
       Discard pile:
     </div>
-    {#each cardsInfo as cardInfo}
+    {#each cardsInfo as cardInfo (cardInfo.card.location.key)} <!-- Is this how this works? -->
       {@const card = cardInfo.card}
       <ButtonDiv class="card-in-discard" uiConfig={cardInfo.uiConfig}>
         {toCapitalCase(stringifyEnumLong(card.card_type))} card:<br>

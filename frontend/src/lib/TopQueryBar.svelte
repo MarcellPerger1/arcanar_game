@@ -1,6 +1,6 @@
 <script lang="ts">
 import { checkRequestType } from "./api/index.ts";
-import { costFromRequest, costFromSingleOption, counterNonzeroKeys, matchesCostExact } from "./common.ts";
+import { costFromRequest, costFromSingleOption, matchesCostExact } from "./common.ts";
 import { CardTypes, expectEnumType, stringifyEnumLong } from "./enums.ts";
 import { getCurrRequest } from "./main_data.svelte";
 import { stringifyCardTypeFilter, stringifyCost } from "./stringify/common.ts";
