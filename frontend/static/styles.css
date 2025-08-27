@@ -35,8 +35,9 @@ body {
   /* I cannot stand Times New Roman any longer. */
   font-family: Arial, Helvetica, sans-serif;
 }
-@media(width < 578px) {
+@media(width < 900px) {
   body {
+    /* TODO: there's a better way to do this, see my FF bookmarks */
     height: calc(100vh - 20px);  /*remove amount for bottom scrollbar*/
   }
 }
