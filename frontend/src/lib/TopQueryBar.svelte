@@ -1,11 +1,21 @@
 <script lang="ts">
 import { checkRequestType } from "./api/index.ts";
-import { costFromRequest, costFromSingleOption, matchesCostExact } from "./common.ts";
+import { costFromRequest, costFromSingleOption, counterNonzeroKeys, matchesCostExact } from "./common.ts";
+import { CardTypes, expectEnumType, stringifyEnumLong } from "./enums.ts";
 import { getCurrRequest } from "./main_data.svelte";
-import { stringifyCost } from "./stringify/common.ts";
+import { stringifyCardTypeFilter, stringifyCost } from "./stringify/common.ts";
+import type { AdjanceniesT, CardTypeFilterT } from "./types";
 import { requireNonNullish } from "./util";
 
 let currRequest = $derived(getCurrRequest());
+
+function inputCardFilterFromPaths(paths: AdjanceniesT): CardTypeFilterT {
+  return {allowed_types: (
+    Object.entries(paths)
+      .filter(([_k, v]) => v.length != 0)
+      .map(([k, _v]) => expectEnumType(Number(k), CardTypes))
+  )};
+}
 
 function getTopbarMsg(): string {
   if (!currRequest) return 'Waiting...';
@@ -20,11 +30,20 @@ function getTopbarMsg(): string {
         'Choose color to run'
       : `Choose color to run ${msg.n_times} times`
     : msg.request == "color_excl" ? "Choose color not to execute"
-    // TODO: handle msg.request: "color_foreach" | "card_from_discard" | "card_exec"
+    : msg.request == "color_foreach" ? "Run this card for each card of which color?"
+    : msg.request == "card_from_discard" ? 
+      `Choose a card from the discard pile to place (${stringifyCardTypeFilter(msg.filters)} only)`
+    : msg.request == "card_exec" ? 
+        `Choose which card to run` 
+        + (msg.n_times == 1 ? '' : ` ${msg.n_times} times`) 
+        + (msg.discard ? " (then discard it)" : " ")
     : msg.request == "spend_resources" ? 
       `Choose resources to spend (required: ${stringifyCost(costFromSingleOption(msg.filters, msg.amount))}}`
-    // TODO: handle msg.request: "card_move" | "where_move_card"
-    : `Unknown request: ${msg.request}`
+    : msg.request == "card_move" ? 
+      `Choose which card to move (${stringifyCardTypeFilter(inputCardFilterFromPaths(msg.paths))} only)`
+    : msg.request == "where_move_card" ? 
+      `Choose where to move card (${msg.possibilities.map(stringifyEnumLong).join(' or ')})`
+    : `Unknown request: ${(msg as {request: string}).request}`
   );
 }
 

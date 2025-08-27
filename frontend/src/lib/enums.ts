@@ -59,3 +59,7 @@ export function stringifyEnumLong(val: ColorT | MoonPhaseT | ResourceT | CardTyp
 export function checkEnumType<T extends number>(v: number, /* Must be one of the export consts above*/values: T[]): v is T {
   return values.includes(v as any);
 }
+export function expectEnumType<T extends number>(v: number, /* Must be one of the export consts above*/values: T[]): T | never {
+  if(checkEnumType(v, values)) return v;
+  throw new Error(`Number ${v} isn't a valid value for enum [${values.join(',')}]`);
+}
