@@ -1,8 +1,9 @@
 <script lang="ts">
+import { get } from "svelte/store";
 import { checkRequestType } from "./api/index.ts";
 import { costFromRequest, costFromSingleOption, matchesCostExact } from "./common.ts";
 import { CardTypes, expectEnumType, stringifyEnumLong } from "./enums.ts";
-import { getCurrRequest } from "./main_data.svelte";
+import { getCurrRequest, getData } from "./main_data.svelte";
 import { stringifyCardTypeFilter, stringifyCost } from "./stringify/common.ts";
 import type { AdjanceniesT, CardTypeFilterT } from "./types";
 import { requireNonNullish } from "./util";
@@ -17,7 +18,7 @@ function inputCardFilterFromPaths(paths: AdjanceniesT): CardTypeFilterT {
   )};
 }
 
-function getTopbarMsg(): string {
+function getTopbarMsgMain(): string {
   if (!currRequest) return 'Waiting...';
   let msg = currRequest.msg;
   return (
@@ -45,6 +46,9 @@ function getTopbarMsg(): string {
       `Choose where to move card (${msg.possibilities.map(stringifyEnumLong).join(' or ')})`
     : `Unknown request: ${(msg as {request: string}).request}`
   );
+}
+function getTopbarMsg(): string {
+  return `[Player ${getData().state.curr_player_idx + 1}] ${getTopbarMsgMain()}`;
 }
 
 function sendActionType(action_type: "buy" | "execute") {
