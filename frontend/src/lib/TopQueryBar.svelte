@@ -1,9 +1,8 @@
 <script lang="ts">
-import { get } from "svelte/store";
 import { checkRequestType } from "./api/index.ts";
 import { costFromRequest, costFromSingleOption, matchesCostExact } from "./common.ts";
 import { CardTypes, expectEnumType, stringifyEnumLong } from "./enums.ts";
-import { getCurrRequest, getData } from "./main_data.svelte";
+import { getCurrRequest, getState } from "./main_data.svelte";
 import { stringifyCardTypeFilter, stringifyCost } from "./stringify/common.ts";
 import type { AdjanceniesT, CardTypeFilterT } from "./types";
 import { requireNonNullish } from "./util";
@@ -48,7 +47,7 @@ function getTopbarMsgMain(): string {
   );
 }
 function getTopbarMsg(): string {
-  return `[Player ${getData().state.curr_player_idx + 1}] ${getTopbarMsgMain()}`;
+  return `[Player ${getState().curr_player_idx + 1}] ${getTopbarMsgMain()}`;
 }
 
 function sendActionType(action_type: "buy" | "execute") {
