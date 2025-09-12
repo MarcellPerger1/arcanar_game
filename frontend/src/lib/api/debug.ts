@@ -26,6 +26,14 @@ export class ConnWrapper implements IConnection {
 }
 
 export class DebugConnWrapper extends ConnWrapper implements IConnection {
+  constructor(wrapped: IConnection) {
+    super(wrapped);
+    // TODO: this assumes there's only one in existence...
+    window.ARCANAR_send_messages = (messages: string[]) => {
+      messages.forEach(msg => this.send(msg));
+    }
+  }
+
   // Do we want a cotr argument to disable the debugging?
   async send(msg: string): Promise<void> {
     if(this.shouldDebugSend(this.consoleDebugConf)) console.debug('Sending:', msg);
@@ -63,8 +71,11 @@ export type SingleLogMsgT = {type: 'send' | 'recv', msg: string};
 
 declare global {
   interface Window {
+    // TODO: perhaps a single arcanar object with sub-objects for each 'layer'
     ARCANAR_DEBUG_CONSOLE?: DebugWhenT;
     ARCANAR_DEBUG_OBJECT?: DebugWhenT;
     ARCANAR_message_log?: SingleLogMsgT[];
+    // This 'layer' of our stack doesn't know *anything* about layers above (e.g. that it's JSON)
+    ARCANAR_send_messages?(messages: string[]): void;
   }
 }
