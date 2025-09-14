@@ -31,7 +31,8 @@ export function infinitePromise() : Promise<never> {
   return new Promise(() => {});
 }
 
-export function promiseWithResolvers<V>(): {resolve(value: V | PromiseLike<V>): void; reject(reason?: any): void; promise: Promise<V>} {
+export type PromiseAndResolvers<V> = {resolve(value: V | PromiseLike<V>): void; reject(reason?: any): void; promise: Promise<V>};
+export function promiseWithResolvers<V>(): PromiseAndResolvers<V> {
   // Polyfill for Promise.withResolvers()
   let resolve: (value: V) => void, reject: (reason?: any) => void;
   const promise = new Promise<V>((res, rej) => {
@@ -40,6 +41,16 @@ export function promiseWithResolvers<V>(): {resolve(value: V | PromiseLike<V>): 
   });
   // @ts-expect-error Promise constructor calls the function immediately (sync) so there will be set
   return {promise, resolve, reject};
+}
+
+export const Cancelled = Symbol();
+export async function guardCancellation<T, D>(promise: Promise<T>, fallback: D, cancelValue: any = Cancelled): Promise<T | D> {
+  try {
+    return await promise;
+  } catch(e) {
+    if(e === cancelValue) return fallback;
+    throw e;
+  }
 }
 
 export function requireNonNullish<T>(v: T | null | undefined): T {
