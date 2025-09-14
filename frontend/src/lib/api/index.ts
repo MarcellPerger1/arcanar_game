@@ -1,7 +1,7 @@
 import type { ClientRespRawT, ClientRespT, ServerMsgT, ServerReqStrings, ServerReqT, StateT } from "$lib/types";
 import { initUiState, type UIStateT } from "$lib/ui_state.ts";
-import { promiseWithResolvers } from "$lib/util";
-import { CloseCode, type IConnection } from "./connection";
+import { Cancelled, guardCancellation, promiseWithResolvers, type PromiseAndResolvers } from "$lib/util";
+import { CloseCode, type CloseCodeTp, type IConnection } from "./connection";
 
 export * from "./connection";
 
@@ -24,7 +24,7 @@ export function expectRequestType<R extends ServerReqStrings>(req: CurrRequestT 
   return req;
 }
 
-export class ApiController {
+export class ApiController extends EventTarget {
   conn: IConnection;
   // Framework-agnostic forward API: an object on which we set the state.
   // Vue/Svelte use proxy so it can be used as-is. I don't know about other
@@ -34,6 +34,7 @@ export class ApiController {
   server_version: string = '?';
   
   constructor(conn: IConnection, dest: EarlyMainStoreT) {
+    super();
     this.conn = conn;
     this.dest = dest;
   }
@@ -45,6 +46,7 @@ export class ApiController {
     this._did_init = true;
     await this.conn.connect();
     await this.handleInitMsg();
+    this.conn.addOnmessageListener((msg) => this.handleMessageRaw(msg));
   }
 
   private async handleInitMsg() {
@@ -61,41 +63,70 @@ export class ApiController {
 
   async run() {
     await this.init();
-    while(true) {
-      const msg = await this.recv();
-      if(msg.request == "init") {
-        throw new Error("Receaived request:init multiple times.");
-      } else if (msg.request == "shutdown") {
-        this.conn.close(CloseCode.NORMAL);
-        break;
-      } else if(msg.request == "state") {
-        this.setState(msg.state);
-      } else if (msg.request == "result") {
-        this.setState(msg.state);  // winners is included in state, so nothing extra to do
-      } else {  // only the true requests (the ones where we have to reply, ie. with `thread`)
-        await this.handleTrueRequest(msg);
-      }
+    const {promise, resolve} = promiseWithResolvers<void>();
+    this.addEventListener('close', () => resolve());
+    await promise;
+  }
+
+  handleMessageRaw(msg: string) {
+    return this.handleMessage(this.parseMessage(msg));
+  }
+  handleMessage(msg: ServerMsgT) {
+    this.dispatchEvent(new Event('recv'));
+    if(msg.request == "init") {
+      throw new Error("Receaived request:init multiple times.");
+    } else if (msg.request == "shutdown") {
+      this.setCurrRequest(null);
+      this.close(CloseCode.NORMAL);
+    } else if (msg.request == "state" || /*winners is included in state, nothing special*/msg.request == "result") {
+      this.setState(msg.state);
+      this.setCurrRequest(null);
+    } else {
+      this.handleTrueRequest(msg);  // Just start it off so we can cancel if new request comes in
     }
   }
 
   async handleTrueRequest(msg: ServerReqT) {
     this.setState(msg.state);
-    const {promise: getRespFromUser, resolve, reject} = promiseWithResolvers<ClientRespT>();
+    const resp = await this.getUiResponse(msg);
+    if(!resp) return;  // Received new request, cancel this one
+    await this.send({...resp, thread: msg.thread});
+  }
+
+  async getUiResponse(msg: ServerReqT): Promise<ClientRespT | undefined> {
+    const {promise: getUserResponse, reject} = this.createCurrRequest(msg);
+    this.addEventListener('recv', () => reject(Cancelled), {once: true});
+    return await guardCancellation(getUserResponse, /*fallback*/void 0);
+  }
+
+  createCurrRequest(msg: ServerReqT): PromiseAndResolvers<ClientRespT> {
+    const {promise, resolve, reject} = promiseWithResolvers<ClientRespT>();
     this.setCurrRequest({resolve, reject, msg, uiState: initUiState(msg.request)});
-    // Wait for the UI will handle it, then send result. "Ionos [the UI] will sort this."
-    await this.send({...await getRespFromUser, thread: msg.thread});
+    return {promise, resolve, reject};
   }
 
   setState(state: StateT) {
     this.dest.state = state;
   }
-  setCurrRequest(currRequest: CurrRequestT) {
-    this.dest.currRequest = currRequest;
+  setCurrRequest(currRequest: CurrRequestT | null | undefined) {
+    this.dest.currRequest = currRequest ?? void 0;
   }
+
   async recv(): Promise<ServerMsgT> {
-    return JSON.parse(await this.conn.recv());
+    return this.parseMessage(await this.conn.recv());
   }
   async send(data: ClientRespRawT) {
-    await this.conn.send(JSON.stringify(data));
+    await this.conn.send(this.formatMessage(data));
+  }
+  close(reason: CloseCodeTp) {
+    this.conn.close(reason);
+    this.dispatchEvent(new Event('close'));
+  }
+
+  parseMessage(msg: string): ServerMsgT {
+    return JSON.parse(msg);
+  }
+  formatMessage(msg: ClientRespRawT): string {
+    return JSON.stringify(msg);
   }
 }
