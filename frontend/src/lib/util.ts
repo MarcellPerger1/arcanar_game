@@ -30,6 +30,9 @@ export function stringifyToOrdinal(n: number) {
 export function infinitePromise() : Promise<never> {
   return new Promise(() => {});
 }
+export function sleep(ms?: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 export type PromiseAndResolvers<V> = {resolve(value: V | PromiseLike<V>): void; reject(reason?: any): void; promise: Promise<V>};
 export function promiseWithResolvers<V>(): PromiseAndResolvers<V> {
@@ -74,3 +77,23 @@ export function clamp(x: number, lo: number | null, hi: number | null) {
     : x
   );
 }
+
+// TODO: this would be more elegant as a generator
+export function groupBy<T, U>(items: T[], fn: (v: T, i: number, arr: T[]) => U): T[][] {
+  const [_, last, rest] =  items.reduce<[U | typeof None, T[], T[][]]>(
+    ([pr, curr, prevs], v, i, arr) => {
+      const r = fn(v, i, arr);
+      if (pr == None) return [r, [v], []];
+      if (!Object.is(r, pr)) {
+        prevs.push(curr);
+        curr = [];
+      }
+      curr.push(v);
+      return [r, curr, prevs];
+    },
+    [None, [], []]
+  );
+  rest.push(last);
+  return rest;
+}
+const None: unique symbol = Symbol();

@@ -4,6 +4,7 @@ import DiscardViewColumn from "./DiscardViewColumn.svelte";
 import { setDataContext } from "./main_data.svelte";
 import MoonPhases from "./MoonPhases.svelte";
 import PlayerArea from "./PlayerArea.svelte";
+import ResultsDisplay from "./ResultsDisplay.svelte";
 import TopQueryBar from "./TopQueryBar.svelte";
 
 let { data }: {data: MainStoreT} = $props();
@@ -14,13 +15,17 @@ setDataContext(data);
 
 <div id="full-game-area" class="full-page-size">
   <TopQueryBar />
-  <div id="game-area-with-discard">
-    <div id="main-game-area">
-      <MoonPhases moon_phases={state.moon_phases}/>
-      <PlayerArea player_data={player_data}/>
+  {#if state.winners && state.players_ranked}
+    <ResultsDisplay winners={state.winners} players_ranked={state.players_ranked} />
+  {:else}
+    <div id="game-area-with-discard">
+      <div id="main-game-area">
+        <MoonPhases moon_phases={state.moon_phases}/>
+        <PlayerArea player_data={player_data}/>
+      </div>
+      <DiscardViewColumn {data} />
     </div>
-    <DiscardViewColumn {data} />
-  </div>
+  {/if}
 </div>
 
 <style>
