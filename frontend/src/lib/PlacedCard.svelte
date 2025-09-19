@@ -1,6 +1,6 @@
 <script lang="ts">
 import CardEffectText from "./stringify/EffectText.svelte";
-import { checkEnumType, PlaceableCards, stringifyEnumLong } from "./enums";
+import { checkEnumType, Colors, PlaceableCards, stringifyEnumLong } from "./enums";
 import type { CardT } from "./types";
 import { toCapitalCase } from "./util";
 import ButtonDiv, { type UIConfigT } from "./ButtonDiv.svelte";
@@ -12,16 +12,25 @@ let req = $derived(getCurrRequest());
 let uiConfig = $derived(getUIConfig());
 
 function getUIConfig(): UIConfigT {
-  return checkRequestType(req, 'card_move') ?
+  return (
+    checkRequestType(req, 'card_move') ?
       {
         isClickable:
           checkEnumType(data.card_type, PlaceableCards)
-          && (req.msg.paths[data.card_type]?.length ?? 0) > 0,  // (has path out)
+          && (req.msg.paths[data.card_type]?.length ?? 0) > 0, // (has path out)
         onclick() {
           req.resolve({ card_move: data.location });
         }
       }
-    : null;
+    : checkRequestType(req, 'card_exec') ?
+      {
+        isClickable: checkEnumType(data.card_type, Colors),
+        onclick() {
+          req.resolve({ card_exec: data.location });
+        }
+      }
+    : null
+  );
 }
 </script>
 

@@ -153,11 +153,12 @@ namespace response_types {
   declare type ColorExclResp = {color_excl: ColorT};
   declare type ColorForeachResp = {color_foreach: ColorT};
   declare type CardFromDiscardResp = {card_from_discard: CardRefT};
+  declare type CardExecResp = {card_exec: CardRefT};
   declare type SpendResourcesResp = {spend_resources: _Counter<ResourceT> | null};
   declare type CardMoveResp = {card_move: CardRefT};
   declare type WhereMoveCard = {where_move_card: PlaceableCardT};
 
-  declare type AnyResp = ActionTypeResp | DiscardForExecResp | BuyCardResp | CardPaymentResp | ColorExecResp | ColorExclResp | ColorForeachResp | CardFromDiscardResp | SpendResourcesResp | CardMoveResp | WhereMoveCard;
+  declare type AnyResp = ActionTypeResp | DiscardForExecResp | BuyCardResp | CardPaymentResp | ColorExecResp | ColorExclResp | ColorForeachResp | CardFromDiscardResp | CardExecResp | SpendResourcesResp | CardMoveResp | WhereMoveCard;
   declare type AnyRespRaw = AnyResp & _AddThread;
 }
 
