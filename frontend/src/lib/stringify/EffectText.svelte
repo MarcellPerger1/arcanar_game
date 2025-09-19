@@ -1,11 +1,12 @@
 <script lang="ts">
-  import { stringifyEnumLong, stringifyEnumShort } from "../enums";
-  import type { EffectT } from "../types";
-  import EffectCondtionText from "./EffectCondtionText.svelte";
-  import EffectText from "./EffectText.svelte";
-  import { strigifyDiscardPileOffset, strigifyResourceFilter, stringifyCardTypeFilter } from "./common.ts";
+import { stringifyEnumLong, stringifyEnumShort } from "../enums";
+import type { EffectT } from "../types";
+import EffectCondtionText from "./EffectCondtionText.svelte";
+import EffectMeasureText from "./EffectMeasureText.svelte";
+import EffectText from "./EffectText.svelte";
+import { strigifyDiscardPileOffset, strigifyResourceFilter, stringifyCardTypeFilter } from "./common.ts";
 
-  let {effect}: {effect: EffectT} = $props();
+let {effect}: {effect: EffectT} = $props();
 </script>
 
 <!-- Oh no, this is a massive if, my HTML is going to be full of hydration markers -->
@@ -70,8 +71,7 @@
 {:else if effect.__class__ == "ForEachDynChosenColor"}
   For each card of chosen color: <EffectText effect={effect.effect} />
 {:else if effect.__class__ == "ForEachM"}
-  <!-- TODO! Render measures -->
-  (?Measure?) times: <EffectText effect={effect.effect} />
+  <EffectMeasureText measure={effect.measure} /> times: <EffectText effect={effect.effect} />
 {:else if effect.__class__ == "ChooseFromDiscardOf"}
   Place a {stringifyCardTypeFilter(effect.filters)} card from {strigifyDiscardPileOffset(effect.player_offset)}
 {:else if effect.__class__ == "ExecOwnPlacedCard"}
