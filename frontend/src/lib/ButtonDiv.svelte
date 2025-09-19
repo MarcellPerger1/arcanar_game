@@ -10,17 +10,22 @@ let {children, uiConfig, class: className = []}: {
 } = $props();
 </script>
 
-<button
-  class={className}
-  class:reset-button-appearance={true}
-  class:norequest={uiConfig == null}
-  class:clickable={uiConfig?.isClickable === true}
-  class:disabled={uiConfig?.isClickable === false}
-  onclick={() => uiConfig?.isClickable && uiConfig.onclick()}
-  disabled={!uiConfig?.isClickable}
->
-  {@render children()}
-</button>
+{#if uiConfig != null}
+  <button
+    class={className}
+    class:reset-button-appearance={true}
+    class:clickable={uiConfig.isClickable}
+    class:disabled={!uiConfig.isClickable}
+    disabled={!uiConfig.isClickable}
+    onclick={() => uiConfig.isClickable && uiConfig.onclick()}
+  >
+    {@render children()}
+  </button>
+{:else}
+  <div class={className} class:norequest={true}>
+    {@render children()}
+  </div>
+{/if}
 
 <style>
 .clickable {
