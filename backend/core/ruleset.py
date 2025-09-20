@@ -142,7 +142,6 @@ class DefaultRuleset(IRuleset):
         def only2x(ef: CardEffect):
             return Group(
                 ef,
-                AddMarker(),
                 ConditionalEffect(HasMarkers(), DiscardThis(), AddMarker())
             )
 
