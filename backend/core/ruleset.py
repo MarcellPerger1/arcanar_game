@@ -246,7 +246,7 @@ class DefaultRuleset(IRuleset):
                 Card(g, GainPoints(1), Cost(p, 1, 3), True),
                 Card(g, gain_rp(g, 1, 1), Cost(r, 4, 4), True),
                 Card(g, gain_rp(g, 2, 1), Cost(p, 3, 5)),
-                Card(g, exp_ef(gain_rp(g, 1, 1)), Cost(p, 4, 2)),
+                Card(g, exp_ef(gain_rp(g, 1, 1)), Cost(p, 2, 4)),
                 # red
                 Card(r, gain_rp(r, 2, 1), Cost(g, 2, 4)),
                 Card(r, gain_rp(r, 3, 2), Cost(b, 4, 6)),
