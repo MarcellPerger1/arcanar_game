@@ -120,14 +120,20 @@ class Player:
         self.run_curr_magics()
 
     def run_curr_magics(self):
-        self.execute_filtered(self.can_run_card)  # Cool!
+        self.execute_filtered(self.does_card_run)  # Cool!
 
-    def can_run_card(self, card: Card):
+    def does_card_run(self, card: Card):
         effective_color = card.location.area
-        if not Color.has_instance(effective_color):
-            return False
-        is_last = self.cards_of_type(effective_color)[-1] is card
-        return self.game.does_color_run(effective_color, is_last)
+        return Color.has_instance(effective_color) and (
+            card.always_triggers
+            or self.game.does_color_run(
+                effective_color, is_last=self.is_last_card(card)
+            )
+        )
+
+    def is_last_card(self, card: Card):
+        assert card.location.player is self
+        return self.cards_of_type(card.location.area)[-1] is card
 
     def execute_filtered(self, predicate: Callable[[Card], bool]):
         for c in Color:
