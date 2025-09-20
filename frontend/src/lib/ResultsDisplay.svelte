@@ -2,15 +2,15 @@
 import type { PlayerT } from "./types";
 import { groupBy, ordinalSuffix } from "./util.ts";
 
-let {players_ranked}: {winners: PlayerT[], players_ranked: PlayerT[]} = $props();
+let {players_ranked, winners: _}: {winners: PlayerT[], players_ranked: PlayerT[]} = $props();
 let players_grouped = $derived(groupBy(players_ranked, p => p.final_score));
 </script>
 
 <div class="results-display-wrapper">
   <div class="results-display">
-    {#each players_grouped as group, rank_zerobased}
+    {#each players_grouped as group, rank_zerobased (rank_zerobased)}
       {@const rank = rank_zerobased + 1}
-      {#each group as player}
+      {#each group as player (player.idx)}
         <div class="ranking-player-row">
           <div class="player-rank">
             {rank}{ordinalSuffix(rank)} 
