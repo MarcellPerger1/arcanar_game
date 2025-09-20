@@ -1,3 +1,4 @@
+import difflib
 import json
 import os
 import sys
@@ -105,7 +106,22 @@ class E2ETestCase(unittest.TestCase):
             self.assertEqual(expected_str, actual_str)
         with self.subTest('Objects:'):
             self.assertEqual(expected, actual)
+        self._write_diff(expected_str, actual_str)
         self.assertEqual(expected, actual)
+
+    def _write_diff(self, expected_str, actual_str):
+        path = Path(f'./_exclude/test_e2e_py-{self._testMethodName}-{self._idx}.diff')
+        print(f'Writing diff file to {path}')
+        with path.open('w', encoding='utf8') as f:
+            # context_diff maybe here?
+            lines = tuple(difflib.unified_diff(
+                expected_str.splitlines(keepends=True),
+                actual_str.splitlines(keepends=True),
+                fromfile='EXPECTED.JSON',
+                tofile='ACTUAL.JSON', n=1000000))  # whole file
+            f.writelines(lines)
+            sys.stdout.writelines(lines)
+
 
     def assert_conn_closed(self, ws: ClientConnection):
         with self.assertRaises(ConnectionClosedOK, msg="Server should close connection"):
