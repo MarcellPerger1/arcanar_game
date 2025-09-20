@@ -12,7 +12,8 @@
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "format": "prettier --write .",
     "lint": "eslint .",
-    "lint:strict": "eslint . --max-warnings 0"
+    "lint:strict": "eslint . --max-warnings 0",
+    "lint:full": "npm run check && npm run lint:strict"
   },
   "devDependencies": {
     "@eslint/compat": "^1.2.5",
