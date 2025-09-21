@@ -43,6 +43,9 @@ function getUIConfig(): UIConfigT {
   {#if data.markers != 0}
     {data.markers} markers<br>
   {/if}
+  {#if data.always_triggers}
+    Evergreen<br>
+  {/if}
   <CardEffectText effect={data.effect}/>
 </ButtonDiv>
 

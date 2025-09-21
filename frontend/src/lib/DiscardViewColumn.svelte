@@ -36,6 +36,9 @@ let cardsInfo = $derived.by(() => {
       <ButtonDiv class="card-in-discard" uiConfig={cardInfo.uiConfig}>
         {toCapitalCase(stringifyEnumLong(card.card_type))} card:<br>
         Cost: {stringifyCost(card.cost)}<br>
+        {#if card.always_triggers}
+          Evergreen<br>
+        {/if}
         <EffectText effect={card.effect} />
       </ButtonDiv>
     {:else}

@@ -37,6 +37,9 @@ function getUIConfig(): UIConfigT {
 <ButtonDiv class="card-in-hand" {uiConfig}>
   {toCapitalCase(stringifyEnumLong(data.card_type))} card:<br>
   Cost: {stringifyCost(data.cost)}<br>
+  {#if data.always_triggers}
+    Evergreen<br>
+  {/if}
   <CardEffectText effect={data.effect} />
 </ButtonDiv>
 
