@@ -40,6 +40,9 @@ function getUIConfig(): UIConfigT {
   {:else}
     {toCapitalCase(stringifyEnumLong(data.card_type))} card: <br>
   {/if}
+  {#if data.markers != 0}
+    {data.markers} markers<br>
+  {/if}
   <CardEffectText effect={data.effect}/>
 </ButtonDiv>
 
