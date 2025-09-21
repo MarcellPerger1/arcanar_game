@@ -132,7 +132,7 @@ class Player:
         )
 
     def is_last_card(self, card: Card):
-        assert card.location.player is self
+        assert card.location.player == self.idx
         return self.cards_of_type(card.location.area)[-1] is card
 
     def execute_filtered(self, predicate: Callable[[Card], bool]):
