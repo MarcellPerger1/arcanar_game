@@ -16,8 +16,9 @@ function getUIConfig(): UIConfigT {
     checkRequestType(req, 'card_move') ?
       {
         isClickable:
-          checkEnumType(data.card_type, PlaceableCards)
-          && (req.msg.paths[data.card_type]?.length ?? 0) > 0, // (has path out)
+          checkEnumType(data.location.area, PlaceableCards)
+          && !data.is_starting_card
+          && (req.msg.paths[data.location.area]?.length ?? 0) > 0, // (has path out)
         onclick() {
           req.resolve({ card_move: data.location });
         }
