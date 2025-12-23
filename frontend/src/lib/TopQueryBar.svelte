@@ -47,16 +47,18 @@ function getTopbarMsgMain(): string {
   );
 }
 function getTopbarMsg(): string {
-  return `[Player ${getState().curr_player_idx + 1}] ${getTopbarMsgMain()}`;
+  return getState().winners == null ? `[Player ${getState().curr_player_idx + 1}] ${getTopbarMsgMain()}` : "";
 }
+
+let topbarMsg = $derived(getTopbarMsg());
 
 function sendActionType(action_type: "buy" | "execute") {
   requireNonNullish(currRequest).resolve({action_type});
 }
 </script>
 
-<div id="top-bar">
-  <div class="top-bar-text top-bar-item">{getTopbarMsg()}</div>
+<div id="top-bar" class:hide-topbar={topbarMsg == ""}>
+  <div class="top-bar-text top-bar-item">{topbarMsg}</div>
   {#if currRequest?.msg.request == "action_type"}
     <button class="top-bar-item top-bar-button" onclick={() => sendActionType('buy')}>Buy card</button>
     <button class="top-bar-item top-bar-button" onclick={() => sendActionType('execute'/*order 66*/)}>Cast spells</button>
@@ -87,6 +89,9 @@ function sendActionType(action_type: "buy" | "execute") {
   background-color: var(--color-main-1);
 }
 #top-bar:empty {
+  display: none;
+}
+#top-bar.hide-topbar {
   display: none;
 }
 
