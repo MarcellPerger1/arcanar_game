@@ -47,7 +47,8 @@ function getTopbarMsgMain(): string {
   );
 }
 function getTopbarMsg(): string {
-  return `[Player ${getState().curr_player_idx + 1}] ${getTopbarMsgMain()}`;
+  // TODO: does this work? Must test but to_end broken by my fixes
+  return getState().winners == null ? `[Player ${getState().curr_player_idx + 1}] ${getTopbarMsgMain()}` : "";
 }
 
 function sendActionType(action_type: "buy" | "execute") {
