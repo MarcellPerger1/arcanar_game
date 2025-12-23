@@ -47,7 +47,6 @@ function getTopbarMsgMain(): string {
   );
 }
 function getTopbarMsg(): string {
-  // TODO: does this work? Must test but to_end broken by my fixes
   return getState().winners == null ? `[Player ${getState().curr_player_idx + 1}] ${getTopbarMsgMain()}` : "";
 }
 
